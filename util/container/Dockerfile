@@ -27,6 +27,10 @@ RUN apt-get update && \
     unzip \
     python3-pip
 
+# Verible
+ENV VLT_ROOT /usr/local/share/verilator
+ENV VERIBLE_VERSION 0.0-3644-g6882622d
+
 # Install Verilator
 RUN git clone https://github.com/verilator/verilator && \
   cd verilator && \
@@ -44,7 +48,6 @@ RUN git clone https://github.com/verilator/verilator && \
 # Bender
 RUN cd /usr/bin && curl --proto '=https' --tlsv1.2 https://pulp-platform.github.io/bender/init -sSf | sh -s 0.28.1 && cd /
 
-# Verible
 RUN wget https://github.com/chipsalliance/verible/releases/download/v${VERIBLE_VERSION}/verible-v${VERIBLE_VERSION}-linux-static-x86_64.tar.gz && \
     mkdir tempdir && \
     tar -x -f verible-v${VERIBLE_VERSION}-linux-static-x86_64.tar.gz --strip-components=1 -C tempdir && \
