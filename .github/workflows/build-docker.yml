@@ -1,0 +1,26 @@
+# Build Docker image and publish to KU Leuven MICAS Platform
+name: build-docker
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  build-docker:
+    name: Deploy Docker Image
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: docker/setup-buildx-action@v1
+      - name: GHCR Log-in
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GH_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: util/container/Dockerfile
+          push: true
+          tags: ghcr.io/kuleuven-micas/hypercorex:main
