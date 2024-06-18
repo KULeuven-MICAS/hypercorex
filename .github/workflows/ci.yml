@@ -1,0 +1,19 @@
+name: Hardware Unit Tests
+on: 
+  pull_request:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  rtl-test-vlt:
+    name: RTL test using verilator
+    runs-on: ubuntu-22.04
+    container:
+      image: ghcr.io/kuleuven-micas/hypercorex
+    steps:
+      - uses: actions/checkout@v3
+      - name: Running Pytest
+        run: |
+          pytest
+
