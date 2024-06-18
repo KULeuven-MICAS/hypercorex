@@ -8,8 +8,8 @@
 '''
 
 # Importing useful tools
-import subprocess
 import random
+import os
 from cocotb_test.simulator import run
 
 '''
@@ -18,16 +18,8 @@ from cocotb_test.simulator import run
 
 
 # For getting the root of the repository
-def get_git_root():
-    try:
-        result = subprocess.run(['git', 'rev-parse', '--show-toplevel'],
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE,
-                                text=True,
-                                check=True)
-        return result.stdout.strip()
-    except subprocess.CalledProcessError:
-        return None
+def get_root():
+    return os.getcwd()
 
 
 # Setup and run functions
@@ -42,7 +34,7 @@ def setup_and_run(verilog_sources=None,
                   parameters=None):
 
     # Extract global main root
-    git_repo_root = get_git_root()
+    git_repo_root = get_root()
 
     # Set tests path, we use this by default
     tests_path = git_repo_root + "/tests"
