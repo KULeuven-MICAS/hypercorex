@@ -1,5 +1,5 @@
 # Build Docker image and publish to KU Leuven MICAS Platform
-name: build-docker
+name: Build Docker
 on:
   push:
     branches: [main]

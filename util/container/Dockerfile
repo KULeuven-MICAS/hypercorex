@@ -40,7 +40,7 @@ ENV VERIBLE_VERSION 0.0-3644-g6882622d
 # Install Verilator
 RUN git clone https://github.com/verilator/verilator && \
   cd verilator && \
-  git checkout stable && \
+  git checkout v5.006 && \
   unset VERILATOR_ROOT && \
   autoconf && \
   ./configure && \
