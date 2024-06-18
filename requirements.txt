@@ -1,12 +1,11 @@
-cocotb==1.8.0
-cocotb-test==0.2.4
-pytest==7.4.0
-mako==1.3.0
-jsonref==1.1.0
-hjson==3.1.0
+cocotb
+cocotb-test
+pytest
+mako
+jsonref
+hjson
 pre-commit
 ruff
 black
-# pyright version has to be fixed with '=='. the CI parses this file
-# and installs the exact version for type-checking
-pyright==1.1.323
+pyright
+flake8

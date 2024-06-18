@@ -13,17 +13,23 @@ RUN apt-get update && \
     flex \
     bison \
     g++ \
+    ccache \
     libfl2 \
     libfl-dev \
+    libgoogle-perftools-dev numactl perl-doc \
     curl \
     openjdk-11-jre-headless openjdk-11-jdk-headless \
     wget \
     tar \
     gnupg2 \
+    zlib1g zlib1g-dev \
     software-properties-common \
     lsb-release \
     git \
     tar \
+    zsh \
+    vim \
+    nano \
     unzip \
     python3-pip
 
@@ -53,6 +59,15 @@ RUN wget https://github.com/chipsalliance/verible/releases/download/v${VERIBLE_V
     tar -x -f verible-v${VERIBLE_VERSION}-linux-static-x86_64.tar.gz --strip-components=1 -C tempdir && \
     cp -rn tempdir/bin/* ./bin/ && \
     rm -rf verible-v${VERIBLE_VERSION}-linux-static-x86_64.tar.gz tempdir
+
+# Install Oh-My-Zsh and Autocomplete Plugin
+RUN sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended && \
+git clone https://github.com/zsh-users/zsh-autosuggestions.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions && \
+echo "source ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh" >> ~/.zshrc && \
+chsh -s $(which zsh)
+
+# Zsh as default shell
+CMD ["zsh"]
 
 # Install python dependencies
 WORKDIR /repo
