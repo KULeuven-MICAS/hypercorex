@@ -16,22 +16,22 @@ from cocotb.triggers import Timer
 import pytest
 
 
-def hv_alu_pe_golden_out(A,B,mode):
-    if (mode==1):
-        result = A&B
-    elif(mode==2):
-        result = A|B
+def hv_alu_pe_golden_out(A, B, mode):
+    if (mode == 1):
+        result = A & B
+    elif (mode == 2):
+        result = A | B
     else:
-        result = A^B
+        result = A ^ B
     return result
 
 
-async def gen_and_test(dut,mode):
+async def gen_and_test(dut, mode):
 
     # Generate data
     A = gen_rand_bits(set_parameters.HV_DIM)
     B = gen_rand_bits(set_parameters.HV_DIM)
-    gold_result = hv_alu_pe_golden_out(A,B,mode)
+    gold_result = hv_alu_pe_golden_out(A, B, mode)
 
     # Feed inputs
     dut.A_i.value = Force(A)
@@ -67,7 +67,7 @@ async def hv_alu_pe_dut(dut):
 
     # Test the default XOR case
     for i in range(set_parameters.TEST_RUNS):
-        await gen_and_test(dut,0)
+        await gen_and_test(dut, 0)
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("             Testing AND Cases              ")
@@ -75,7 +75,7 @@ async def hv_alu_pe_dut(dut):
 
     # Test the default AND case
     for i in range(set_parameters.TEST_RUNS):
-        await gen_and_test(dut,1)
+        await gen_and_test(dut, 1)
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("             Testing OR Cases               ")
@@ -83,14 +83,14 @@ async def hv_alu_pe_dut(dut):
 
     # Test the default OR case
     for i in range(set_parameters.TEST_RUNS):
-        await gen_and_test(dut,2)
+        await gen_and_test(dut, 2)
 
 
 # Actual test run
 @pytest.mark.parametrize(
     "parameters", [{"HVDimension": str(set_parameters.HV_DIM)}]
 )
-def test_hv_alu_pe(simulator,parameters):
+def test_hv_alu_pe(simulator, parameters):
 
     verilog_sources = ["/rtl/hv_alu_pe.sv"]
 
