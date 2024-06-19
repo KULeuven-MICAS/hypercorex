@@ -1,11 +1,11 @@
-'''
+"""
   Copyright 2024 KU Leuven
   Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
   Description:
   This tests the basic functionality of the
   hypervector ALU with basic operations
-'''
+"""
 
 import set_parameters
 from util import setup_and_run, gen_rand_bits
@@ -17,9 +17,9 @@ import pytest
 
 # ALU PE model
 def hv_alu_pe_golden_out(A, B, mode):
-    if (mode == 1):
+    if mode == 1:
         result = A & B
-    elif (mode == 2):
+    elif mode == 2:
         result = A | B
     else:
         result = A ^ B
@@ -28,7 +28,6 @@ def hv_alu_pe_golden_out(A, B, mode):
 
 # Routinary test
 async def gen_and_test(dut, mode):
-
     # Generate data
     A = gen_rand_bits(set_parameters.HV_DIM)
     B = gen_rand_bits(set_parameters.HV_DIM)
@@ -58,7 +57,6 @@ async def gen_and_test(dut, mode):
 
 @cocotb.test()
 async def hv_alu_pe_dut(dut):
-
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("            Testing ALU HV Cases            ")
     cocotb.log.info(" ------------------------------------------ ")
@@ -89,19 +87,18 @@ async def hv_alu_pe_dut(dut):
 
 
 # Actual test run
-@pytest.mark.parametrize(
-    "parameters", [{"HVDimension": str(set_parameters.HV_DIM)}]
-)
+@pytest.mark.parametrize("parameters", [{"HVDimension": str(set_parameters.HV_DIM)}])
 def test_hv_alu_pe(simulator, parameters):
-
     verilog_sources = ["/rtl/hv_alu_pe.sv"]
 
     toplevel = "hv_alu_pe"
 
     module = "test_hv_alu_pe"
 
-    setup_and_run(verilog_sources=verilog_sources,
-                  toplevel=toplevel,
-                  module=module,
-                  simulator=simulator,
-                  parameters=parameters)
+    setup_and_run(
+        verilog_sources=verilog_sources,
+        toplevel=toplevel,
+        module=module,
+        simulator=simulator,
+        parameters=parameters,
+    )

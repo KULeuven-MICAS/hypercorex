@@ -93,7 +93,6 @@ def clear_inputs_no_clock(dut):
 # Test routine
 @cocotb.test()
 async def bundler_unit_dut(dut):
-
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("           Testing Bundler Unit             ")
     cocotb.log.info(" ------------------------------------------ ")
@@ -119,9 +118,7 @@ async def bundler_unit_dut(dut):
         await increment_inputs(dut)
         print_counter_output(dut)
 
-    assert (
-        dut.counter_o.value.signed_integer >= 0
-    ), "Error! Bundler needs to increment!"
+    assert dut.counter_o.value.signed_integer >= 0, "Error! Bundler needs to increment!"
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("       Testing Positive Binarization        ")
@@ -132,9 +129,7 @@ async def bundler_unit_dut(dut):
     await binarize_output(dut)
     print_counter_output(dut)
 
-    assert (
-        dut.counter_o.value.signed_integer == 1
-        ), "Error! Bundler needs to be 1!"
+    assert dut.counter_o.value.signed_integer == 1, "Error! Bundler needs to be 1!"
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("        Testing Clearing of Bundler         ")
@@ -170,9 +165,7 @@ async def bundler_unit_dut(dut):
     await binarize_output(dut)
     print_counter_output(dut)
 
-    assert (
-        dut.counter_o.value.signed_integer == 0
-    ), "Error! Bundler needs to be 0!"
+    assert dut.counter_o.value.signed_integer == 0, "Error! Bundler needs to be 0!"
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("       Testing Positive Saturation          ")
@@ -224,7 +217,6 @@ async def bundler_unit_dut(dut):
     "parameters", [{"CounterWidth": str(set_parameters.BUNDLER_COUNT_WIDTH)}]
 )
 def test_bundler_unit(simulator, parameters):
-
     verilog_sources = ["/rtl/bundler_unit.sv"]
 
     toplevel = "bundler_unit"

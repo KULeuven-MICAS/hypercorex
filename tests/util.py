@@ -1,11 +1,11 @@
-'''
+"""
     Copyright 2024 KU Leuven
     Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
     Description:
     This contains useful functions for managing
     the tests, script,s and generations
-'''
+"""
 
 # Importing useful tools
 import random
@@ -13,9 +13,9 @@ import os
 from cocotb_test.simulator import run
 from cocotb.triggers import Timer, RisingEdge
 
-'''
+"""
     Set of functions for test setups
-'''
+"""
 
 
 # For getting the root of the repository
@@ -26,15 +26,16 @@ def get_root():
 # Setup and run functions
 # Extracts necessary definitions and filelists
 # Then invokes the run simulator
-def setup_and_run(verilog_sources=None,
-                  defines=None,
-                  includes=None,
-                  toplevel="",
-                  module="",
-                  simulator="verilator",
-                  waves=False,
-                  parameters=None):
-
+def setup_and_run(
+    verilog_sources=None,
+    defines=None,
+    includes=None,
+    toplevel="",
+    module="",
+    simulator="verilator",
+    waves=False,
+    parameters=None,
+):
     # Extract global main root
     git_repo_root = get_root()
 
@@ -51,11 +52,7 @@ def setup_and_run(verilog_sources=None,
     # Setting of compilation arguments
     # and timescale depending on simulator
     if simulator == "verilator":
-        compile_args = [
-            "-Wno-WIDTH",
-            "--no-timing",
-            "--trace-structs"
-        ]
+        compile_args = ["-Wno-WIDTH", "--no-timing", "--trace-structs"]
         timescale = None
     else:
         compile_args = None
@@ -76,9 +73,9 @@ def setup_and_run(verilog_sources=None,
     )
 
 
-'''
+"""
     Functions for simulations
-'''
+"""
 
 
 async def clock_and_time(clock):
@@ -86,9 +83,9 @@ async def clock_and_time(clock):
     await Timer(1, "ps")
 
 
-'''
+"""
     Set of functions for data generation
-'''
+"""
 
 
 # For generating random bits
