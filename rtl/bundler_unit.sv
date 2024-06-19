@@ -24,17 +24,13 @@ module bundler_unit #(
   //---------------------------
   // Wires
   //---------------------------
-  // logic set_one;
   logic saturate_low;
   logic saturate_high;
 
   //---------------------------
   // Combinational Logic
   //---------------------------
-  // Set the final bundler to 1 if 
-  // it's above threshold otherwise set to 0
-  //assign set_one       = (counter_o > 0) ? {{(CounterWidth-1){1'b0}},1'b1} : {CounterWidth{1'b0}};
-  // assign set_one = (counter_o > 0);
+
   // Saturate low happens when counter == 10000...000
   assign saturate_low  = (counter_o == {1'b1,{(CounterWidth-1){1'b0}}}) ? 1'b1: 1'b0;
 
@@ -46,11 +42,11 @@ module bundler_unit #(
     if(!rst_ni) begin
       counter_o <= {CounterWidth{1'b0}};
     end else begin
-      
+
       // This is for synchronous reset
       if(clr_i) begin
         counter_o <= {CounterWidth{1'b0}};
-      
+
       // This is for binarizing the input
       // Go to 1 or 0
       end else if (binarize_i) begin
@@ -70,7 +66,7 @@ module bundler_unit #(
           end else begin
             counter_o <= counter_o + 1;
           end
-        
+
         // If the bit is 0, we decrement
         // but we need to saturate at max negative
         end else begin
