@@ -11,11 +11,11 @@ import set_parameters
 from util import setup_and_run, gen_rand_bits
 
 import cocotb
-from cocotb.handle import Force
 from cocotb.triggers import Timer
 import pytest
 
 
+# ALU PE model
 def hv_alu_pe_golden_out(A, B, mode):
     if (mode == 1):
         result = A & B
@@ -26,6 +26,7 @@ def hv_alu_pe_golden_out(A, B, mode):
     return result
 
 
+# Routinary test
 async def gen_and_test(dut, mode):
 
     # Generate data
@@ -34,9 +35,9 @@ async def gen_and_test(dut, mode):
     gold_result = hv_alu_pe_golden_out(A, B, mode)
 
     # Feed inputs
-    dut.A_i.value = Force(A)
-    dut.B_i.value = Force(B)
-    dut.op_i.value = Force(mode)
+    dut.A_i.value = A
+    dut.B_i.value = B
+    dut.op_i.value = mode
 
     # Let time pass for logic to evaluate
     await Timer(1, units="ps")
@@ -50,6 +51,7 @@ async def gen_and_test(dut, mode):
     cocotb.log.info(f" Actual Out: {dut.C_o.value.integer}")
     cocotb.log.info(" ------------------------------------------ ")
 
+    # Check if result is correct
     assert gold_result == dut.C_o.value.integer, "Error! Output mismatch!"
     return
 
