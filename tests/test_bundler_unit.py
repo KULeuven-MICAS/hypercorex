@@ -127,6 +127,7 @@ async def bundler_unit_dut(dut):
     cocotb.log.info("       Testing Positive Binarization        ")
     cocotb.log.info(" ------------------------------------------ ")
 
+    # Clear inputs first then set binarize signal
     clear_inputs_no_clock(dut)
     await binarize_output(dut)
     print_counter_output(dut)
@@ -139,6 +140,7 @@ async def bundler_unit_dut(dut):
     cocotb.log.info("        Testing Clearing of Bundler         ")
     cocotb.log.info(" ------------------------------------------ ")
 
+    # Check if clear signal works
     await clear_bundler_unit(dut)
     print_counter_output(dut)
 
@@ -150,7 +152,7 @@ async def bundler_unit_dut(dut):
     cocotb.log.info("            Testing Decrements              ")
     cocotb.log.info(" ------------------------------------------ ")
 
-    # Let cycles run and check if output is positive
+    # Let cycles run and check if output is negative
     for i in range(gen_randint(UNSIGNED_MAX_HALF)):
         await decrement_inputs(dut)
         print_counter_output(dut)
@@ -163,6 +165,7 @@ async def bundler_unit_dut(dut):
     cocotb.log.info("       Testing Negative Binarization        ")
     cocotb.log.info(" ------------------------------------------ ")
 
+    # Clear inputs first then set binarize signal
     clear_inputs_no_clock(dut)
     await binarize_output(dut)
     print_counter_output(dut)
