@@ -31,6 +31,7 @@ def setup_and_run(verilog_sources=None,
                   toplevel="",
                   module="",
                   simulator="verilator",
+                  waves=False,
                   parameters=None):
 
     # Extract global main root
@@ -51,7 +52,7 @@ def setup_and_run(verilog_sources=None,
     if simulator == "verilator":
         compile_args = [
             "-Wno-WIDTH",
-            "--timing",
+            "--no-timing",
             "--trace-structs"
         ]
         timescale = None
@@ -69,7 +70,7 @@ def setup_and_run(verilog_sources=None,
         sim_build=sim_build,
         compile_args=compile_args,
         timescale=timescale,
-        waves=True,
+        waves=waves,
         parameters=parameters,
     )
 
