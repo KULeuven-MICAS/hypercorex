@@ -36,7 +36,6 @@ def setup_and_run(
     waves=False,
     parameters=None,
 ):
-
     # Extract global main root
     git_repo_root = get_root()
 

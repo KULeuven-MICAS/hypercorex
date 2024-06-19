@@ -28,7 +28,6 @@ def hv_alu_pe_golden_out(A, B, mode):
 
 # Routinary test
 async def gen_and_test(dut, mode):
-
     # Generate data
     A = gen_rand_bits(set_parameters.HV_DIM)
     B = gen_rand_bits(set_parameters.HV_DIM)
@@ -58,7 +57,6 @@ async def gen_and_test(dut, mode):
 
 @cocotb.test()
 async def hv_alu_pe_dut(dut):
-
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("            Testing ALU HV Cases            ")
     cocotb.log.info(" ------------------------------------------ ")
@@ -91,7 +89,6 @@ async def hv_alu_pe_dut(dut):
 # Actual test run
 @pytest.mark.parametrize("parameters", [{"HVDimension": str(set_parameters.HV_DIM)}])
 def test_hv_alu_pe(simulator, parameters):
-
     verilog_sources = ["/rtl/hv_alu_pe.sv"]
 
     toplevel = "hv_alu_pe"
