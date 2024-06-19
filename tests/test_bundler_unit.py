@@ -119,9 +119,7 @@ async def bundler_unit_dut(dut):
         await increment_inputs(dut)
         print_counter_output(dut)
 
-    assert (
-        dut.counter_o.value.signed_integer >= 0
-    ), "Error! Bundler needs to increment!"
+    assert dut.counter_o.value.signed_integer >= 0, "Error! Bundler needs to increment!"
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("       Testing Positive Binarization        ")
@@ -132,9 +130,7 @@ async def bundler_unit_dut(dut):
     await binarize_output(dut)
     print_counter_output(dut)
 
-    assert (
-        dut.counter_o.value.signed_integer == 1
-        ), "Error! Bundler needs to be 1!"
+    assert dut.counter_o.value.signed_integer == 1, "Error! Bundler needs to be 1!"
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("        Testing Clearing of Bundler         ")
@@ -170,9 +166,7 @@ async def bundler_unit_dut(dut):
     await binarize_output(dut)
     print_counter_output(dut)
 
-    assert (
-        dut.counter_o.value.signed_integer == 0
-    ), "Error! Bundler needs to be 0!"
+    assert dut.counter_o.value.signed_integer == 0, "Error! Bundler needs to be 0!"
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("       Testing Positive Saturation          ")
