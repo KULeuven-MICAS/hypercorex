@@ -75,12 +75,16 @@ def setup_and_run(verilog_sources=None,
         parameters=parameters,
     )
 
+
 '''
     Functions for simulations
 '''
+
+
 async def clock_and_time(clock):
     await RisingEdge(clock)
-    await Timer(1,"ps")
+    await Timer(1, "ps")
+
 
 '''
     Set of functions for data generation
@@ -94,4 +98,4 @@ def gen_rand_bits(dimension):
 
 # For generating random integer
 def gen_randint(max_val):
-    return random.randint(0,max_val)
+    return random.randint(0, max_val)
