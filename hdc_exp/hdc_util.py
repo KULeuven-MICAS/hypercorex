@@ -93,6 +93,23 @@ def binarize_hv(hv_a,threshold,hv_type="binary"):
     return hv_a
 
 
+# Normalized distance calculation
+# the output range is from 0 to 1
+# where 1 is the highest similarity
+def norm_dist_hv(hv_a, hv_b, hv_type="binary"):
+    # If binary we do hamming distance,
+    # else we do cosine similarity
+    if(hv_type=="bipolar"):
+        hv_dot = np.dot(hv_a, hv_b)
+        norm_a = np.linalg.norm(hv_a)
+        norm_b = np.linalg.norm(hv_b)
+        dist = hv_dot/(norm_a*norm_b)
+    else:
+        ham_dist = np.sum(np.bitwise_xor(hv_a,hv_b))
+        dist = 1-(ham_dist/hv_a.size)
+    
+    return dist
+
 """
     Functions for generating item memories
     
@@ -115,5 +132,3 @@ def gen_orthogonal_im(num_hv, hv_dim, p_dense, hv_type="binary"):
         orthogonal_im[i] = gen_ri_hv(hv_dim=hv_dim, p_dense=p_dense, hv_type=hv_type)
     
     return orthogonal_im
-
-
