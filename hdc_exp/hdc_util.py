@@ -11,7 +11,6 @@
 import numpy as np
 
 
-
 """
     Hypervector functions
     
@@ -50,19 +49,19 @@ import numpy as np
 def gen_ri_hv(hv_dim, p_dense, hv_type="binary"):
     # Generate a list of random integers
     random_list = np.arange(hv_dim)
-    
+
     # Permute list
     np.random.shuffle(random_list)
-    
+
     # Determine threshold
-    threshold = np.floor(hv_dim*p_dense)
-    
+    threshold = np.floor(hv_dim * p_dense)
+
     # Binarize depending on hv_type
-    if(hv_type == "bipolar"):
+    if hv_type == "bipolar":
         random_list = np.where(random_list >= threshold, 1, -1)
     else:
         random_list = np.where(random_list >= threshold, 1, 0)
-    
+
     return random_list
 
 
@@ -70,26 +69,26 @@ def gen_ri_hv(hv_dim, p_dense, hv_type="binary"):
 def bind_hv(hv_a, hv_b, hv_type="binary", density="dense"):
     # If bipolar we do multiplication
     # otherwise we do bit-wise XOR
-    if(hv_type == "bipolar"):
-        return np.multiply(hv_a,hv_b)
+    if hv_type == "bipolar":
+        return np.multiply(hv_a, hv_b)
     else:
-        return np.bitwise_xor(hv_a,hv_b)
+        return np.bitwise_xor(hv_a, hv_b)
 
 
 # Circular permutations
-def circ_perm_hv(hv_a,permute_amt):
-    return np.roll(hv_a,permute_amt)
+def circ_perm_hv(hv_a, permute_amt):
+    return np.roll(hv_a, permute_amt)
 
 
 # Binarize hypervector
-def binarize_hv(hv_a,threshold,hv_type="binary"):
+def binarize_hv(hv_a, threshold, hv_type="binary"):
     # Binarize depending on hv_type
     # If it's binary use a threshold for this
-    if(hv_type == "bipolar"):
+    if hv_type == "bipolar":
         hv_a = np.where(hv_a >= 0, 1, -1)
     else:
         hv_a = np.where(hv_a >= threshold, 1, 0)
-    
+
     return hv_a
 
 
@@ -99,16 +98,17 @@ def binarize_hv(hv_a,threshold,hv_type="binary"):
 def norm_dist_hv(hv_a, hv_b, hv_type="binary"):
     # If binary we do hamming distance,
     # else we do cosine similarity
-    if(hv_type=="bipolar"):
+    if hv_type == "bipolar":
         hv_dot = np.dot(hv_a, hv_b)
         norm_a = np.linalg.norm(hv_a)
         norm_b = np.linalg.norm(hv_b)
-        dist = hv_dot/(norm_a*norm_b)
+        dist = hv_dot / (norm_a * norm_b)
     else:
-        ham_dist = np.sum(np.bitwise_xor(hv_a,hv_b))
-        dist = 1-(ham_dist/hv_a.size)
-    
+        ham_dist = np.sum(np.bitwise_xor(hv_a, hv_b))
+        dist = 1 - (ham_dist / hv_a.size)
+
     return dist
+
 
 """
     Functions for generating item memories
@@ -127,8 +127,8 @@ def norm_dist_hv(hv_a, hv_b, hv_type="binary"):
 def gen_orthogonal_im(num_hv, hv_dim, p_dense, hv_type="binary"):
     # Initialize empty matrix
     orthogonal_im = np.zeros((num_hv, hv_dim))
-    
+
     for i in range(num_hv):
         orthogonal_im[i] = gen_ri_hv(hv_dim=hv_dim, p_dense=p_dense, hv_type=hv_type)
-    
+
     return orthogonal_im
