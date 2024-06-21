@@ -1,14 +1,34 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-  Copyright 2024 KU Leuven
-  Ryan Antonio <ryan.antonio@esat.kuleuven.be>
-
-  Description:
-  These contain useful functions for testing HDC activities
+    Copyright 2024 KU Leuven
+    Ryan Antonio <ryan.antonio@esat.kuleuven.be>
+    
+    Description:
+    These contain useful functions for testing HDC activities
 """
 
+
 import numpy as np
+
+
+"""
+    General functions
+
+"""
+
+
+def extract_dataset(file_path):
+    # Initialize empty data set array
+    dataset = []
+
+    with open(file_path, "r") as file:
+        lines = file.readlines()
+
+        for line in lines:
+            dataset.append(line.strip())
+
+    return dataset
 
 
 """
@@ -43,6 +63,11 @@ import numpy as np
             - hv_type: hv_type of hypervector, if bipolar we threshold at 0
 
 """
+
+
+# Generate empty HV
+def gen_empty_hv(hv_dim):
+    return np.zeros(hv_dim)
 
 
 # Generate using random indexing style
@@ -123,12 +148,79 @@ def norm_dist_hv(hv_a, hv_b, hv_type="binary"):
 """
 
 
+# Generating empty memories
+def gen_empty_mem_hv(num_hv, hv_dim):
+    return np.zeros((num_hv, hv_dim))
+
+
 # Generating orthogonal item memory
 def gen_orthogonal_im(num_hv, hv_dim, p_dense, hv_type="binary"):
     # Initialize empty matrix
-    orthogonal_im = np.zeros((num_hv, hv_dim))
+    orthogonal_im = gen_empty_mem_hv(num_hv, hv_dim)
 
     for i in range(num_hv):
         orthogonal_im[i] = gen_ri_hv(hv_dim=hv_dim, p_dense=p_dense, hv_type=hv_type)
 
     return orthogonal_im
+
+
+"""
+    Functions for testing purposes
+    
+    prediction_idx:
+        - returns the predicted index from the associative memory
+        - arguments:
+            - assoc_mem: the associative memory
+            - query_hv: is the query hypervector
+            - hv_type: is HV type to use
+            
+    prediction_set:
+        - returns a set of predicted values
+        - arguments:
+            - assoc_mem: associative memory model
+            - query_hv_set: query hyper vectors set
+            - hv_type: is HV type to use
+            
+    measure_acc:
+        - measures the accuracy between a test set and the correct set
+        - 
+"""
+
+
+# Returns the predicted index
+def prediction_idx(assoc_mem, query_hv, hv_type="binary"):
+    score_list = []
+
+    for i in range(len(assoc_mem)):
+        score_list.append(norm_dist_hv(assoc_mem[i], query_hv, hv_type=hv_type))
+
+    predict_idx = np.argmax(score_list)
+
+    return predict_idx
+
+
+# Get prediction set
+def prediction_set(assoc_mem, query_hv_set, hv_type="binary"):
+    # Initialize prediction set
+    predict_set = []
+    len_query_hv_set = len(query_hv_set)
+
+    # Predict test element
+    for i in range(len_query_hv_set):
+        predict_set.append(prediction_idx(assoc_mem, query_hv_set[i], hv_type=hv_type))
+
+    return predict_set
+
+
+# Measuring accuracy for the test set
+# The correct set needs to be in correct order
+def measure_acc(assoc_mem, predict_set, correct_set):
+    len_predict_set = len(predict_set)
+
+    # Count number of correct elements
+    count_correct_items = len(set(predict_set) & set(correct_set))
+
+    # Measure accuracy
+    acc = count_correct_items / len_predict_set
+
+    return acc
