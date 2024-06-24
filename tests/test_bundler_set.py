@@ -96,6 +96,11 @@ def check_boundler_out(dut, hv_bundle, hv_dim, counter_width):
     return
 
 
+"""
+    Actual test routines
+"""
+
+
 @cocotb.test()
 async def bundler_set_dut(dut):
     cocotb.log.info(" ------------------------------------------ ")
@@ -186,7 +191,7 @@ async def bundler_set_dut(dut):
         )
 
 
-# Actual test run
+# Config and run
 @pytest.mark.parametrize(
     "parameters",
     [
