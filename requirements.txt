@@ -9,3 +9,4 @@ ruff
 black
 pyright
 flake8
+numpy
