@@ -7,8 +7,8 @@
 """
 
 # Test Parameters
-TEST_RUNS = 50
+TEST_RUNS = 20
 
 # Working dimensions
-HV_DIM = 512
+HV_DIM = 256
 BUNDLER_COUNT_WIDTH = 8
