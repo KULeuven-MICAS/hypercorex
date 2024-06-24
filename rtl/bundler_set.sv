@@ -22,7 +22,7 @@ module bundler_set#(
 );
 
   genvar i;
-  for(i = 0; i < HVDimension; i++ )begin
+  for(i = 0; i < HVDimension; i++ )begin: gen_bundler_units
     bundler_unit #(
       .CounterWidth (CounterWidth )
     ) i_bundler_unit (
