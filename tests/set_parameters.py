@@ -12,3 +12,8 @@ TEST_RUNS = 20
 # Working dimensions
 HV_DIM = 256
 BUNDLER_COUNT_WIDTH = 8
+
+# Shift amount needs to be in odd number form
+# because the shifts is from 0 to some dimension
+# here, we restrict shift amount to be half of the total dimension
+MAX_SHIFT_AMT = HV_DIM / 2 - 1
