@@ -11,8 +11,8 @@
 //---------------------------
 
 module reg_file_1w1r #(
-  parameter int unsigned DataWidth    = 512,
-  parameter int unsigned NumRegs      = 4,
+  parameter int unsigned DataWidth    = 32,
+  parameter int unsigned NumRegs      = 32,
   // Automatic computation - don't touch!
   parameter int unsigned NumRegsWidth = $clog2(NumRegs)
 )(
