@@ -8,7 +8,7 @@
 """
 
 import set_parameters
-from util import setup_and_run, gen_rand_bits
+from util import setup_and_run, gen_rand_bits, gen_randint
 
 import cocotb
 from cocotb.triggers import Timer
@@ -16,26 +16,38 @@ import pytest
 
 
 # ALU PE model
-def hv_alu_pe_golden_out(A, B, mode):
+def hv_alu_pe_golden_out(A, B, shift_amt, hv_dim, mode):
+    mask_val = 2**hv_dim - 1
+
     if mode == 1:
         result = A & B
     elif mode == 2:
         result = A | B
+    elif mode == 3:
+        result = (A >> shift_amt) | (A << (hv_dim - shift_amt)) & mask_val
     else:
         result = A ^ B
     return result
 
 
 # Routinary test
-async def gen_and_test(dut, mode):
+async def gen_and_test(dut, hv_dim, max_shift_amt, mode):
     # Generate data
-    A = gen_rand_bits(set_parameters.HV_DIM)
-    B = gen_rand_bits(set_parameters.HV_DIM)
-    gold_result = hv_alu_pe_golden_out(A, B, mode)
+    if mode == 3:
+        A = gen_rand_bits(set_parameters.HV_DIM)
+        B = 0
+        shift_amt = gen_randint(max_shift_amt)
+    else:
+        A = gen_rand_bits(set_parameters.HV_DIM)
+        B = gen_rand_bits(set_parameters.HV_DIM)
+        shift_amt = 0
+
+    gold_result = hv_alu_pe_golden_out(A, B, shift_amt, hv_dim, mode)
 
     # Feed inputs
     dut.A_i.value = A
     dut.B_i.value = B
+    dut.shift_amt_i.value = shift_amt
     dut.op_i.value = mode
 
     # Let time pass for logic to evaluate
@@ -46,6 +58,7 @@ async def gen_and_test(dut, mode):
     cocotb.log.info(f" Mode: { dut.op_i.value.integer}")
     cocotb.log.info(f" Input A: {dut.A_i.value.integer}")
     cocotb.log.info(f" Input B: {dut.B_i.value.integer}")
+    cocotb.log.info(f" Shift Amount: {dut.shift_amt_i.value.integer}")
     cocotb.log.info(f" Golden Out: {gold_result}")
     cocotb.log.info(f" Actual Out: {dut.C_o.value.integer}")
     cocotb.log.info(" ------------------------------------------ ")
@@ -65,29 +78,45 @@ async def hv_alu_pe_dut(dut):
     cocotb.log.info("             Testing XOR Cases              ")
     cocotb.log.info(" ------------------------------------------ ")
 
-    # Test the default XOR case
+    # Test the XOR case
     for i in range(set_parameters.TEST_RUNS):
-        await gen_and_test(dut, 0)
+        await gen_and_test(dut, set_parameters.HV_DIM, set_parameters.MAX_SHIFT_AMT, 0)
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("             Testing AND Cases              ")
     cocotb.log.info(" ------------------------------------------ ")
 
-    # Test the default AND case
+    # Test the AND case
     for i in range(set_parameters.TEST_RUNS):
-        await gen_and_test(dut, 1)
+        await gen_and_test(dut, set_parameters.HV_DIM, set_parameters.MAX_SHIFT_AMT, 1)
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("             Testing OR Cases               ")
     cocotb.log.info(" ------------------------------------------ ")
 
-    # Test the default OR case
+    # Test the OR case
     for i in range(set_parameters.TEST_RUNS):
-        await gen_and_test(dut, 2)
+        await gen_and_test(dut, set_parameters.HV_DIM, set_parameters.MAX_SHIFT_AMT, 2)
+
+    cocotb.log.info(" ------------------------------------------ ")
+    cocotb.log.info("       Testing Circular Shift Cases         ")
+    cocotb.log.info(" ------------------------------------------ ")
+
+    # Test circular shift cases
+    for i in range(set_parameters.TEST_RUNS):
+        await gen_and_test(dut, set_parameters.HV_DIM, set_parameters.MAX_SHIFT_AMT, 3)
 
 
 # Actual test run
-@pytest.mark.parametrize("parameters", [{"HVDimension": str(set_parameters.HV_DIM)}])
+@pytest.mark.parametrize(
+    "parameters",
+    [
+        {
+            "HVDimension": str(set_parameters.HV_DIM),
+            "MaxShiftAmt": str(set_parameters.MAX_SHIFT_AMT),
+        }
+    ],
+)
 def test_hv_alu_pe(simulator, parameters):
     verilog_sources = ["/rtl/hv_alu_pe.sv"]
 
