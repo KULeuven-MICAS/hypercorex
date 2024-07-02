@@ -47,7 +47,6 @@ def print_all(dut):
     cocotb.log.info(f"bit_i: {dut.bit_i.value.integer}")
     cocotb.log.info(f"valid_i: {dut.valid_i.value.integer}")
     cocotb.log.info(f"clr_i: {dut.clr_i.value.integer}")
-    cocotb.log.info(f"binarize_i: {dut.binarize_i.value.integer}")
     cocotb.log.info(f"counter_o: {dut.counter_o.value.signed_integer}")
     return
 
@@ -68,21 +67,12 @@ async def decrement_inputs(dut):
     return
 
 
-# Binarize output
-async def binarize_output(dut):
-    dut.binarize_i.value = 1
-    await clock_and_time(dut.clk_i)
-    dut.binarize_i.value = 0
-    return
-
-
 # Clearing inputs but
 # without time progression
 def clear_inputs_no_clock(dut):
     dut.bit_i.value = 0
     dut.valid_i.value = 0
     dut.clr_i.value = 0
-    dut.binarize_i.value = 0
 
 
 """
@@ -121,17 +111,6 @@ async def bundler_unit_dut(dut):
     assert dut.counter_o.value.signed_integer >= 0, "Error! Bundler needs to increment!"
 
     cocotb.log.info(" ------------------------------------------ ")
-    cocotb.log.info("       Testing Positive Binarization        ")
-    cocotb.log.info(" ------------------------------------------ ")
-
-    # Clear inputs first then set binarize signal
-    clear_inputs_no_clock(dut)
-    await binarize_output(dut)
-    print_counter_output(dut)
-
-    assert dut.counter_o.value.signed_integer == 1, "Error! Bundler needs to be 1!"
-
-    cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("        Testing Clearing of Bundler         ")
     cocotb.log.info(" ------------------------------------------ ")
 
@@ -155,17 +134,6 @@ async def bundler_unit_dut(dut):
     assert (
         dut.counter_o.value.signed_integer < 0
     ), "Error! Bundler needs to be cleared to 0!"
-
-    cocotb.log.info(" ------------------------------------------ ")
-    cocotb.log.info("       Testing Negative Binarization        ")
-    cocotb.log.info(" ------------------------------------------ ")
-
-    # Clear inputs first then set binarize signal
-    clear_inputs_no_clock(dut)
-    await binarize_output(dut)
-    print_counter_output(dut)
-
-    assert dut.counter_o.value.signed_integer == 0, "Error! Bundler needs to be 0!"
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("       Testing Positive Saturation          ")

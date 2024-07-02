@@ -17,9 +17,13 @@ module bundler_set#(
   input  logic [HVDimension-1:0] hv_i,
   input  logic valid_i,
   input  logic clr_i,
-  input  logic binarize_i,
-  output logic signed [HVDimension-1:0][CounterWidth-1:0] counter_o
+  output logic signed [HVDimension-1:0][CounterWidth-1:0] counter_o,
+  output logic [HVDimension-1:0] binarized_hv_o
 );
+
+  //---------------------------
+  // Bundler units
+  //---------------------------
 
   genvar i;
   for(i = 0; i < HVDimension; i++ )begin: gen_bundler_units
@@ -31,9 +35,19 @@ module bundler_set#(
       .bit_i        (hv_i[i]      ),
       .valid_i      (valid_i      ),
       .clr_i        (clr_i        ),
-      .binarize_i   (binarize_i   ),
       .counter_o    (counter_o[i] )
     );
   end
+
+  //---------------------------
+  // Combinational threshold
+  //---------------------------
+
+  always_comb begin
+    for(int i = 0; i < HVDimension; i++) begin
+      binarized_hv_o[i] = (counter_o[i] >= 0) ? 1'b1 : 1'b0;
+    end
+  end
+
 
 endmodule

@@ -53,7 +53,6 @@ def clear_inputs_no_clock(dut):
     dut.hv_i.value = 0
     dut.valid_i.value = 0
     dut.clr_i.value = 0
-    dut.binarize_i.value = 0
     return
 
 
@@ -61,14 +60,6 @@ def clear_inputs_no_clock(dut):
 def load_hv_bundler(dut, hv):
     dut.hv_i.value = hv
     dut.valid_i.value = 1
-    return
-
-
-# Binarize output of bundler
-async def binarize_output(dut):
-    dut.binarize_i.value = 1
-    await clock_and_time(dut.clk_i)
-    dut.binarize_i.value = 0
     return
 
 
@@ -81,7 +72,7 @@ async def clear_bundler_unit(dut):
 
 
 # Checking each input of the bundler
-def check_boundler_out(dut, hv_bundle, hv_dim, counter_width):
+def check_bundler_out(dut, hv_bundle, hv_dim, counter_width):
     # Iterate through number of elements
     for i in range(hv_dim):
         bundler_val = dut.counter_o.value[
@@ -92,6 +83,34 @@ def check_boundler_out(dut, hv_bundle, hv_dim, counter_width):
         cocotb.log.info(
             f"Bundler {i}: Actual output: {actual_val}; Golden output: {bundler_val}"
         )
+
+    return
+
+
+# Checking the binarized output of each bundler unit
+def check_binarize_out(dut, hv_bundle):
+    # Taken from hdc_util in hdc_exp directory
+    # Get golden binarized value, note that we used hv_bundle
+    # as if it were bipolar, but the output is binary
+    # so we set the threshold to 0 but the expected outputs
+    # are in binary
+    hv_binarized = binarize_hv(hv_bundle, 0)
+
+    # Extract actual data
+    actual_val = dut.binarized_hv_o.value.integer
+
+    # Convert binarized output
+    golden_val = "".join(hv_binarized.astype(str))
+    golden_val = int(golden_val, 2)
+
+    # Log
+    cocotb.log.info(
+        f"Binarize check! Actual output: {actual_val}; Golden output: {golden_val}"
+    )
+
+    assert (
+        golden_val == actual_val
+    ), f"Error! Actual output: {actual_val}; Golden output: {golden_val}"
 
     return
 
@@ -149,7 +168,7 @@ async def bundler_set_dut(dut):
         clear_inputs_no_clock(dut)
 
         # Check result per bundler
-        check_boundler_out(
+        check_bundler_out(
             dut, hv_bundle, set_parameters.HV_DIM, set_parameters.BUNDLER_COUNT_WIDTH
         )
 
@@ -157,23 +176,8 @@ async def bundler_set_dut(dut):
         cocotb.log.info("           Testing Binarization             ")
         cocotb.log.info(" ------------------------------------------ ")
 
-        # Binarize output
-        await binarize_output(dut)
-
-        # Clear inputs
-        clear_inputs_no_clock(dut)
-
-        # Taken from hdc_util in hdc_exp directory
-        # Get golden binarized value, note that we used hv_bundle
-        # as if it were bipolar, but the output is binary
-        # so we set the threshold to 0 but the expected outputs
-        # are in binary
-        hv_bundle = binarize_hv(hv_bundle, 0)
-
         # Check result per bundler
-        check_boundler_out(
-            dut, hv_bundle, set_parameters.HV_DIM, set_parameters.BUNDLER_COUNT_WIDTH
-        )
+        check_binarize_out(dut, hv_bundle)
 
         cocotb.log.info(" ------------------------------------------ ")
         cocotb.log.info("               Testing Clear                ")
@@ -186,7 +190,7 @@ async def bundler_set_dut(dut):
         hv_bundle = np.zeros(set_parameters.HV_DIM)
 
         # Check result per bundler
-        check_boundler_out(
+        check_bundler_out(
             dut, hv_bundle, set_parameters.HV_DIM, set_parameters.BUNDLER_COUNT_WIDTH
         )
 
