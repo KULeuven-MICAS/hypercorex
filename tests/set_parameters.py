@@ -8,11 +8,13 @@
 
 # Test Parameters
 TEST_RUNS = 20
+NUM_CLASSES = 10
 
 # Working dimensions
 HV_DIM = 256
 BUNDLER_COUNT_WIDTH = 8
 REG_FILE_WIDTH = 32
+
 
 # Shift amount needs to be in odd number form
 # because the shifts is from 0 to some dimension
