@@ -17,7 +17,6 @@ module bundler_unit #(
   input  logic bit_i,
   input  logic valid_i,
   input  logic clr_i,
-  input  logic binarize_i,
   output logic signed [CounterWidth-1:0] counter_o
 );
 
@@ -45,16 +44,9 @@ module bundler_unit #(
 
       // This is for synchronous reset
       if(clr_i) begin
+
         counter_o <= {CounterWidth{1'b0}};
 
-      // This is for binarizing the input
-      // Go to 1 or 0
-      end else if (binarize_i) begin
-        if(counter_o >= 0) begin
-          counter_o <= 1;
-        end else begin
-          counter_o <= 0;
-        end
       // This is for accumulating values
       end else if (valid_i) begin
 
