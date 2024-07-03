@@ -24,6 +24,7 @@ MIN_VAL = int(-1 * (2 ** (set_parameters.BUNDLER_COUNT_WIDTH - 1)))
 
 # Test functions
 
+
 # For clearing bundler unit
 async def clear_bundler_unit(dut):
     dut.clr_i.value = 1
@@ -69,6 +70,7 @@ def clear_inputs_no_clock(dut):
     dut.bit_i.value = 0
     dut.valid_i.value = 0
     dut.clr_i.value = 0
+
 
 # Actual test routines
 

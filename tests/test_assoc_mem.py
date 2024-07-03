@@ -6,7 +6,6 @@
   This tests the vectorized bundler unit
 """
 
-
 import set_parameters
 from util import get_root, setup_and_run, gen_rand_bits, clock_and_time
 
