@@ -14,19 +14,15 @@ from cocotb.clock import Clock
 from util import clock_and_time, gen_randint
 import pytest
 
-"""
-    Some useful local parameters
-"""
+
+# Local parameters
+
 UNSIGNED_MAX = int(2 ** (set_parameters.BUNDLER_COUNT_WIDTH) - 1)
 UNSIGNED_MAX_HALF = int(UNSIGNED_MAX / 2)
 MAX_VAL = int(2 ** (set_parameters.BUNDLER_COUNT_WIDTH - 1) - 1)
 MIN_VAL = int(-1 * (2 ** (set_parameters.BUNDLER_COUNT_WIDTH - 1)))
 
-
-"""
-    Test functions
-"""
-
+# Test functions
 
 # For clearing bundler unit
 async def clear_bundler_unit(dut):
@@ -74,10 +70,7 @@ def clear_inputs_no_clock(dut):
     dut.valid_i.value = 0
     dut.clr_i.value = 0
 
-
-"""
-    Actual test routines
-"""
+# Actual test routines
 
 
 # Test routine

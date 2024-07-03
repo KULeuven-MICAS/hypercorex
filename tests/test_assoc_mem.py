@@ -24,14 +24,8 @@ sys.path.append(hdc_util_path)
 
 from hdc_util import binarize_hv  # noqa: E402
 
-"""
-    Some useful local parameters
-"""
 
-
-"""
-    Test functions
-"""
+# Test functions
 
 
 # Set inputs to 0
@@ -106,9 +100,7 @@ def gen_am_and_qv(num_classes, hv_dim):
     return random_idx, query_hv, assoc_mem
 
 
-"""
-    Actual test routines
-"""
+# Actual test routines
 
 
 @cocotb.test()
