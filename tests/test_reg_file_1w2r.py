@@ -132,7 +132,7 @@ async def reg_file_1w2r_dut(dut):
     ],
 )
 def test_reg_file_1w2r(simulator, parameters):
-    verilog_sources = ["/rtl/reg_file_1w2r.sv"]
+    verilog_sources = ["/rtl/common/reg_file_1w2r.sv"]
 
     toplevel = "reg_file_1w2r"
 

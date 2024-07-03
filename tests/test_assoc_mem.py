@@ -6,7 +6,6 @@
   This tests the vectorized bundler unit
 """
 
-
 import set_parameters
 from util import get_root, setup_and_run, gen_rand_bits, clock_and_time
 
@@ -24,14 +23,8 @@ sys.path.append(hdc_util_path)
 
 from hdc_util import binarize_hv  # noqa: E402
 
-"""
-    Some useful local parameters
-"""
 
-
-"""
-    Test functions
-"""
+# Test functions
 
 
 # Set inputs to 0
@@ -106,9 +99,7 @@ def gen_am_and_qv(num_classes, hv_dim):
     return random_idx, query_hv, assoc_mem
 
 
-"""
-    Actual test routines
-"""
+# Actual test routines
 
 
 @cocotb.test()

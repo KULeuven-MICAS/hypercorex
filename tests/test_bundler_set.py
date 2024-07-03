@@ -6,7 +6,6 @@
   This tests the vectorized bundler unit
 """
 
-
 import set_parameters
 from util import get_root, setup_and_run, gen_rand_bits, clock_and_time
 
@@ -24,16 +23,14 @@ sys.path.append(hdc_util_path)
 
 from hdc_util import binarize_hv  # noqa: E402
 
-"""
-    Some useful local parameters
-"""
+
+# Some useful local parameters
+
 
 UNSIGNED_MAX = int(2 ** (set_parameters.BUNDLER_COUNT_WIDTH) - 1)
 UNSIGNED_MAX_HALF = int(UNSIGNED_MAX / 2)
 
-"""
-    Test functions
-"""
+# Test functions
 
 
 # Convert a number in binary to a list
@@ -115,9 +112,7 @@ def check_binarize_out(dut, hv_bundle):
     return
 
 
-"""
-    Actual test routines
-"""
+# Actual test routines
 
 
 @cocotb.test()
