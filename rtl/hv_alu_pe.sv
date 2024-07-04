@@ -12,16 +12,16 @@ module hv_alu_pe #(
   parameter int unsigned NumOps        = 4,
   parameter int unsigned NumOpsWidth   = $clog2(NumOps),
   parameter int unsigned MaxShiftAmt   = 128,
-  parameter int unsigned PermuteWidth  = $clog2(MaxShiftAmt)
+  parameter int unsigned ShiftWidth    = $clog2(MaxShiftAmt)
 )(
   // Inputs
-  input  logic [ HVDimension-1:0] A_i,
-  input  logic [ HVDimension-1:0] B_i,
+  input  logic [HVDimension-1:0] A_i,
+  input  logic [HVDimension-1:0] B_i,
   // Outputs
-  output logic [ HVDimension-1:0] C_o,
+  output logic [HVDimension-1:0] C_o,
   // Control ports
-  input  logic [ NumOpsWidth-1:0] op_i,
-  input  logic [PermuteWidth-1:0] shift_amt_i
+  input  logic [NumOpsWidth-1:0] op_i,
+  input  logic [ ShiftWidth-1:0] shift_amt_i
 );
 
   //---------------------------
