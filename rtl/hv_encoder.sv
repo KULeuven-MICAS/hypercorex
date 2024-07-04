@@ -12,16 +12,17 @@
 module hv_encoder #(
   parameter int unsigned HVDimension    = 512,
   parameter int unsigned BundCountWidth = 8,
-  parameter int unsigned BundMuxWidth    = 2,
+  parameter int unsigned BundMuxWidth   = 2,
   parameter int unsigned ALUMuxWidth    = 2,
-  parameter int unsigned ALUOpsWidth    = 2,
   parameter int unsigned ALUMaxShiftAmt = 128,
   parameter int unsigned RegMuxWidth    = 2,
   parameter int unsigned QvMuxWidth     = 2,
   parameter int unsigned RegNum         = 4,
   // Don't touch!
+  parameter int unsigned NumALUOps      = 4,
+  parameter int unsigned ALUOpsWidth    = $clog2(NumALUOps     ),
   parameter int unsigned ShiftWidth     = $clog2(ALUMaxShiftAmt),
-  parameter int unsigned RegAddrWidth   = $clog2(RegNum)
+  parameter int unsigned RegAddrWidth   = $clog2(RegNum        )
 )(
   // Clocks and reset
   input  logic clk_i,
@@ -53,11 +54,6 @@ module hv_encoder #(
   input  logic [  QvMuxWidth-1:0] qhv_mux_i,
   output logic [ HVDimension-1:0] qhv_o
 );
-
-  //---------------------------
-  // Some fixed local parameters
-  //---------------------------
-  parameter int unsigned NumALUOps   = 4;
 
   //---------------------------
   // Wires
@@ -104,7 +100,7 @@ module hv_encoder #(
     // Write port
     .wr_addr_i    ( reg_wr_addr_i   ),
     .wr_data_i    ( reg_wr_data     ),
-    .wr_en_i      ( reg_wr_en_i       ),
+    .wr_en_i      ( reg_wr_en_i     ),
     // Read port A
     .rd_addr_a_i  ( reg_rd_addr_a_i ),
     .rd_data_a_o  ( reg_rd_data_a   ),
