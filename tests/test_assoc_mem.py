@@ -7,7 +7,8 @@
 """
 
 import set_parameters
-from util import get_root, setup_and_run, gen_rand_bits, clock_and_time
+from util import get_root, setup_and_run, gen_rand_bits, \
+    clock_and_time, hvlist2num
 
 import cocotb
 from cocotb.clock import Clock
@@ -93,8 +94,7 @@ def gen_am_and_qv(num_classes, hv_dim):
     # Bring back into an integer itself!
     # Sad workaround is to convert to str
     # The convert to integer
-    query_hv = "".join(query_hv.astype(str))
-    query_hv = int(query_hv, 2)
+    query_hv = hvlist2num(query_hv)
 
     return random_idx, query_hv, assoc_mem
 

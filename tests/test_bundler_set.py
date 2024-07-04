@@ -7,7 +7,8 @@
 """
 
 import set_parameters
-from util import get_root, setup_and_run, gen_rand_bits, clock_and_time
+from util import get_root, setup_and_run, gen_rand_bits, \
+    clock_and_time, numbip2list, hvlist2num
 
 import cocotb
 from cocotb.clock import Clock
@@ -31,19 +32,6 @@ UNSIGNED_MAX = int(2 ** (set_parameters.BUNDLER_COUNT_WIDTH) - 1)
 UNSIGNED_MAX_HALF = int(UNSIGNED_MAX / 2)
 
 # Test functions
-
-
-# Convert a number in binary to a list
-# Used to feed each bundler unit
-def numbip2list(numbin, dim):
-    # Convert binary inputs first
-    bin_hv = np.array(list(map(int, format(numbin, f"0{dim}b"))))
-    # Get marks that have 0s
-    mask = bin_hv == 0
-    # Convert 0s to -1s
-    bin_hv[mask] = -1
-    return bin_hv
-
 
 # Set inputs to 0
 def clear_inputs_no_clock(dut):
@@ -97,8 +85,7 @@ def check_binarize_out(dut, hv_bundle):
     actual_val = dut.binarized_hv_o.value.integer
 
     # Convert binarized output
-    golden_val = "".join(hv_binarized.astype(str))
-    golden_val = int(golden_val, 2)
+    golden_val = hvlist2num(hv_binarized)
 
     # Log
     cocotb.log.info(
