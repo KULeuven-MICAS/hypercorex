@@ -11,7 +11,7 @@ TEST_RUNS = 20
 NUM_CLASSES = 10
 
 # Working dimensions
-HV_DIM = 32
+HV_DIM = 256
 REG_FILE_WIDTH = 32
 
 # Encoder parameters
