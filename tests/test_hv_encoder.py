@@ -231,7 +231,6 @@ async def hv_encoder_dut(dut):
             "BundCountWidth": str(set_parameters.BUNDLER_COUNT_WIDTH),
             "BundMuxWidth": str(set_parameters.BUNDLER_MUX_WIDTH),
             "ALUMuxWidth": str(set_parameters.ALU_MUX_WIDTH),
-            "ALUOpsWidth": str(set_parameters.ALU_OPS_WIDTH),
             "ALUMaxShiftAmt": str(set_parameters.ALU_MAX_SHIFT),
             "RegMuxWidth": str(set_parameters.REG_MUX_WIDTH),
             "QvMuxWidth": str(set_parameters.QHV_MUX_WIDTH),
