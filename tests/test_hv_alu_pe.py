@@ -8,26 +8,12 @@
 """
 
 import set_parameters
-from util import setup_and_run, gen_rand_bits, gen_randint
+from util import setup_and_run, gen_rand_bits, \
+    gen_randint, hv_alu_out
 
 import cocotb
 from cocotb.triggers import Timer
 import pytest
-
-
-# ALU PE model
-def hv_alu_pe_golden_out(A, B, shift_amt, hv_dim, mode):
-    mask_val = 2**hv_dim - 1
-
-    if mode == 1:
-        result = A & B
-    elif mode == 2:
-        result = A | B
-    elif mode == 3:
-        result = (A >> shift_amt) | (A << (hv_dim - shift_amt)) & mask_val
-    else:
-        result = A ^ B
-    return result
 
 
 # Routinary test
@@ -42,7 +28,7 @@ async def gen_and_test(dut, hv_dim, max_shift_amt, mode):
         B = gen_rand_bits(set_parameters.HV_DIM)
         shift_amt = 0
 
-    gold_result = hv_alu_pe_golden_out(A, B, shift_amt, hv_dim, mode)
+    gold_result = hv_alu_out(A, B, shift_amt, hv_dim, mode)
 
     # Feed inputs
     dut.A_i.value = A
