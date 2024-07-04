@@ -8,8 +8,7 @@
 """
 
 import set_parameters
-from util import setup_and_run, gen_rand_bits, \
-    gen_randint, hv_alu_out
+from util import setup_and_run, gen_rand_bits, gen_randint, hv_alu_out
 
 import cocotb
 from cocotb.triggers import Timer

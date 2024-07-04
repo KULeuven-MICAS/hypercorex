@@ -1,11 +1,11 @@
-'''
+"""
     Copyright 2024 KU Leuven
     Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
     Description:
     This contains useful functions for managing
     the tests, script,s and generations
-'''
+"""
 
 # Importing useful tools
 import random
@@ -14,9 +14,9 @@ from cocotb_test.simulator import run
 from cocotb.triggers import Timer, RisingEdge
 import numpy as np
 
-'''
+"""
     Set of functions for test setups
-'''
+"""
 
 
 # For getting the root of the repository
@@ -74,9 +74,9 @@ def setup_and_run(
     )
 
 
-'''
+"""
     Functions for simulations
-'''
+"""
 
 
 async def clock_and_time(clock):
@@ -84,9 +84,9 @@ async def clock_and_time(clock):
     await Timer(1, "ps")
 
 
-'''
+"""
     Set of functions for data generation
-'''
+"""
 
 
 # For generating random bits
@@ -113,6 +113,7 @@ def hv_alu_out(A, B, shift_amt, hv_dim, op):
         result = A ^ B
     return result
 
+
 # Convert a number in binary to a list
 # Used to feed each bundler unit
 def numbip2list(numbin, dim):
@@ -124,8 +125,9 @@ def numbip2list(numbin, dim):
     bin_hv[mask] = -1
     return bin_hv
 
+
 # Convert from list to binary value
-def hvlist2num (hv_list):
+def hvlist2num(hv_list):
     # Bring back into an integer itself!
     # Sad workaround is to convert to str
     # The convert to integer
@@ -134,9 +136,11 @@ def hvlist2num (hv_list):
 
     return hv_num
 
-'''
+
+"""
     Set of functions for the encoding module
-'''
+"""
+
 
 # Clear encoder signal inputs to 0
 def clear_encode_inputs_no_clock(dut):
@@ -171,6 +175,7 @@ def clear_encode_inputs_no_clock(dut):
     dut.qhv_mux_i.value = 0
 
     return
+
 
 # Loading from Im to register
 async def load_im_to_reg(dut, hv_data, reg_addr):
@@ -214,6 +219,7 @@ async def load_reg_to_qhv(dut, reg_addr):
 
     return
 
+
 # Permute element and load to query HV
 async def perm_reg_to_qhv(dut, reg_addr, shift_amt):
     # Make sure to clear first
@@ -239,8 +245,9 @@ async def perm_reg_to_qhv(dut, reg_addr, shift_amt):
 
     return
 
+
 # Bind 2 IM inputs and save to reg
-async def bind_2im_to_reg (dut, hv_a, hv_b, reg_addr):
+async def bind_2im_to_reg(dut, hv_a, hv_b, reg_addr):
     # Make sure to clear
     clear_encode_inputs_no_clock(dut)
 
@@ -266,11 +273,11 @@ async def bind_2im_to_reg (dut, hv_a, hv_b, reg_addr):
 
     return
 
+
 # Bind 2 reg inputs and save to reg
-async def bind_2reg_to_reg (dut, reg_addr_a, reg_addr_b, reg_wr_addr):
+async def bind_2reg_to_reg(dut, reg_addr_a, reg_addr_b, reg_wr_addr):
     # Make sure to clear
     clear_encode_inputs_no_clock(dut)
-
 
     # Control ports for ALU
     dut.alu_mux_a_i.value = 1
@@ -292,6 +299,7 @@ async def bind_2reg_to_reg (dut, reg_addr_a, reg_addr_b, reg_wr_addr):
 
     return
 
+
 # Load bundler from IM
 async def im_to_bundler(dut, hv_data, bundler_addr):
     # Make sure to clear first
@@ -301,7 +309,7 @@ async def im_to_bundler(dut, hv_data, bundler_addr):
     dut.im_rd_a_i.value = hv_data
 
     # Control ports for bundlers
-    if (bundler_addr == 0):
+    if bundler_addr == 0:
         dut.bund_mux_a_i.value = 2
         dut.bund_valid_a_i.value = 1
     else:
@@ -315,6 +323,7 @@ async def im_to_bundler(dut, hv_data, bundler_addr):
     clear_encode_inputs_no_clock(dut)
     return
 
+
 # Load reg to bundler
 async def load_reg_to_bundler(dut, bundler_addr, reg_addr):
     # Make sure to clear first
@@ -324,7 +333,7 @@ async def load_reg_to_bundler(dut, bundler_addr, reg_addr):
     dut.reg_rd_addr_a_i.value = reg_addr
 
     # Control ports for bundlers
-    if (bundler_addr == 0):
+    if bundler_addr == 0:
         dut.bund_mux_a_i.value = 3
         dut.bund_valid_a_i.value = 1
     else:
@@ -338,13 +347,14 @@ async def load_reg_to_bundler(dut, bundler_addr, reg_addr):
     clear_encode_inputs_no_clock(dut)
     return
 
+
 # Load bundler to reg
 async def load_bundler_to_reg(dut, bundler_addr, reg_addr):
     # Make sure to clear first
     clear_encode_inputs_no_clock(dut)
 
     # Control ports for registers
-    if (bundler_addr == 0):
+    if bundler_addr == 0:
         dut.reg_mux_i.value = 2
     else:
         dut.reg_mux_i.value = 3
@@ -359,13 +369,14 @@ async def load_bundler_to_reg(dut, bundler_addr, reg_addr):
     clear_encode_inputs_no_clock(dut)
     return
 
+
 # Load bundler to query HV
 async def load_bundler_to_qhv(dut, bundler_addr):
     # Make sure to clear first
     clear_encode_inputs_no_clock(dut)
 
     # Control ports for bundlers
-    if (bundler_addr == 0):
+    if bundler_addr == 0:
         dut.qhv_mux_i.value = 2
     else:
         dut.qhv_mux_i.value = 3

@@ -7,8 +7,7 @@
 """
 
 import set_parameters
-from util import get_root, setup_and_run, gen_rand_bits, \
-    clock_and_time, hvlist2num
+from util import get_root, setup_and_run, gen_rand_bits, clock_and_time, hvlist2num
 
 import cocotb
 from cocotb.clock import Clock

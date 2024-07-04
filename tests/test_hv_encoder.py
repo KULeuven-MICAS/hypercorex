@@ -7,11 +7,24 @@
 """
 
 import set_parameters
-from util import get_root, setup_and_run, gen_rand_bits, clock_and_time, \
-    clear_encode_inputs_no_clock, load_reg_to_qhv, load_im_to_reg, \
-    perm_reg_to_qhv, bind_2im_to_reg, bind_2reg_to_reg, \
-    im_to_bundler, load_bundler_to_reg, load_bundler_to_qhv, \
-    hv_alu_out, numbip2list, hvlist2num
+from util import (
+    get_root,
+    setup_and_run,
+    gen_rand_bits,
+    clock_and_time,
+    clear_encode_inputs_no_clock,
+    load_reg_to_qhv,
+    load_im_to_reg,
+    perm_reg_to_qhv,
+    bind_2im_to_reg,
+    bind_2reg_to_reg,
+    im_to_bundler,
+    load_bundler_to_reg,
+    load_bundler_to_qhv,
+    hv_alu_out,
+    numbip2list,
+    hvlist2num,
+)
 
 import cocotb
 from cocotb.clock import Clock
@@ -30,6 +43,7 @@ from hdc_util import binarize_hv  # noqa: E402
 # Some local parameters
 IM_LEN = 10
 
+
 # Convert a number in binary to a list
 # Used to feed each bundler unit
 def numbin2list(numbin, dim):
@@ -37,9 +51,12 @@ def numbin2list(numbin, dim):
     bin_hv = np.array(list(map(int, format(numbin, f"0{dim}b"))))
     return bin_hv
 
+
 # Check results
 def check_result(actual_val, golden_val):
-    assert  golden_val == actual_val, f"Error! Golden Val: {golden_val}; Actual Val: {actual_val}"
+    assert (
+        golden_val == actual_val
+    ), f"Error! Golden Val: {golden_val}; Actual Val: {actual_val}"
     return
 
 
@@ -121,7 +138,7 @@ async def hv_encoder_dut(dut):
         golden_val = hv_alu_out(im_a_list[i], im_b_list[i], 0, set_parameters.HV_DIM, 0)
 
         # Bind from 2 im and save to register
-        await bind_2im_to_reg (dut, im_a_list[i], im_b_list[i], i)
+        await bind_2im_to_reg(dut, im_a_list[i], im_b_list[i], i)
 
         # Move register to qhv
         await load_reg_to_qhv(dut, i)
@@ -143,8 +160,8 @@ async def hv_encoder_dut(dut):
 
     # 2. Grab HA A and HV B from register
     # and store back to 1st and 2nd respectively
-    await bind_2reg_to_reg (dut, 0, 1, 0)
-    await bind_2reg_to_reg (dut, 2, 3, 1)
+    await bind_2reg_to_reg(dut, 0, 1, 0)
+    await bind_2reg_to_reg(dut, 2, 3, 1)
 
     # Get golden answers from here
     test_hv_0 = im_a_list[0] ^ im_a_list[1]
@@ -154,14 +171,13 @@ async def hv_encoder_dut(dut):
     await load_reg_to_qhv(dut, 0)
     qhv_val = dut.qhv_o.value.integer
 
-    check_result(test_hv_0,qhv_val)
+    check_result(test_hv_0, qhv_val)
 
     await load_reg_to_qhv(dut, 1)
     qhv_val = dut.qhv_o.value.integer
 
-    check_result(test_hv_1,qhv_val)
+    check_result(test_hv_1, qhv_val)
 
-    
     cocotb.log.info(" ------------------------------------------------ ")
     cocotb.log.info("   IM > Bundler > Reg > QHV > or Bundler > QHV    ")
     cocotb.log.info(" ------------------------------------------------ ")
@@ -170,7 +186,6 @@ async def hv_encoder_dut(dut):
         # Do this for the item length count
         golden_hv_bundle = np.zeros(set_parameters.HV_DIM)
         for i in range(IM_LEN):
-
             # Bindle from IM to bundler
             await im_to_bundler(dut, im_a_list[i], bundler_addr)
 
@@ -191,7 +206,7 @@ async def hv_encoder_dut(dut):
         actual_hv_bundle = dut.qhv_o.value.integer
 
         # Compare results
-        check_result(actual_hv_bundle,golden_hv_bundle)
+        check_result(actual_hv_bundle, golden_hv_bundle)
 
         # Move the bundler to QHV
         await load_bundler_to_qhv(dut, bundler_addr)
@@ -200,7 +215,7 @@ async def hv_encoder_dut(dut):
         actual_hv_bundle = dut.qhv_o.value.integer
 
         # Compare results
-        check_result(actual_hv_bundle,golden_hv_bundle)
+        check_result(actual_hv_bundle, golden_hv_bundle)
 
     # Some trailing cycles only
     for i in range(10):
@@ -230,8 +245,8 @@ def test_hv_encoder(simulator, parameters, waves):
         "/rtl/hv_alu_pe.sv",
         "/rtl/bundler_unit.sv",
         "/rtl/bundler_set.sv",
-        "/rtl/hv_encoder.sv"
-        ]
+        "/rtl/hv_encoder.sv",
+    ]
 
     toplevel = "hv_encoder"
 

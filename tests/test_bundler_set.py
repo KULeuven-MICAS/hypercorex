@@ -7,8 +7,14 @@
 """
 
 import set_parameters
-from util import get_root, setup_and_run, gen_rand_bits, \
-    clock_and_time, numbip2list, hvlist2num
+from util import (
+    get_root,
+    setup_and_run,
+    gen_rand_bits,
+    clock_and_time,
+    numbip2list,
+    hvlist2num,
+)
 
 import cocotb
 from cocotb.clock import Clock
@@ -32,6 +38,7 @@ UNSIGNED_MAX = int(2 ** (set_parameters.BUNDLER_COUNT_WIDTH) - 1)
 UNSIGNED_MAX_HALF = int(UNSIGNED_MAX / 2)
 
 # Test functions
+
 
 # Set inputs to 0
 def clear_inputs_no_clock(dut):
