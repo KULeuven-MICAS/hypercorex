@@ -5,7 +5,7 @@
 // Module: Encoder
 // Description:
 // Main encoder module including glue logic
-// for the registers, hypervector ALUs, 
+// for the registers, hypervector ALUs,
 // and other useful units.
 //---------------------------
 
@@ -146,7 +146,7 @@ module hv_encoder #(
     .A_i          ( alu_input_a     ),
     .B_i          ( alu_input_b     ),
     // Outputs
-    .C_o          ( alu_output      ), 
+    .C_o          ( alu_output      ),
     // Control ports
     .op_i         ( alu_ops_i       ),
     .shift_amt_i  ( alu_shift_amt_i )
