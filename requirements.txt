@@ -10,3 +10,4 @@ black
 pyright
 flake8
 numpy
+matplotlib
