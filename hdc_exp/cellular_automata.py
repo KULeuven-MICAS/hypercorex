@@ -34,6 +34,34 @@ TEST_RUNS = 100
 """
 
 
+def gen_avg_std_scores(seed_list, ca90_mode="iter"):
+    density_avg_list = []
+    density_std_list = []
+
+    for seed_size in seed_list:
+        # Initialize score list
+        density_list = np.zeros(TEST_RUNS)
+
+        # Try for different runs
+        for i in range(TEST_RUNS):
+            # Assume 0.5 size
+            hv_seed = gen_ri_hv(seed_size, 0.5)
+
+            if ca90_mode == "iter":
+                gen_hv = gen_hv_ca90_iterate_rows(hv_seed, HV_DIM)
+            else:
+                gen_hv = gen_hv_ca90_hierarchical_rows(hv_seed, HV_DIM)
+
+            # Save similarity score
+            density_list[i] = np.sum(gen_hv)
+
+        # Save average and standard dev
+        density_avg_list.append(np.mean(density_list))
+        density_std_list.append(np.std(density_list))
+
+    return density_avg_list, density_std_list
+
+
 """
     Main function list
 """
@@ -41,47 +69,16 @@ if __name__ == "__main__":
     # For different seed sizes,
     # will we get consistent HV density?
     seed_list = [4, 8, 16, 32, 64, 128, 256, 512, 1024]
-    density_avg_list_iterate = []
-    density_std_list_iterate = []
 
-    for seed_size in seed_list:
-        # Initialize score list
-        density_list = np.zeros(TEST_RUNS)
-
-        # Try for different runs
-        for i in range(TEST_RUNS):
-            # Assume 0.5 size
-            hv_seed = gen_ri_hv(seed_size, 0.5)
-            gen_hv = gen_hv_ca90_iterate_rows(hv_seed, HV_DIM)
-
-            # Save similarity score
-            density_list[i] = np.sum(gen_hv)
-
-        # Save average and standard dev
-        density_avg_list_iterate.append(np.mean(density_list))
-        density_std_list_iterate.append(np.std(density_list))
+    # Extract for CA 90 iterative generation
+    density_avg_list_iterate, density_std_list_iterate = gen_avg_std_scores(
+        seed_list, ca90_mode="iter"
+    )
 
     # Redo experiment but on a different HV generation thing
-    density_avg_list_hierarchical = []
-    density_std_list_hierarchical = []
-
-    # Do this for different seed sizes
-    for seed_size in seed_list:
-        # Initialize score list
-        density_list = np.zeros(TEST_RUNS)
-
-        # Try for different runs
-        for i in range(TEST_RUNS):
-            # Assume 0.5 size
-            hv_seed = gen_ri_hv(seed_size, 0.5)
-            gen_hv = gen_hv_ca90_hierarchical_rows(hv_seed, HV_DIM)
-
-            # Save similarity score
-            density_list[i] = np.sum(gen_hv)
-
-        # Save average and standard dev
-        density_avg_list_hierarchical.append(np.mean(density_list))
-        density_std_list_hierarchical.append(np.std(density_list))
+    density_avg_list_hierarchical, density_std_list_hierarchical = gen_avg_std_scores(
+        seed_list, ca90_mode="hier"
+    )
 
     # List of y values
     y_list = [density_avg_list_iterate, density_avg_list_hierarchical]
@@ -99,5 +96,6 @@ if __name__ == "__main__":
         ylabel="Density",
         marker="o",
         plt_label=label_list,
+        legend=True,
         single_plot=False,
     )
