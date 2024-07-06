@@ -10,6 +10,7 @@
 
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 """
@@ -138,6 +139,33 @@ def norm_dist_hv(hv_a, hv_b, hv_type="binary"):
 """
     Functions for generating item memories
     
+    gen_empty_mem_hv:
+        - arguments:
+            - for generating an empty IM matrix used for
+              initializing an im
+            - num_hv: number of hypervectors to generate
+            - hv_dim: dimension of each hypervector
+    
+    gen_ca90:
+        - CA 90 generation of new HV
+        - argeuments:
+            - hv_seed: base hypervector seed
+            - cycle_time: number of iterations
+            
+    gen_hv_ca90_iterate_rows:
+        - CA 90 generation of an entire HV by
+          iterating each chunk of the hypervector
+        - arguments:
+            - hv_seed: base hypervector seed
+            - hv_dim: target hypervector dimension
+    
+    gen_hv_ca90_hierarchical_rows:
+        - CA 90 generation of an entire HV by
+          hierarchical means (faster generation)
+        - arguments:
+            - hv_seed: base hypervector seed
+            - hv_dim: target hypervector dimension    
+    
     gen_orthogonal_im:
         - generates a set of HVs with orthogonal mapping
         - arguments:
@@ -150,16 +178,76 @@ def norm_dist_hv(hv_a, hv_b, hv_type="binary"):
 
 # Generating empty memories
 def gen_empty_mem_hv(num_hv, hv_dim):
-    return np.zeros((num_hv, hv_dim))
+    return np.zeros((num_hv, hv_dim), dtype=int)
+
+
+# The CA 90 generation
+def gen_ca90(hv_seed, cycle_time):
+    shift_left = np.roll(hv_seed, -1 * cycle_time)
+    shift_right = np.roll(hv_seed, cycle_time)
+    new_hv = np.bitwise_xor(shift_left, shift_right)
+    return new_hv
+
+
+# Iterative splitting of iterative ca90
+def gen_hv_ca90_iterate_rows(hv_seed, hv_dim):
+    # Extract number of lengths
+    len_hv_seed = len(hv_seed)
+
+    # Total iterations is number of seeds
+    # within target HV but -1 to include the base seed
+    iterations = int(hv_dim / len_hv_seed) - 1
+
+    # Initialize generated hv
+    gen_hv = hv_seed
+
+    # Iterate until we reach HV size
+    for i in range(iterations):
+        gen_hv = np.concatenate((gen_hv, gen_ca90(hv_seed, i + 1)))
+
+    return gen_hv
+
+
+# Hierarchical generation of the ca90
+def gen_hv_ca90_hierarchical_rows(hv_seed, hv_dim):
+    # Initialize generated hv
+    gen_hv = hv_seed
+
+    # Initialize number
+    len_gen_hv = len(gen_hv)
+
+    # Iterate until we reach HV size
+    while len_gen_hv != hv_dim:
+        gen_ca90_hv = gen_ca90(gen_hv, 1)
+        gen_hv = np.concatenate((gen_hv, gen_ca90_hv))
+        len_gen_hv = len(gen_hv)
+
+    return gen_hv
 
 
 # Generating orthogonal item memory
-def gen_orthogonal_im(num_hv, hv_dim, p_dense, hv_type="binary"):
+def gen_orthogonal_im(
+    num_hv, hv_dim, p_dense, hv_seed, hv_type="binary", im_type="random"
+):
     # Initialize empty matrix
     orthogonal_im = gen_empty_mem_hv(num_hv, hv_dim)
 
-    for i in range(num_hv):
-        orthogonal_im[i] = gen_ri_hv(hv_dim=hv_dim, p_dense=p_dense, hv_type=hv_type)
+    # Do this for initialize first seed first
+    if im_type == "ca90_iter":
+        orthogonal_im[0] = gen_hv_ca90_iterate_rows(hv_seed, hv_dim)
+    elif im_type == "ca90_hier":
+        orthogonal_im[0] = gen_hv_ca90_hierarchical_rows(hv_seed, hv_dim)
+    else:
+        orthogonal_im[0] = gen_ri_hv(hv_dim=hv_dim, p_dense=p_dense, hv_type=hv_type)
+
+    # Generate all other item memories
+    for i in range(1, num_hv):
+        if im_type == "random":
+            orthogonal_im[i] = gen_ri_hv(
+                hv_dim=hv_dim, p_dense=p_dense, hv_type=hv_type
+            )
+        else:
+            orthogonal_im[i] = gen_ca90(orthogonal_im[i - 1], 1)
 
     return orthogonal_im
 
@@ -224,3 +312,84 @@ def measure_acc(assoc_mem, predict_set, correct_set):
     acc = count_correct_items / len_predict_set
 
     return acc
+
+
+"""
+    Simple matplotlib plotting functions
+    
+    simple_plot2d:
+        - For plotting simple 2D plots
+        - arguments:
+            - x, y: the x and y values,
+                    y can be a list of multiple arrays
+            - title: title of the plot
+            - xlabel: label of x-axis
+            - ylabel: label of y-axis
+            - plt_label: list of labels, only useful for multiple plots
+            - linestyle: type of lines
+            - marker: type of data point marks
+            - grid: activate grid
+            - legend: activate legend for lines
+            - single_plot: if single line only or multiple lines
+"""
+
+
+# Simple 2D plot
+def simple_plot2d(
+    x,
+    y,
+    title="Cool title",
+    xlabel="x-axis",
+    ylabel="y-axis",
+    plt_label=[],
+    linestyle="-",
+    marker="",
+    grid=True,
+    legend=True,
+    single_plot=True,
+):
+    # Check if single plot only or not
+    if single_plot:
+        # Plot figure
+        plt.plot(
+            x,
+            y,
+            linestyle=linestyle,
+            marker=marker,
+        )
+
+        # Add title and axes titles
+        plt.title(title)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.grid(grid)
+
+        # Show plot
+        plt.show()
+    else:
+        num_plots = len(y)
+
+        # Iterative plotting
+        for i in range(num_plots):
+            plt.plot(
+                x,
+                y[i],
+                label=plt_label[i],
+                linestyle=linestyle,
+                marker=marker,
+            )
+
+        # Add title and axes titles
+        plt.title(title)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.grid(grid)
+
+        # Plot legend if true
+        if legend:
+            plt.legend(loc="center left")
+
+        # Show plot
+        plt.show()
+
+    return
