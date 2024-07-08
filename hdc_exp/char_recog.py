@@ -41,7 +41,7 @@ IMG_PIXEL_NUM = IMG_ROW_NUM * IMG_COL_NUM
 
 # Characteristics of HV
 HV_TYPE = "binary"
-HV_DIM = 512
+HV_DIM = 1024
 P_DENSE = 0.5
 HV_SEED_DIM = HV_DIM
 HV_SEED_DENSE = 1 / 2
@@ -265,22 +265,22 @@ if __name__ == "__main__":
     # Label list
     label_list = [
         "Random",
-        "CA 90 Iterative",
-        "CA 90 Hierarchical",
-        "CA 90 Iterative Div2",
-        "CA 90 Hierarchical Div2",
-        "CA 90 Iterative Div4",
-        "CA 90 Hierarchical Div4",
-        "CA 90 Iterative Div8",
-        "CA 90 Hierarchical Div8",
-        "CA 90 Iterative Div16",
-        "CA 90 Hierarchical Div16",
-        "CA 90 Iterative Div32",
-        "CA 90 Hierarchical Div32",
-        "CA 90 Iterative Div64",
-        "CA 90 Hierarchical Div64",
-        "CA 90 Iterative Div128",
-        "CA 90 Hierarchical Div128",
+        "CA 90 Iterative Seed 256",
+        "CA 90 Hierarchical Seed 256",
+        "CA 90 Iterative Seed 128",
+        "CA 90 Hierarchical Seed 128",
+        "CA 90 Iterative Seed 64",
+        "CA 90 Hierarchical Seed 64",
+        "CA 90 Iterative Seed 32",
+        "CA 90 Hierarchical Seed 32",
+        "CA 90 Iterative Seed 16",
+        "CA 90 Hierarchical Seed 16",
+        "CA 90 Iterative Seed 8",
+        "CA 90 Hierarchical Seed 8",
+        "CA 90 Iterative Seed 4",
+        "CA 90 Hierarchical Seed 4",
+        "CA 90 Iterative Seed 2",
+        "CA 90 Hierarchical Seed 2",
     ]
 
     # Plot multiple lines

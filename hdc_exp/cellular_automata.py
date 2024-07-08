@@ -26,6 +26,7 @@ from hdc_util import (
 
 HV_SEED = 8
 HV_DIM = 1024
+HV_ORTHO_DIST = int(HV_DIM / 2)
 TEST_RUNS = 100
 
 
@@ -80,12 +81,15 @@ if __name__ == "__main__":
         seed_list, ca90_mode="hier"
     )
 
+    # Ideal density
+    density_ideal = len(seed_list) * [HV_ORTHO_DIST]
+
     # List of y values
-    y_list = [density_avg_list_iterate, density_avg_list_hierarchical]
+    y_list = [density_avg_list_iterate, density_avg_list_hierarchical, density_ideal]
 
     # This plot answers the iterative
     # style of generating CA
-    label_list = ["Iterative Generation", "Hierarchical Generation"]
+    label_list = ["Iterative Generation", "Hierarchical Generation", "Ideal distance"]
 
     # Plot the lines
     simple_plot2d(

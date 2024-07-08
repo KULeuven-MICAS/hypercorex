@@ -387,7 +387,7 @@ def simple_plot2d(
 
         # Plot legend if true
         if legend:
-            plt.legend(loc="center left")
+            plt.legend(loc="center right")
 
         # Show plot
         plt.show()
