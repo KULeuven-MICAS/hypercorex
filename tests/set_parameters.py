@@ -16,7 +16,7 @@ SEED_DIM = 64
 REG_FILE_WIDTH = 32
 
 # Item memory parameters
-NUM_ORTHO_ITEMS = 128
+NUM_ORTHO_ITEMS = 256
 
 # Encoder parameters
 BUNDLER_COUNT_WIDTH = 8
