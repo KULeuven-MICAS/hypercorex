@@ -84,6 +84,21 @@ async def clock_and_time(clock):
     await Timer(1, "ps")
 
 
+# Check results
+def check_result(actual_val, golden_val):
+    assert (
+        golden_val == actual_val
+    ), f"Error! Golden Val: {golden_val}; Actual Val: {actual_val}"
+    return
+
+
+def check_result_array(actual_val_array, golden_val_array):
+    assert (
+        golden_val_array == actual_val_array
+    ).any(), f"Error! Golden Val: {golden_val_array}; Actual Val: {actual_val_array}"
+    return
+
+
 """
     Set of functions for data generation
 """
@@ -96,7 +111,7 @@ def gen_rand_bits(dimension):
 
 # For generating random integer
 def gen_randint(max_val):
-    return random.randint(0, max_val)
+    return random.randint(0, int(max_val))
 
 
 # For the ALU output
@@ -112,6 +127,14 @@ def hv_alu_out(A, B, shift_amt, hv_dim, op):
     else:
         result = A ^ B
     return result
+
+
+# Convert a number in binary to a list
+# Used to feed each bundler unit
+def numbin2list(numbin, dim):
+    # Convert binary inputs first
+    bin_hv = np.array(list(map(int, format(numbin, f"0{dim}b"))))
+    return bin_hv
 
 
 # Convert a number in binary to a list

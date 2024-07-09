@@ -7,11 +7,17 @@
 """
 
 import set_parameters
-from util import get_root, setup_and_run, gen_rand_bits, clock_and_time, hvlist2num
+from util import (
+    get_root,
+    setup_and_run,
+    gen_rand_bits,
+    clock_and_time,
+    hvlist2num,
+    numbin2list,
+)
 
 import cocotb
 from cocotb.clock import Clock
-import numpy as np
 import sys
 import pytest
 import random
@@ -53,14 +59,6 @@ async def load_am_hv(dut, am_hv):
     dut.class_hv_i.value = 0
     dut.class_hv_valid_i.value = 0
     return
-
-
-# Convert a number in binary to a list
-# Used to feed each bundler unit
-def numbin2list(numbin, dim):
-    # Convert binary inputs first
-    bin_hv = np.array(list(map(int, format(numbin, f"0{dim}b"))))
-    return bin_hv
 
 
 # Generate sample associative memory
