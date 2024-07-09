@@ -24,6 +24,7 @@ from util import (
     hv_alu_out,
     numbip2list,
     hvlist2num,
+    check_result,
 )
 
 import cocotb
@@ -42,22 +43,6 @@ from hdc_util import binarize_hv  # noqa: E402
 
 # Some local parameters
 IM_LEN = 10
-
-
-# Convert a number in binary to a list
-# Used to feed each bundler unit
-def numbin2list(numbin, dim):
-    # Convert binary inputs first
-    bin_hv = np.array(list(map(int, format(numbin, f"0{dim}b"))))
-    return bin_hv
-
-
-# Check results
-def check_result(actual_val, golden_val):
-    assert (
-        golden_val == actual_val
-    ), f"Error! Golden Val: {golden_val}; Actual Val: {actual_val}"
-    return
 
 
 # Actual test routines
