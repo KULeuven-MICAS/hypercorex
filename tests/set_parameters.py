@@ -11,7 +11,7 @@ TEST_RUNS = 20
 NUM_CLASSES = 10
 
 # Working dimensions
-HV_DIM = 512
+HV_DIM = 256
 SEED_DIM = 64
 REG_FILE_WIDTH = 32
 
