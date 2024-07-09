@@ -11,8 +11,12 @@ TEST_RUNS = 20
 NUM_CLASSES = 10
 
 # Working dimensions
-HV_DIM = 256
+HV_DIM = 512
+SEED_DIM = 64
 REG_FILE_WIDTH = 32
+
+# Item memory parameters
+NUM_ORTHO_ITEMS = 128
 
 # Encoder parameters
 BUNDLER_COUNT_WIDTH = 8
@@ -26,4 +30,4 @@ REG_NUM = 4
 # Shift amount needs to be in odd number form
 # because the shifts is from 0 to some dimension
 # here, we restrict shift amount to be half of the total dimension
-MAX_SHIFT_AMT = HV_DIM / 2 - 1
+MAX_SHIFT_AMT = int(HV_DIM / 2) - 1
