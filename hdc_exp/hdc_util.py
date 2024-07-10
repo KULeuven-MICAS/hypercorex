@@ -62,6 +62,18 @@ def extract_dataset(file_path):
             - hv_a: hypervecetor to binarize
             - threshold: threshold to set 1s for binary hv_type
             - hv_type: hv_type of hypervector, if bipolar we threshold at 0
+            
+    norm_dist_hv:
+        - for calculating the normalized distances
+        - arguments:
+            - hv_a, hv_b: input hypervectors
+            - hv_type: hv_type of hypervector, if bipolar we threshold at 0
+            
+    gen_conf_mat:
+        - for generating a confusion matrix
+        - arguments:
+            - num_levels: number of levels to generate
+            - hv_list: list of hypervectors to use
 
 """
 
@@ -134,6 +146,19 @@ def norm_dist_hv(hv_a, hv_b, hv_type="binary"):
         dist = 1 - (ham_dist / hv_a.size)
 
     return dist
+
+
+# Calculatiing confusion matrix
+def gen_conf_mat(num_levels, hv_list):
+    # Intiialize empty confusion matrix
+    conf_mat = np.zeros((num_levels, num_levels))
+
+    # Iterate through different levels
+    for i in range(num_levels):
+        for j in range(num_levels):
+            conf_mat[i][j] = norm_dist_hv(hv_list[i], hv_list[j])
+
+    return conf_mat
 
 
 """
@@ -271,7 +296,11 @@ def gen_orthogonal_im(
             
     measure_acc:
         - measures the accuracy between a test set and the correct set
-        - 
+        - arguments:
+            - assoc_mem: associative memory model
+            - predict_set: the set of qeury hvs
+            - correct_set: golden answers that need to match
+                           the predict_set
 """
 
 
