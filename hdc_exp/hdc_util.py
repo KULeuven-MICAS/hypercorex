@@ -10,6 +10,7 @@
 
 
 import numpy as np
+from tqdm import tqdm
 import matplotlib.pyplot as plt
 
 
@@ -154,7 +155,7 @@ def gen_conf_mat(num_levels, hv_list):
     conf_mat = np.zeros((num_levels, num_levels))
 
     # Iterate through different levels
-    for i in range(num_levels):
+    for i in tqdm(range(num_levels), desc="Generating confusion matrix"):
         for j in range(num_levels):
             conf_mat[i][j] = norm_dist_hv(hv_list[i], hv_list[j])
 
@@ -234,7 +235,7 @@ def gen_hv_ca90_iterate_rows(hv_seed, hv_dim):
 
 
 # Hierarchical generation of the ca90
-def gen_hv_ca90_hierarchical_rows(hv_seed, hv_dim):
+def gen_hv_ca90_hierarchical_rows(hv_seed, hv_dim, permute_base=1):
     # Initialize generated hv
     gen_hv = hv_seed
 
@@ -243,7 +244,7 @@ def gen_hv_ca90_hierarchical_rows(hv_seed, hv_dim):
 
     # Iterate until we reach HV size
     while len_gen_hv != hv_dim:
-        gen_ca90_hv = gen_ca90(gen_hv, 1)
+        gen_ca90_hv = gen_ca90(gen_hv, permute_base)
         gen_hv = np.concatenate((gen_hv, gen_ca90_hv))
         len_gen_hv = len(gen_hv)
 
@@ -252,7 +253,7 @@ def gen_hv_ca90_hierarchical_rows(hv_seed, hv_dim):
 
 # Generating orthogonal item memory
 def gen_orthogonal_im(
-    num_hv, hv_dim, p_dense, hv_seed, hv_type="binary", im_type="random"
+    num_hv, hv_dim, p_dense, hv_seed, permute_base=1, hv_type="binary", im_type="random"
 ):
     # Initialize empty matrix
     orthogonal_im = gen_empty_mem_hv(num_hv, hv_dim)
@@ -272,7 +273,7 @@ def gen_orthogonal_im(
                 hv_dim=hv_dim, p_dense=p_dense, hv_type=hv_type
             )
         else:
-            orthogonal_im[i] = gen_ca90(orthogonal_im[i - 1], 1)
+            orthogonal_im[i] = gen_ca90(orthogonal_im[i - 1], permute_base)
 
     return orthogonal_im
 
@@ -421,4 +422,29 @@ def simple_plot2d(
         # Show plot
         plt.show()
 
+    return
+
+
+# Plotting heatmaps
+
+
+def heatmap_plot(
+    data,
+    title="Cool title",
+    xlabel="x-axis",
+    ylabel="y-axis",
+):
+    # Heatmap
+    plt.imshow(data, cmap="hot", interpolation="nearest")
+
+    # Add colorbar
+    plt.colorbar()
+
+    # Add title and axes titles
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+
+    # Step 4: Display the plot
+    plt.show()
     return
