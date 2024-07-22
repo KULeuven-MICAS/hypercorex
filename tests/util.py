@@ -11,10 +11,8 @@
 import random
 import os
 import cocotb
-import hjson
 from mako.template import Template
 from mako.lookup import TemplateLookup
-import JsonRef
 from cocotb_test.simulator import run
 from cocotb.triggers import Timer, RisingEdge
 import numpy as np
@@ -77,17 +75,6 @@ def setup_and_run(
         waves=waves,
         parameters=parameters,
     )
-
-
-# Extract json file
-def get_config(cfg_path: str):
-    with open(cfg_path, "r") as jsonf:
-        srcfull = jsonf.read()
-
-    # Format hjson file
-    cfg = hjson.loads(srcfull, use_decimal=True)
-    cfg = JsonRef.replace_refs(cfg)
-    return cfg
 
 
 # Read template
