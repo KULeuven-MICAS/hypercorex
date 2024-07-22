@@ -18,6 +18,7 @@ from hdc_util import (
     gen_hv_ca90_hierarchical_rows,
     gen_orthogonal_im,
     gen_conf_mat,
+    heatmap_plot,
 )
 
 
@@ -108,6 +109,11 @@ def find_target_indices(lst, number):
     extract_target_seeds:
         - This function is for extracting seeds
           That give the target 50% density of a base HV
+          
+    gen_ca90_im_set
+        - This generates the seeds for the item memory
+          moreover it also generates a confusion matrix
+          and a heatmap for inspection purposes
 """
 
 
@@ -210,9 +216,56 @@ def extract_target_seeds(seed_size, seed_num, hv_dim, ca90_mode="iter"):
     print(f"Search count time: {run_count}")
     print(f"Target HV Dimension: {hv_dim}")
     print(f"Seed size: {seed_size}")
-    print(f"Number of items: {seed_num}")
+    print(f"Number of seeds: {seed_num}")
 
     return seed_list
+
+
+# This function generates an item memory
+# for the specified number of items and items per im bank
+# It displays a heat map and displays the seeds to use
+# Returns the seeds and the confusion matrix
+def gen_ca90_im_set(
+    seed_size,
+    hv_dim,
+    num_total_im,
+    num_per_im_bank,
+    ca90_mode="hier",
+    display_heatmap=False,
+):
+    num_ims = int(num_total_im / num_per_im_bank)
+
+    # Extract seed list that give
+    # 50% density of a base HV
+    seed_list = extract_target_seeds(seed_size, num_ims, hv_dim, ca90_mode=ca90_mode)
+
+    # Generate the 1st orthogonal item memory
+    hv_seed = numbin2list(seed_list[0], seed_size)
+    ortho_im = gen_orthogonal_im(
+        num_per_im_bank, hv_dim, 0.5, hv_seed, permute_base=7, im_type="ca90_hier"
+    )
+
+    # Generate all other sets
+    for i in range(1, num_ims):
+        hv_seed = numbin2list(seed_list[i], seed_size)
+        temp_orth_im = gen_orthogonal_im(
+            num_per_im_bank, hv_dim, 0.5, hv_seed, permute_base=7, im_type="ca90_hier"
+        )
+        ortho_im = np.concatenate((ortho_im, temp_orth_im), axis=0)
+
+    # Get the confusion matrix!
+    conf_mat = gen_conf_mat(num_total_im, ortho_im)
+
+    # Plot the working heat map
+    if display_heatmap:
+        heatmap_plot(conf_mat)
+
+    # Print the IM seeds to use
+    print()  # for new line purposes
+    for i in range(num_ims):
+        print(f"IM seed #{i}: {seed_list[i]}")
+
+    return seed_list, ortho_im, conf_mat
 
 
 """
@@ -221,20 +274,17 @@ def extract_target_seeds(seed_size, seed_num, hv_dim, ca90_mode="iter"):
 if __name__ == "__main__":
     # Current test to test the extraction
     # of target seeds for generating 50% density
-    seed_size = 16
-    seed_num = 20
-    hv_dim = 512
+    seed_size = 32
+    hv_dim = 256
     ca90_mode = "hier"
-    num_levels = 300
+    num_total_im = 512
+    num_per_im_bank = 64
 
-    # Extract seed list
-    seed_list = extract_target_seeds(seed_size, seed_num, hv_dim, ca90_mode=ca90_mode)
-
-    # Use the first seed
-    hv_seed = numbin2list(seed_list[0], seed_size)
-
-    # Generate the orthogonal item memory
-    ortho_im = gen_orthogonal_im(num_levels, hv_dim, 0.5, hv_seed, im_type="random")
-
-    # Get the confusion matrix!
-    conf_mat = gen_conf_mat(num_levels, ortho_im)
+    seed_list, ortho_im, conf_mat = gen_ca90_im_set(
+        seed_size,
+        hv_dim,
+        num_total_im,
+        num_per_im_bank,
+        ca90_mode=ca90_mode,
+        display_heatmap=True,
+    )
