@@ -10,6 +10,11 @@
 # Importing useful tools
 import random
 import os
+import cocotb
+import hjson
+from mako.template import Template
+from mako.lookup import TemplateLookup
+import JsonRef
 from cocotb_test.simulator import run
 from cocotb.triggers import Timer, RisingEdge
 import numpy as np
@@ -74,6 +79,42 @@ def setup_and_run(
     )
 
 
+# Extract json file
+def get_config(cfg_path: str):
+    with open(cfg_path, "r") as jsonf:
+        srcfull = jsonf.read()
+
+    # Format hjson file
+    cfg = hjson.loads(srcfull, use_decimal=True)
+    cfg = JsonRef.replace_refs(cfg)
+    return cfg
+
+
+# Read template
+def get_template(tpl_path: str) -> Template:
+    dir_name = os.path.dirname(tpl_path)
+    file_name = os.path.basename(tpl_path)
+    tpl_list = TemplateLookup(directories=[dir_name], output_encoding="utf-8")
+    tpl = tpl_list.get_template(file_name)
+    return tpl
+
+
+# Generate file
+def gen_file(cfg, tpl, out_file) -> None:
+    # Writing file
+    with open(out_file, "w") as f:
+        f.write(str(tpl.render_unicode(cfg=cfg)))
+    return
+
+
+# For template generation
+def gen_ca90_hier_base(cfg, tpl_path, out_file):
+    tpl = get_template(tpl_path)
+    gen_file(cfg, tpl, out_file)
+
+    return
+
+
 """
     Functions for simulations
 """
@@ -85,14 +126,21 @@ async def clock_and_time(clock):
 
 
 # Check results
-def check_result(actual_val, golden_val):
+def check_result(actual_val, golden_val, debug_on=False):
+    if debug_on:
+        cocotb.log.info(f"Golden val: {golden_val}; Actual val: {actual_val}")
     assert (
         golden_val == actual_val
     ), f"Error! Golden Val: {golden_val}; Actual Val: {actual_val}"
     return
 
 
-def check_result_array(actual_val_array, golden_val_array):
+def check_result_array(actual_val_array, golden_val_array, debug_on=False):
+    if debug_on:
+        for i in range(len(golden_val_array)):
+            cocotb.log.info(
+                f"Golden val: {golden_val_array[i]}; Actual val: {actual_val_array[i]}"
+            )
     assert (
         golden_val_array == actual_val_array
     ).any(), f"Error! Golden Val: {golden_val_array}; Actual Val: {actual_val_array}"
