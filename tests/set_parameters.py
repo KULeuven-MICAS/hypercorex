@@ -16,7 +16,9 @@ SEED_DIM = 64
 REG_FILE_WIDTH = 32
 
 # Item memory parameters
-NUM_ORTHO_ITEMS = 256
+NUM_TOT_IM = 256
+NUM_PER_IM_BANK = int(HV_DIM // 4)
+CA90_MODE = "ca90_hier"
 
 # Encoder parameters
 BUNDLER_COUNT_WIDTH = 8

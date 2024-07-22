@@ -11,3 +11,4 @@ pyright
 flake8
 numpy
 matplotlib
+tqdm
