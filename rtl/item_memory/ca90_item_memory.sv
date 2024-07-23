@@ -20,9 +20,9 @@ module ca90_item_memory #(
   parameter int unsigned HVDimension   = 512,
   parameter int unsigned NumTotIm      = 1024,
   parameter int unsigned NumPerImBank  = 128,
+  parameter int unsigned SeedWidth     = 32,
   // Don't touch parameters
   parameter int unsigned Ca90ImPerm    = 7,
-  parameter int unsigned SeedWidth     = 32,
   parameter int unsigned NumImSets     = NumTotIm/NumPerImBank,
   parameter int unsigned ImSelWidth    = $clog2(NumTotIm)
 )(

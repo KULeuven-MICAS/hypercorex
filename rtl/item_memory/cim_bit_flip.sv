@@ -1,3 +1,16 @@
+//---------------------------
+// Copyright 2024 KU Leuven
+// Ryan Antonio <ryan.antonio@esat.kuleuven.be>
+//
+// Module: CiM Bit Flip
+// Description:
+// A dedicated module to cut SV limitations
+// on signal loop banks.
+//
+// This statically flips the bit based on
+// the FlipBitPos value
+//---------------------------
+
 module cim_bit_flip #(
   parameter int unsigned HVDimension = 512,
   parameter int unsigned FlipBitPos  = 1
