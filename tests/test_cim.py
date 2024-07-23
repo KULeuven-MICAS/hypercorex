@@ -99,5 +99,4 @@ def test_cim(simulator, parameters):
         module=module,
         simulator=simulator,
         parameters=parameters,
-        waves=True,
     )
