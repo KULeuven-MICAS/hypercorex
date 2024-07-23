@@ -2,24 +2,18 @@
 // Copyright 2024 KU Leuven
 // Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 //
-// Module: CA90 Item Memory
+// Module: Continuous Item Memory (CiM)
 // Description:
-// This is the base CA90 item memory
-// Note that this item memory
-// will be a bit more customized and less
-// flexible. Only the dimension size can change.
-//
-// Because of the CA90 limitations despite being
-// a good compressive mechanism, we need to generate
-// 8 item memories to generate 1024 cases
-//
-// Therevore we need 8 different seeds for this!
+// This is the CiM used to represent
+// real values signals. It generates a
+// square CiM which is at max half
+// of the specified working dimension
 //---------------------------
 
 module cim #(
   parameter int unsigned HVDimension   = 512,
-  // Don't touch parameters
   parameter int unsigned SeedWidth     = 32,
+  // Don't touch parameters
   parameter int unsigned NumCimLevels  = HVDimension/2,
   parameter int unsigned ImSelWidth    = $clog2(NumCimLevels)
 )(
