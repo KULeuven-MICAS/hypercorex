@@ -281,13 +281,20 @@ def gen_orthogonal_im(
 # Generating a square CiM
 # The number of levels is the ortho distance
 # depending on the dimension size
-def gen_square_cim(hv_dim):
+def gen_square_cim(hv_dim, hv_seed, im_type="random"):
     # Half of the distance
     # which marks the number of levels
     hv_ortho_dist = int(hv_dim / 2)
 
     # First initialize some seed HV
-    hv_seed = gen_ri_hv(hv_dim, 0.5)
+    # Depending on which mode we choose
+    # Do this for initialize first seed first
+    if im_type == "ca90_iter":
+        hv_seed = gen_hv_ca90_iterate_rows(hv_seed, hv_dim)
+    elif im_type == "ca90_hier":
+        hv_seed = gen_hv_ca90_hierarchical_rows(hv_seed, hv_dim)
+    else:
+        hv_seed = gen_ri_hv(hv_dim=hv_dim, p_dense=0.5, hv_type="binary")
 
     # Initialize empty memory
     cim = gen_empty_mem_hv(hv_ortho_dist, hv_dim)
@@ -296,13 +303,14 @@ def gen_square_cim(hv_dim):
     cim[0] = hv_seed.copy()
 
     # Fill-in and flip bits
+    # On every other skip step
     for i in range(1, hv_ortho_dist):
-        if cim[i - 1][i] == 0:
+        if cim[i - 1][2 * i - 1] == 0:
             cim[i] = cim[i - 1]
-            cim[i][i] = 1
+            cim[i][2 * i - 1] = 1
         else:
             cim[i] = cim[i - 1]
-            cim[i][i] = 0
+            cim[i][2 * i - 1] = 0
 
     return cim
 
