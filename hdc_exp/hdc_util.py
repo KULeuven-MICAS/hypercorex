@@ -278,6 +278,35 @@ def gen_orthogonal_im(
     return orthogonal_im
 
 
+# Generating a square CiM
+# The number of levels is the ortho distance
+# depending on the dimension size
+def gen_square_cim(hv_dim):
+    # Half of the distance
+    # which marks the number of levels
+    hv_ortho_dist = int(hv_dim / 2)
+
+    # First initialize some seed HV
+    hv_seed = gen_ri_hv(hv_dim, 0.5)
+
+    # Initialize empty memory
+    cim = gen_empty_mem_hv(hv_ortho_dist, hv_dim)
+
+    # Set first seed for the empty memory
+    cim[0] = hv_seed.copy()
+
+    # Fill-in and flip bits
+    for i in range(1, hv_ortho_dist):
+        if cim[i - 1][i] == 0:
+            cim[i] = cim[i - 1]
+            cim[i][i] = 1
+        else:
+            cim[i] = cim[i - 1]
+            cim[i][i] = 0
+
+    return cim
+
+
 """
     Functions for testing purposes
     
@@ -433,9 +462,10 @@ def heatmap_plot(
     title="Cool title",
     xlabel="x-axis",
     ylabel="y-axis",
+    cmap="viridis",
 ):
     # Heatmap
-    plt.imshow(data, cmap="hot", interpolation="nearest")
+    plt.imshow(data, cmap=cmap, interpolation="nearest")
 
     # Add colorbar
     plt.colorbar()
