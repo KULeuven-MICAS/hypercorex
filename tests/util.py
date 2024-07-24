@@ -150,17 +150,22 @@ def gen_randint(max_val):
 
 
 # For the ALU output
-def hv_alu_out(A, B, shift_amt, hv_dim, op):
+def hv_alu_out(hv_a, hv_b, shift_amt, hv_dim, op):
     mask_val = 2**hv_dim - 1
 
     if op == 1:
-        result = A & B
+        result = hv_a & hv_b
     elif op == 2:
-        result = A | B
+        result = hv_a | hv_b
     elif op == 3:
-        result = (A >> shift_amt) | (A << (hv_dim - shift_amt)) & mask_val
+        # Workaround because github CI fails
+        # At shifting more than 64 bits
+        if isinstance(hv_a, np.ndarray):
+            result = np.roll(hv_a, shift_amt)
+        else:
+            result = (hv_a >> shift_amt) | (hv_a << (hv_dim - shift_amt)) & mask_val
     else:
-        result = A ^ B
+        result = hv_a ^ hv_b
     return result
 
 
@@ -203,8 +208,8 @@ def hvlist2num(hv_list):
 # Clear encoder signal inputs to 0
 def clear_encode_inputs_no_clock(dut):
     # Item memory inputs
-    dut.im_rd_a_i.value = 0
-    dut.im_rd_b_i.value = 0
+    dut.im_a_addr_i.value = 0
+    dut.im_b_addr_i.value = 0
 
     # Control ports for ALU
     dut.alu_mux_a_i.value = 0
@@ -235,13 +240,13 @@ def clear_encode_inputs_no_clock(dut):
     return
 
 
-# Loading from Im to register
-async def load_im_to_reg(dut, hv_data, reg_addr):
+# Loading from IM to register
+async def load_im_to_reg(dut, im_addr, reg_addr):
     # Make sure to clear first
     clear_encode_inputs_no_clock(dut)
 
     # Item memory inputs
-    dut.im_rd_a_i.value = hv_data
+    dut.im_a_addr_i.value = im_addr
 
     # Control ports for registers
     dut.reg_mux_i.value = 1
@@ -305,13 +310,13 @@ async def perm_reg_to_qhv(dut, reg_addr, shift_amt):
 
 
 # Bind 2 IM inputs and save to reg
-async def bind_2im_to_reg(dut, hv_a, hv_b, reg_addr):
+async def bind_2im_to_reg(dut, im_addr_a, im_addr_b, reg_addr):
     # Make sure to clear
     clear_encode_inputs_no_clock(dut)
 
     # Item memory inputs
-    dut.im_rd_a_i.value = hv_a
-    dut.im_rd_b_i.value = hv_b
+    dut.im_a_addr_i.value = im_addr_a
+    dut.im_b_addr_i.value = im_addr_b
 
     # Control ports for ALU
     dut.alu_mux_a_i.value = 0
@@ -359,12 +364,12 @@ async def bind_2reg_to_reg(dut, reg_addr_a, reg_addr_b, reg_wr_addr):
 
 
 # Load bundler from IM
-async def im_to_bundler(dut, hv_data, bundler_addr):
+async def im_to_bundler(dut, im_a_addr, bundler_addr):
     # Make sure to clear first
     clear_encode_inputs_no_clock(dut)
 
     # Item memory inputs
-    dut.im_rd_a_i.value = hv_data
+    dut.im_a_addr_i.value = im_a_addr
 
     # Control ports for bundlers
     if bundler_addr == 0:
