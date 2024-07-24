@@ -7,7 +7,7 @@
   register set with 1 write and 2 read ports
 """
 
-from util import setup_and_run, gen_rand_bits, clock_and_time
+from util import setup_and_run, gen_rand_bits, clock_and_time, check_result
 
 import cocotb
 from cocotb.clock import Clock
@@ -21,6 +21,7 @@ NUM_REGS = 32
 # Set inputs to 0
 def clear_inputs_no_clock(dut):
     # Write ports
+    dut.clr_i.value = 0
     dut.wr_addr_i.value = 0
     dut.wr_data_i.value = 0
     dut.wr_en_i.value = 0
@@ -36,6 +37,13 @@ async def write_reg(dut, addr, data):
     dut.wr_addr_i.value = addr
     dut.wr_data_i.value = data
     dut.wr_en_i.value = 1
+    await clock_and_time(dut.clk_i)
+
+
+# Clear registers
+async def clr_reg(dut):
+    # Write ports
+    dut.clr_i.value = 1
     await clock_and_time(dut.clk_i)
 
 
@@ -89,16 +97,17 @@ async def reg_file_1w2r_dut(dut):
     for i in range(NUM_REGS):
         await write_reg(dut, i, rand_data_list[i])
 
+    clear_inputs_no_clock(dut)
+
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("            Read from port A                ")
     cocotb.log.info(" ------------------------------------------ ")
 
     for i in range(NUM_REGS):
         reg_val = await read_reg(dut, i, port="a")
-        assert (
-            reg_val == rand_data_list[i]
-        ), f"Error! Register RW is incorrect! \
-            Golden: {rand_data_list[i]}; Actual: {reg_val}"
+        check_result(reg_val, rand_data_list[i])
+
+    clear_inputs_no_clock(dut)
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("            Write to registers              ")
@@ -109,16 +118,31 @@ async def reg_file_1w2r_dut(dut):
     for i in range(NUM_REGS):
         await write_reg(dut, i, rand_data_list[i])
 
+    clear_inputs_no_clock(dut)
+
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("            Read from port B                ")
     cocotb.log.info(" ------------------------------------------ ")
 
     for i in range(NUM_REGS):
         reg_val = await read_reg(dut, i, port="b")
-        assert (
-            reg_val == rand_data_list[i]
-        ), f"Error! Register RW is incorrect! \
-            Golden: {rand_data_list[i]}; Actual: {reg_val}"
+        check_result(reg_val, rand_data_list[i])
+
+    clear_inputs_no_clock(dut)
+
+    cocotb.log.info(" ------------------------------------------ ")
+    cocotb.log.info("         Clear and read registers           ")
+    cocotb.log.info(" ------------------------------------------ ")
+
+    await clr_reg(dut)
+
+    for i in range(NUM_REGS):
+        reg_val = await read_reg(dut, i, port="a")
+        check_result(reg_val, 0)
+        reg_val = await read_reg(dut, i, port="b")
+        check_result(reg_val, 0)
+
+    clear_inputs_no_clock(dut)
 
 
 # Actual test run
@@ -131,7 +155,7 @@ async def reg_file_1w2r_dut(dut):
         }
     ],
 )
-def test_reg_file_1w2r(simulator, parameters):
+def test_reg_file_1w2r(simulator, parameters, waves):
     verilog_sources = ["/rtl/common/reg_file_1w2r.sv"]
 
     toplevel = "reg_file_1w2r"
@@ -144,4 +168,5 @@ def test_reg_file_1w2r(simulator, parameters):
         module=module,
         simulator=simulator,
         parameters=parameters,
+        waves=waves,
     )
