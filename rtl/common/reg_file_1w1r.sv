@@ -40,14 +40,26 @@ module reg_file_1w1r #(
   always_ff @ (posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       // Initialize to 0 during resets
-      for (int i = 0; i < NumRegs; i++) begin
-        reg_file[i] <= {DataWidth{1'b0}};
-      end
-    end else begin
-      if(clr_i) begin
+`ifdef SIM_VLT
+        for (int i = 0; i < NumRegs; i++) begin
+          reg_file[i] = {DataWidth{1'b0}}; // verilog_lint: waive always-ff-non-blocking
+        end
+`else
         for (int i = 0; i < NumRegs; i++) begin
           reg_file[i] <= {DataWidth{1'b0}};
         end
+`endif
+    end else begin
+      if(clr_i) begin
+`ifdef SIM_VLT
+        for (int i = 0; i < NumRegs; i++) begin
+          reg_file[i] = {DataWidth{1'b0}}; // verilog_lint: waive always-ff-non-blocking
+        end
+`else
+        for (int i = 0; i < NumRegs; i++) begin
+          reg_file[i] <= {DataWidth{1'b0}};
+        end
+`endif
       end else if(wr_en_i) begin
         reg_file[wr_addr_i] <= wr_data_i;
       end else begin
