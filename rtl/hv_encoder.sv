@@ -129,6 +129,7 @@ module hv_encoder #(
     .clk_i        ( clk_i           ),
     .rst_ni       ( rst_ni          ),
     // Write port
+    .clr_i        ( '0              ),
     .wr_addr_i    ( reg_wr_addr_i   ),
     .wr_data_i    ( reg_wr_data     ),
     .wr_en_i      ( reg_wr_en_i     ),

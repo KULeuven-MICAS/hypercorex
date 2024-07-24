@@ -20,6 +20,7 @@ module reg_file_1w2r #(
   input  logic clk_i,
   input  logic rst_ni,
   // Write port
+  input  logic                    clr_i,
   input  logic [NumRegsWidth-1:0] wr_addr_i,
   input  logic [   DataWidth-1:0] wr_data_i,
   input  logic                    wr_en_i,
@@ -46,7 +47,11 @@ module reg_file_1w2r #(
         reg_file[i] <= {DataWidth{1'b0}};
       end
     end else begin
-      if(wr_en_i) begin
+      if(clr_i) begin
+        for (int i = 0; i < NumRegs; i++) begin
+          reg_file[i] <= {DataWidth{1'b0}};
+        end
+      end else if(wr_en_i) begin
         reg_file[wr_addr_i] <= wr_data_i;
       end else begin
         reg_file[wr_addr_i] <= reg_file[wr_addr_i];
