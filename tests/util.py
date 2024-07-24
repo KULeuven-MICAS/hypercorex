@@ -158,7 +158,12 @@ def hv_alu_out(hv_a, hv_b, shift_amt, hv_dim, op):
     elif op == 2:
         result = hv_a | hv_b
     elif op == 3:
-        result = (hv_a >> shift_amt) | (hv_a << (hv_dim - shift_amt)) & mask_val
+        # Workaround because github CI fails
+        # At shifting more than 64 bits
+        if isinstance(hv_a, np.ndarray):
+            result = np.roll(hv_a, shift_amt)
+        else:
+            result = (hv_a >> shift_amt) | (hv_a << (hv_dim - shift_amt)) & mask_val
     else:
         result = hv_a ^ hv_b
     return result
