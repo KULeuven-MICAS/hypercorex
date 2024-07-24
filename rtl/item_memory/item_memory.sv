@@ -20,9 +20,9 @@ module item_memory #(
   // Don't touch!
   parameter int unsigned NumImSets   = NumTotIm/NumPerImBank
 )(
-  input  logic                                  port_a_cim,
-  input  logic                [  SeedWidth-1:0] cim_seed_hv,
-  input  logic [NumImSets-1:0][  SeedWidth-1:0] im_seed_hv,
+  input  logic                                  port_a_cim_i,
+  input  logic                [  SeedWidth-1:0] cim_seed_hv_i,
+  input  logic [NumImSets-1:0][  SeedWidth-1:0] im_seed_hv_i,
   input  logic                [ImAddrWidth-1:0] im_a_addr_i,
   input  logic                [ImAddrWidth-1:0] im_b_addr_i,
   output logic                [HVDimension-1:0] im_a_o,
@@ -63,7 +63,7 @@ module item_memory #(
     .DataWidth  ( CimSelWidth       ),
     .NumSel     ( 2                 )
   ) i_mux_cim_in (
-    .sel_i      ( port_a_cim        ),
+    .sel_i      ( port_a_cim_i      ),
     .signal_i   ( mux_cim_addr_in   ),
     .signal_o   ( mux_cim_addr_out  )
   );
@@ -75,7 +75,7 @@ module item_memory #(
     .HVDimension ( HVDimension      ),
     .SeedWidth   ( SeedWidth        )
   ) i_cim (
-    .seed_hv_i   ( cim_seed_hv      ),
+    .seed_hv_i   ( cim_seed_hv_i    ),
     .cim_sel_i   ( mux_cim_addr_out ),
     .cim_o       ( cim_a            )
   );
@@ -92,7 +92,7 @@ module item_memory #(
     .DataWidth  ( ImSelWidth      ),
     .NumSel     ( 2               )
   ) i_mux_im_in (
-    .sel_i      ( port_a_cim      ),
+    .sel_i      ( port_a_cim_i    ),
     .signal_i   ( mux_im_addr_in  ),
     .signal_o   ( mux_im_addr_out )
   );
@@ -106,7 +106,7 @@ module item_memory #(
     .NumPerImBank ( NumPerImBank    ),
     .SeedWidth    ( SeedWidth       )
   ) i_ca90_item_memory (
-    .seed_hv_i    ( im_seed_hv      ),
+    .seed_hv_i    ( im_seed_hv_i    ),
     .im_sel_a_i   ( mux_im_addr_out ),
     .im_sel_b_i   ( im_b_addr_i     ),
     .im_a_o       ( im_a            ),
@@ -125,7 +125,7 @@ module item_memory #(
     .DataWidth  ( HVDimension      ),
     .NumSel     ( 2                )
   ) i_mux_porta_out (
-    .sel_i      ( port_a_cim       ),
+    .sel_i      ( port_a_cim_i     ),
     .signal_i   ( mux_porta_out_in ),
     .signal_o   ( im_a_o           )
   );
