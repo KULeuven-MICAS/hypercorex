@@ -16,9 +16,8 @@ from hdc_util import (
     simple_plot2d,
     gen_hv_ca90_iterate_rows,
     gen_hv_ca90_hierarchical_rows,
-    gen_orthogonal_im,
-    gen_conf_mat,
-    heatmap_plot,
+    gen_ca90_im_set,
+    numbin2list,
 )
 
 
@@ -37,24 +36,6 @@ TEST_RUNS = 100
 """
     Other useful useful functions
 """
-
-
-# Converting number to a binary numpy array
-def numbin2list(numbin, dim):
-    # Convert binary inputs first
-    bin_hv = np.array(list(map(int, format(numbin, f"0{dim}b"))))
-    return bin_hv
-
-
-# Convert from list to binary value
-def hvlist2num(hv_list):
-    # Bring back into an integer itself!
-    # Sad workaround is to convert to str
-    # The convert to integer
-    hv_num = "".join(hv_list.astype(str))
-    hv_num = int(hv_num, 2)
-
-    return hv_num
 
 
 # Getting averageand std of scores
@@ -106,14 +87,6 @@ def find_target_indices(lst, number):
           used for identifying which HV seeds
           generated the desired list!
 
-    extract_target_seeds:
-        - This function is for extracting seeds
-          That give the target 50% density of a base HV
-          
-    gen_ca90_im_set
-        - This generates the seeds for the item memory
-          moreover it also generates a confusion matrix
-          and a heatmap for inspection purposes
 """
 
 
@@ -188,84 +161,6 @@ def gen_density_list(seed_size, hv_dim, ca90_mode="iter"):
     density_half_list = find_target_indices(density_list, half_dim)
 
     return density_list, density_half_list
-
-
-# This function is for extracting seeds
-# That give the target 50% density of a base HV
-def extract_target_seeds(seed_size, seed_num, hv_dim, ca90_mode="iter"):
-    hv_half_dim = int(hv_dim / 2)
-    seed_list = []
-    seed_count = 0
-    run_count = 0
-
-    while seed_count != seed_num:
-        run_count += 1
-        hv_seed = gen_ri_hv(seed_size, 0.5)
-        if ca90_mode == "iter":
-            gen_hv = gen_hv_ca90_iterate_rows(hv_seed, hv_dim)
-        else:
-            gen_hv = gen_hv_ca90_hierarchical_rows(hv_seed, hv_dim)
-
-        density_hv = np.sum(gen_hv)
-
-        if density_hv == hv_half_dim:
-            seed_idx = hvlist2num(hv_seed)
-            seed_list.append(seed_idx)
-            seed_count += 1
-
-    print(f"Search count time: {run_count}")
-    print(f"Target HV Dimension: {hv_dim}")
-    print(f"Seed size: {seed_size}")
-    print(f"Number of seeds: {seed_num}")
-
-    return seed_list
-
-
-# This function generates an item memory
-# for the specified number of items and items per im bank
-# It displays a heat map and displays the seeds to use
-# Returns the seeds and the confusion matrix
-def gen_ca90_im_set(
-    seed_size,
-    hv_dim,
-    num_total_im,
-    num_per_im_bank,
-    ca90_mode="hier",
-    display_heatmap=False,
-):
-    num_ims = int(num_total_im / num_per_im_bank)
-
-    # Extract seed list that give
-    # 50% density of a base HV
-    seed_list = extract_target_seeds(seed_size, num_ims, hv_dim, ca90_mode=ca90_mode)
-
-    # Generate the 1st orthogonal item memory
-    hv_seed = numbin2list(seed_list[0], seed_size)
-    ortho_im = gen_orthogonal_im(
-        num_per_im_bank, hv_dim, 0.5, hv_seed, permute_base=7, im_type="ca90_hier"
-    )
-
-    # Generate all other sets
-    for i in range(1, num_ims):
-        hv_seed = numbin2list(seed_list[i], seed_size)
-        temp_orth_im = gen_orthogonal_im(
-            num_per_im_bank, hv_dim, 0.5, hv_seed, permute_base=7, im_type="ca90_hier"
-        )
-        ortho_im = np.concatenate((ortho_im, temp_orth_im), axis=0)
-
-    # Get the confusion matrix!
-    conf_mat = gen_conf_mat(num_total_im, ortho_im)
-
-    # Plot the working heat map
-    if display_heatmap:
-        heatmap_plot(conf_mat)
-
-    # Print the IM seeds to use
-    print()  # for new line purposes
-    for i in range(num_ims):
-        print(f"IM seed #{i}: {seed_list[i]}")
-
-    return seed_list, ortho_im, conf_mat
 
 
 """

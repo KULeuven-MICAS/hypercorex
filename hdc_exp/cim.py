@@ -11,7 +11,6 @@
 
 from hdc_util import (
     gen_square_cim,
-    gen_ri_hv,
     gen_conf_mat,
     heatmap_plot,
 )
@@ -22,7 +21,7 @@ from hdc_util import (
         HV_DIM - hypervector dimensions
 """
 
-HV_DIM = 32
+HV_DIM = 256
 
 
 """
@@ -30,10 +29,10 @@ HV_DIM = 32
 """
 if __name__ == "__main__":
     # Set a pre-determined seed
-    hv_seed = gen_ri_hv(32, 0.5, hv_type="binary")
+    seed_size = 32
 
     # Generate the CiM
-    cim = gen_square_cim(HV_DIM, hv_seed, im_type="ca90_hier")
+    hv_seed, cim = gen_square_cim(HV_DIM, seed_size, im_type="ca90_hier")
 
     # Number of CiM levels
     cim_levels = len(cim)
