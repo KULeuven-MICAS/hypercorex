@@ -7,6 +7,7 @@
   of the continuous item memory (CiM)
 """
 
+from hdc_exp.hdc_util import hvlist2num
 import set_parameters
 import cocotb
 from cocotb.triggers import Timer
@@ -29,16 +30,15 @@ async def cim_dut(dut):
     cocotb.log.info("                Testing CiM                 ")
     cocotb.log.info(" ------------------------------------------ ")
 
-    # Use an initial seed
-    seed_input = 3275349888
-
-    # Convert to list for golden checking
-    seed_input_list = numbin2list(seed_input, set_parameters.REG_FILE_WIDTH)
-
     # Generated golden CiM
-    golden_cim = gen_square_cim(
-        set_parameters.HV_DIM, seed_input_list, im_type="ca90_hier"
+    seed_input, golden_cim = gen_square_cim(
+        hv_dim=set_parameters.HV_DIM,
+        seed_size=set_parameters.REG_FILE_WIDTH,
+        im_type="ca90_hier",
     )
+
+    # Convert seed list to number
+    seed_input = hvlist2num(seed_input)
 
     # Input the seed
     dut.seed_hv_i.value = seed_input

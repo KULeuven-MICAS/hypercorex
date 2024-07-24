@@ -30,20 +30,6 @@ async def ca90_item_memory_dut(dut):
     cocotb.log.info("         Testing CA90 Item Memory           ")
     cocotb.log.info(" ------------------------------------------ ")
 
-    # For parameter checking, we put a warning
-    if set_parameters.NUM_PER_IM_BANK >= int(set_parameters.HV_DIM / 2):
-        cocotb.log.info(" ------------------------------------------ ")
-        cocotb.log.info("            !!!!!  WARNING  !!!!!           ")
-        cocotb.log.info(f" The number of IM per bank {set_parameters.NUM_PER_IM_BANK}")
-        cocotb.log.info(
-            f" must be less than half of the HV dimension size {set_parameters.HV_DIM}"
-        )
-        cocotb.log.info(
-            " It is recommended that it is 1/4th of the dimension size to avoid"
-        )
-        cocotb.log.info(" saturating at all 1s or all 0s due to CA90 limitations")
-        cocotb.log.info(" ------------------------------------------ ")
-
     # Generate seed list and golden IM
     seed_list, golden_im, conf_mat = gen_ca90_im_set(
         seed_size=set_parameters.REG_FILE_WIDTH,
