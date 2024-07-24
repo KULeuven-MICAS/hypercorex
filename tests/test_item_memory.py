@@ -13,7 +13,7 @@ from cocotb.triggers import Timer
 import pytest
 import sys
 
-from util import get_root, setup_and_run, check_result_array, numbin2list
+from util import get_root, setup_and_run, check_result_array, numbin2list, hvlist2num
 
 # Add hdc utility functions
 hdc_util_path = get_root() + "/hdc_exp/"
@@ -33,34 +33,19 @@ async def item_memory_dut(dut):
     cocotb.log.info("                Item Memory                 ")
     cocotb.log.info(" ------------------------------------------ ")
 
-    # For parameter checking, we put a warning
-    if set_parameters.NUM_PER_IM_BANK >= int(set_parameters.HV_DIM / 2):
-        cocotb.log.info(" ------------------------------------------ ")
-        cocotb.log.info("            !!!!!  WARNING  !!!!!           ")
-        cocotb.log.info(f" The number of IM per bank {set_parameters.NUM_PER_IM_BANK}")
-        cocotb.log.info(
-            f" must be less than half of the HV dimension size {set_parameters.HV_DIM}"
-        )
-        cocotb.log.info(
-            " It is recommended that it is 1/4th of the dimension size to avoid"
-        )
-        cocotb.log.info(" saturating at all 1s or all 0s due to CA90 limitations")
-        cocotb.log.info(" ------------------------------------------ ")
-
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("     Generate Seeds and Golden Values       ")
     cocotb.log.info(" ------------------------------------------ ")
 
-    # This is for the seed input
-    cim_seed_input = 3275349888
-
-    # Convert to list for golden checking
-    cim_seed_input_list = numbin2list(cim_seed_input, set_parameters.REG_FILE_WIDTH)
-
     # Generated golden CiM
-    golden_cim = gen_square_cim(
-        set_parameters.HV_DIM, cim_seed_input_list, im_type=set_parameters.CA90_MODE
+    cim_seed_input, golden_cim = gen_square_cim(
+        hv_dim=set_parameters.HV_DIM,
+        seed_size=set_parameters.REG_FILE_WIDTH,
+        im_type=set_parameters.CA90_MODE,
     )
+
+    # Convert seed list to number
+    cim_seed_input = hvlist2num(cim_seed_input)
 
     # Generate seed list and golden IM
     im_seed_input_list, golden_im, conf_mat = gen_ca90_im_set(
