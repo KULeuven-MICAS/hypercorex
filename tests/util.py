@@ -56,8 +56,13 @@ def setup_and_run(
     # Setting of compilation arguments
     # and timescale depending on simulator
     if simulator == "verilator":
-        compile_args = ["-Wno-WIDTH", "--no-timing", "--trace-structs"]
+        compile_args = [
+            "-Wno-WIDTH",
+            "--no-timing",
+            "--trace-structs",
+        ]
         timescale = None
+        defines = ["SIM_VLT"]
     else:
         compile_args = None
         timescale = "1ns/1ps"
