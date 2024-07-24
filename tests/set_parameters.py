@@ -20,6 +20,9 @@ NUM_TOT_IM = 256
 NUM_PER_IM_BANK = int(HV_DIM // 4)
 CA90_MODE = "ca90_hier"
 
+# Instruction memory parameters
+INST_MEM_DEPTH = 128
+
 # Encoder parameters
 BUNDLER_COUNT_WIDTH = 8
 BUNDLER_MUX_WIDTH = 2
@@ -32,4 +35,4 @@ REG_NUM = 4
 # Shift amount needs to be in odd number form
 # because the shifts is from 0 to some dimension
 # here, we restrict shift amount to be half of the total dimension
-MAX_SHIFT_AMT = int(HV_DIM / 2) - 1
+MAX_SHIFT_AMT = 4

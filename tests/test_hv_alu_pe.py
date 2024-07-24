@@ -16,12 +16,12 @@ import pytest
 
 
 # Routinary test
-async def gen_and_test(dut, hv_dim, max_shift_amt, mode):
+async def gen_and_test(dut, hv_dim, shift_amt, mode):
     # Generate data
     if mode == 3:
         A = gen_rand_bits(set_parameters.HV_DIM)
         B = 0
-        shift_amt = gen_randint(max_shift_amt)
+        shift_amt = gen_randint(shift_amt)
     else:
         A = gen_rand_bits(set_parameters.HV_DIM)
         B = gen_rand_bits(set_parameters.HV_DIM)
@@ -65,7 +65,7 @@ async def hv_alu_pe_dut(dut):
 
     # Test the XOR case
     for i in range(set_parameters.TEST_RUNS):
-        await gen_and_test(dut, set_parameters.HV_DIM, set_parameters.MAX_SHIFT_AMT, 0)
+        await gen_and_test(dut, set_parameters.HV_DIM, 0, 0)
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("             Testing AND Cases              ")
@@ -73,7 +73,7 @@ async def hv_alu_pe_dut(dut):
 
     # Test the AND case
     for i in range(set_parameters.TEST_RUNS):
-        await gen_and_test(dut, set_parameters.HV_DIM, set_parameters.MAX_SHIFT_AMT, 1)
+        await gen_and_test(dut, set_parameters.HV_DIM, 0, 1)
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("             Testing OR Cases               ")
@@ -81,7 +81,7 @@ async def hv_alu_pe_dut(dut):
 
     # Test the OR case
     for i in range(set_parameters.TEST_RUNS):
-        await gen_and_test(dut, set_parameters.HV_DIM, set_parameters.MAX_SHIFT_AMT, 2)
+        await gen_and_test(dut, set_parameters.HV_DIM, 0, 2)
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("       Testing Circular Shift Cases         ")
@@ -89,7 +89,9 @@ async def hv_alu_pe_dut(dut):
 
     # Test circular shift cases
     for i in range(set_parameters.TEST_RUNS):
-        await gen_and_test(dut, set_parameters.HV_DIM, set_parameters.MAX_SHIFT_AMT, 3)
+        await gen_and_test(
+            dut, set_parameters.HV_DIM, set_parameters.MAX_SHIFT_AMT - 1, 3
+        )
 
 
 # Actual test run

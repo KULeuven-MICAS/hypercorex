@@ -43,7 +43,7 @@ async def ca90_unit_dut(dut):
         # Generate random input but convert
         seed_hv = gen_rand_bits(set_parameters.HV_DIM)
         # Random CA90 cycle time
-        ca90_cycle_time = gen_randint(set_parameters.MAX_SHIFT_AMT)
+        ca90_cycle_time = gen_randint(set_parameters.MAX_SHIFT_AMT - 1)
 
         # Load data into inputs
         dut.vector_i.value = seed_hv
