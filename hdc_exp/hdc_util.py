@@ -20,6 +20,7 @@ import matplotlib.pyplot as plt
 """
 
 
+# For simple file extraction
 def extract_dataset(file_path):
     # Initialize empty data set array
     dataset = []
@@ -31,6 +32,37 @@ def extract_dataset(file_path):
             dataset.append(line.strip())
 
     return dataset
+
+
+# Convert a number in binary to a list
+# Used to feed each bundler unit
+def numbin2list(numbin, dim):
+    # Convert binary inputs first
+    bin_hv = np.array(list(map(int, format(numbin, f"0{dim}b"))))
+    return bin_hv
+
+
+# Convert a number in binary to a list
+# Used to feed each bundler unit
+def numbip2list(numbin, dim):
+    # Convert binary inputs first
+    bin_hv = np.array(list(map(int, format(numbin, f"0{dim}b"))))
+    # Get marks that have 0s
+    mask = bin_hv == 0
+    # Convert 0s to -1s
+    bin_hv[mask] = -1
+    return bin_hv
+
+
+# Convert from list to binary value
+def hvlist2num(hv_list):
+    # Bring back into an integer itself!
+    # Sad workaround is to convert to str
+    # The convert to integer
+    hv_num = "".join(hv_list.astype(str))
+    hv_num = int(hv_num, 2)
+
+    return hv_num
 
 
 """
@@ -199,6 +231,18 @@ def gen_conf_mat(num_levels, hv_list):
             - hv_dim: dimension of each hypervector
             - p_dense: the density of each hypervector
             - hv_type: type of hypervector
+
+    ca90_extract_seeds:
+        - This function is for extracting seeds
+          That give the target 50% density of a base HV
+          
+    gen_ca90_im_set:
+        - This generates the seeds for the item memory
+          moreover it also generates a confusion matrix
+          and a heatmap for inspection purposes
+
+    gen_square_cim:
+        - Generates a square cim that is half of the dimension size
 """
 
 
@@ -251,6 +295,37 @@ def gen_hv_ca90_hierarchical_rows(hv_seed, hv_dim, permute_base=1):
     return gen_hv
 
 
+# This function is for extracting seeds
+# That give the target 50% density of a base HV
+def ca90_extract_seeds(seed_size, seed_num, hv_dim, ca90_mode="iter"):
+    hv_half_dim = int(hv_dim / 2)
+    seed_list = []
+    seed_count = 0
+    run_count = 0
+
+    while seed_count != seed_num:
+        run_count += 1
+        hv_seed = gen_ri_hv(seed_size, 0.5)
+        if ca90_mode == "iter":
+            gen_hv = gen_hv_ca90_iterate_rows(hv_seed, hv_dim)
+        else:
+            gen_hv = gen_hv_ca90_hierarchical_rows(hv_seed, hv_dim)
+
+        density_hv = np.sum(gen_hv)
+
+        if density_hv == hv_half_dim:
+            seed_idx = hvlist2num(hv_seed)
+            seed_list.append(seed_idx)
+            seed_count += 1
+
+    print(f"Search count time: {run_count}")
+    print(f"Target HV Dimension: {hv_dim}")
+    print(f"Seed size: {seed_size}")
+    print(f"Number of seeds: {seed_num}")
+
+    return seed_list
+
+
 # Generating orthogonal item memory
 def gen_orthogonal_im(
     num_hv, hv_dim, p_dense, hv_seed, permute_base=1, hv_type="binary", im_type="random"
@@ -278,10 +353,77 @@ def gen_orthogonal_im(
     return orthogonal_im
 
 
+# This function generates an item memory
+# for the specified number of items and items per im bank
+# It displays a heat map and displays the seeds to use
+# Returns the seeds and the confusion matrix
+def gen_ca90_im_set(
+    seed_size,
+    hv_dim,
+    num_total_im,
+    num_per_im_bank,
+    ca90_mode="hier",
+    display_heatmap=False,
+):
+    # Sanity checker for parameter
+    if num_per_im_bank >= int(hv_dim / 2):
+        print(" ------------------------------------------ ")
+        print("            !!!!!  WARNING  !!!!!           ")
+        print(f" The number of IM per bank {num_per_im_bank}")
+        print(f" must be less than half of the HV dimension size {hv_dim}")
+        print(" It is recommended that it is 1/4th of the dimension size to avoid")
+        print(" saturating at all 1s or all 0s due to CA90 limitations")
+        print(" ------------------------------------------ ")
+
+    num_ims = int(num_total_im / num_per_im_bank)
+
+    # Extract seed list that give
+    # 50% density of a base HV
+    seed_list = ca90_extract_seeds(seed_size, num_ims, hv_dim, ca90_mode=ca90_mode)
+
+    # Generate the 1st orthogonal item memory
+    hv_seed = numbin2list(seed_list[0], seed_size)
+    ortho_im = gen_orthogonal_im(
+        num_per_im_bank, hv_dim, 0.5, hv_seed, permute_base=7, im_type="ca90_hier"
+    )
+
+    # Generate all other sets
+    for i in range(1, num_ims):
+        hv_seed = numbin2list(seed_list[i], seed_size)
+        temp_orth_im = gen_orthogonal_im(
+            num_per_im_bank, hv_dim, 0.5, hv_seed, permute_base=7, im_type="ca90_hier"
+        )
+        ortho_im = np.concatenate((ortho_im, temp_orth_im), axis=0)
+
+    # Plot the working heat map
+    if display_heatmap:
+        # Get the confusion matrix!
+        conf_mat = gen_conf_mat(num_total_im, ortho_im)
+
+        heatmap_plot(conf_mat)
+
+    else:
+        conf_mat = None
+
+    # Print the IM seeds to use
+    print()  # for new line purposes
+    for i in range(num_ims):
+        print(f"IM seed #{i}: {seed_list[i]}")
+
+    return seed_list, ortho_im, conf_mat
+
+
 # Generating a square CiM
 # The number of levels is the ortho distance
 # depending on the dimension size
-def gen_square_cim(hv_dim, hv_seed, im_type="random"):
+def gen_square_cim(hv_dim, seed_size, im_type="random"):
+    # Set a pre-determined seed
+    hv_seed_list = ca90_extract_seeds(seed_size, 1, hv_dim, ca90_mode=im_type)
+
+    print(f"CiM seed: {hv_seed_list[0]}")
+
+    hv_seed = numbin2list(hv_seed_list[0], hv_dim)
+
     # Half of the distance
     # which marks the number of levels
     hv_ortho_dist = int(hv_dim / 2)
@@ -312,7 +454,7 @@ def gen_square_cim(hv_dim, hv_seed, im_type="random"):
             cim[i] = cim[i - 1]
             cim[i][2 * i - 1] = 0
 
-    return cim
+    return hv_seed, cim
 
 
 """
