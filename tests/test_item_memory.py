@@ -19,12 +19,8 @@ from util import get_root, setup_and_run, check_result_array, numbin2list, hvlis
 hdc_util_path = get_root() + "/hdc_exp/"
 sys.path.append(hdc_util_path)
 
-# Grab the CA90 generation from the
-# cellular automata experiment set
-from cellular_automata import gen_ca90_im_set  # noqa: E402
-
-# Grab the CiM generation from the utility
-from hdc_util import gen_square_cim  # noqa: E402
+# Import item memory generations
+from hdc_util import gen_square_cim, gen_ca90_im_set  # noqa: E402
 
 
 @cocotb.test()
@@ -66,11 +62,11 @@ async def item_memory_dut(dut):
         ) + im_seed_input_list[num_im_banks - i - 1]
 
     # Input the CiM seed and the iM seeds
-    dut.cim_seed_hv.value = cim_seed_input
-    dut.im_seed_hv.value = im_seed_input
+    dut.cim_seed_hv_i.value = cim_seed_input
+    dut.im_seed_hv_i.value = im_seed_input
 
     # Initialize all other ports to 0
-    dut.port_a_cim.value = 0
+    dut.port_a_cim_i.value = 0
     dut.im_a_addr_i.value = 0
     dut.im_b_addr_i.value = 0
 
@@ -81,7 +77,7 @@ async def item_memory_dut(dut):
     cocotb.log.info("         Checking CA90 Item Memory          ")
     cocotb.log.info(" ------------------------------------------ ")
 
-    # Since port_a_cim is 0, it selects the
+    # Since port_a_cim_i is 0, it selects the
     # CA90 item memory
 
     # Load request, propagate, check result
@@ -104,8 +100,8 @@ async def item_memory_dut(dut):
         check_result_array(actual_val_b, golden_im[i])
 
     # Clear other inputs but put
-    # port_a_cim to 1 to select the CiM
-    dut.port_a_cim.value = 1
+    # port_a_cim_i to 1 to select the CiM
+    dut.port_a_cim_i.value = 1
     dut.im_a_addr_i.value = 0
     dut.im_b_addr_i.value = 0
 
