@@ -104,7 +104,7 @@ async def hv_alu_pe_dut(dut):
         }
     ],
 )
-def test_hv_alu_pe(simulator, parameters):
+def test_hv_alu_pe(simulator, parameters, waves):
     verilog_sources = ["/rtl/hv_alu_pe.sv"]
 
     toplevel = "hv_alu_pe"
@@ -117,4 +117,5 @@ def test_hv_alu_pe(simulator, parameters):
         module=module,
         simulator=simulator,
         parameters=parameters,
+        waves=waves,
     )
