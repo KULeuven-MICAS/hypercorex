@@ -3,8 +3,8 @@
   Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
   Description:
-  This tests the basic functionality of the
-  register set with 1 write and 1 read port
+  This tests the basic functionality
+of the FIFO common module
 """
 
 from util import setup_and_run, gen_rand_bits, clock_and_time, check_result
