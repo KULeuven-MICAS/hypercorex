@@ -11,10 +11,6 @@
 
 module hv_encoder #(
   parameter int unsigned HVDimension    = 512,
-  parameter int unsigned NumTotIm       = 1024,
-  parameter int unsigned NumPerImBank   = 128,
-  parameter int unsigned ImAddrWidth    = 32,
-  parameter int unsigned SeedWidth      = 32,
   parameter int unsigned BundCountWidth = 8,
   parameter int unsigned BundMuxWidth   = 2,
   parameter int unsigned ALUMuxWidth    = 2,
@@ -23,53 +19,45 @@ module hv_encoder #(
   parameter int unsigned QvMuxWidth     = 2,
   parameter int unsigned RegNum         = 4,
   // Don't touch!
-  parameter int unsigned NumImSets      = NumTotIm/NumPerImBank,
   parameter int unsigned NumALUOps      = 4,
   parameter int unsigned ALUOpsWidth    = $clog2(NumALUOps     ),
   parameter int unsigned ShiftWidth     = $clog2(ALUMaxShiftAmt),
   parameter int unsigned RegAddrWidth   = $clog2(RegNum        )
 )(
   // Clocks and reset
-  input  logic                                   clk_i,
-  input  logic                                   rst_ni,
-  // Item address inputs
-  input  logic                [ ImAddrWidth-1:0] im_a_addr_i,
-  input  logic                [ ImAddrWidth-1:0] im_b_addr_i,
-  // Control ports for item memory
-  input  logic                                   port_a_cim_i,
-  input  logic                [   SeedWidth-1:0] cim_seed_hv_i,
-  input  logic [NumImSets-1:0][   SeedWidth-1:0] im_seed_hv_i,
+  input  logic clk_i,
+  input  logic rst_ni,
+  // Item memory inputs
+  input  logic [ HVDimension-1:0] im_rd_a_i,
+  input  logic [ HVDimension-1:0] im_rd_b_i,
   // Control ports for ALU
-  input  logic                [ ALUMuxWidth-1:0] alu_mux_a_i,
-  input  logic                [ ALUMuxWidth-1:0] alu_mux_b_i,
-  input  logic                [ ALUOpsWidth-1:0] alu_ops_i,
-  input  logic                [  ShiftWidth-1:0] alu_shift_amt_i,
+  input  logic [ ALUMuxWidth-1:0] alu_mux_a_i,
+  input  logic [ ALUMuxWidth-1:0] alu_mux_b_i,
+  input  logic [ ALUOpsWidth-1:0] alu_ops_i,
+  input  logic [  ShiftWidth-1:0] alu_shift_amt_i,
   // Control ports for bundlers
-  input  logic                [BundMuxWidth-1:0] bund_mux_a_i,
-  input  logic                [BundMuxWidth-1:0] bund_mux_b_i,
-  input  logic                                   bund_valid_a_i,
-  input  logic                                   bund_valid_b_i,
-  input  logic                                   bund_clr_a_i,
-  input  logic                                   bund_clr_b_i,
+  input  logic [BundMuxWidth-1:0] bund_mux_a_i,
+  input  logic [BundMuxWidth-1:0] bund_mux_b_i,
+  input  logic                    bund_valid_a_i,
+  input  logic                    bund_valid_b_i,
+  input  logic                    bund_clr_a_i,
+  input  logic                    bund_clr_b_i,
   // Control ports for register ops
-  input  logic                [ RegMuxWidth-1:0] reg_mux_i,
-  input  logic                [RegAddrWidth-1:0] reg_rd_addr_a_i,
-  input  logic                [RegAddrWidth-1:0] reg_rd_addr_b_i,
-  input  logic                [RegAddrWidth-1:0] reg_wr_addr_i,
-  input  logic                                   reg_wr_en_i,
+  input  logic [ RegMuxWidth-1:0] reg_mux_i,
+  input  logic [RegAddrWidth-1:0] reg_rd_addr_a_i,
+  input  logic [RegAddrWidth-1:0] reg_rd_addr_b_i,
+  input  logic [RegAddrWidth-1:0] reg_wr_addr_i,
+  input  logic                    reg_wr_en_i,
   // Control ports for query HV
-  input  logic                                   qhv_clr_i,
-  input  logic                                   qhv_wen_i,
-  input  logic                [  QvMuxWidth-1:0] qhv_mux_i,
-  output logic                [ HVDimension-1:0] qhv_o
+  input  logic                    qhv_clr_i,
+  input  logic                    qhv_wen_i,
+  input  logic [  QvMuxWidth-1:0] qhv_mux_i,
+  output logic [ HVDimension-1:0] qhv_o
 );
 
   //---------------------------
   // Wires
   //---------------------------
-  logic [HVDimension-1:0] im_a;
-  logic [HVDimension-1:0] im_b;
-
   logic [HVDimension-1:0] reg_wr_data;
   logic [HVDimension-1:0] reg_rd_data_a;
   logic [HVDimension-1:0] reg_rd_data_b;
@@ -86,36 +74,17 @@ module hv_encoder #(
   logic [HVDimension-1:0] qhv_input;
   logic [HVDimension-1:0] qhv_output;
 
-
-  //---------------------------
-  // Item memory
-  //---------------------------
-  item_memory #(
-    .HVDimension    ( HVDimension   ),
-    .NumTotIm       ( NumTotIm      ),
-    .NumPerImBank   ( NumPerImBank  ),
-    .ImAddrWidth    ( ImAddrWidth   ),
-    .SeedWidth      ( SeedWidth     )
-  ) i_item_memory (
-    .port_a_cim_i   ( port_a_cim_i  ),
-    .cim_seed_hv_i  ( cim_seed_hv_i ),
-    .im_seed_hv_i   ( im_seed_hv_i  ),
-    .im_a_addr_i    ( im_a_addr_i   ),
-    .im_b_addr_i    ( im_b_addr_i   ),
-    .im_a_o         ( im_a          ),
-    .im_b_o         ( im_b          )
-  );
-
   //---------------------------
   // HV register file MUX
   //---------------------------
   always_comb begin
     case ( reg_mux_i )
-      2'b01:   reg_wr_data = im_a;
+      2'b01:   reg_wr_data = im_rd_a_i;
       2'b10:   reg_wr_data = bund_output_a;
       2'b11:   reg_wr_data = bund_output_b;
       default: reg_wr_data = alu_output;
     endcase
+
   end
 
   //---------------------------
@@ -150,7 +119,7 @@ module hv_encoder #(
       2'b01:   alu_input_a = reg_rd_data_a;
       2'b10:   alu_input_a = bund_output_a;
       2'b11:   alu_input_a = bund_output_b;
-      default: alu_input_a = im_a;
+      default: alu_input_a = im_rd_a_i;
     endcase
 
     // For port B
@@ -158,7 +127,7 @@ module hv_encoder #(
       2'b01:   alu_input_b = reg_rd_data_b;
       2'b10:   alu_input_b = bund_output_a;
       2'b11:   alu_input_b = bund_output_b;
-      default: alu_input_b = im_b;
+      default: alu_input_b = im_rd_b_i;
     endcase
   end
 
@@ -187,7 +156,7 @@ module hv_encoder #(
     // For bundler A
     case ( bund_mux_a_i )
       2'b01:   bund_input_a = bund_output_b;
-      2'b10:   bund_input_a = im_a;
+      2'b10:   bund_input_a = im_rd_a_i;
       2'b11:   bund_input_a = reg_rd_data_a;
       default: bund_input_a = alu_output;
     endcase
@@ -195,7 +164,7 @@ module hv_encoder #(
     // For bundler B
     case ( bund_mux_b_i )
       2'b01:   bund_input_b = bund_output_a;
-      2'b10:   bund_input_b = im_a;
+      2'b10:   bund_input_b = im_rd_a_i;
       2'b11:   bund_input_b = reg_rd_data_a;
       default: bund_input_b = alu_output;
     endcase
