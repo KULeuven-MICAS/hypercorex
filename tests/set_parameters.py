@@ -22,6 +22,7 @@ CA90_MODE = "ca90_hier"
 
 # Instruction memory parameters
 INST_MEM_DEPTH = 128
+HOLD_FIFO_DEPTH = 4
 
 # Encoder parameters
 BUNDLER_COUNT_WIDTH = 8

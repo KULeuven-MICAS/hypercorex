@@ -59,112 +59,112 @@ module fifo #(
   assign counter_state_o = status_cnt_q[FifoAddrWidth:0];
 
   if (FifoDepth == 0) begin : gen_pass_through
-      assign empty_o = ~push_i;
-      assign full_o  = ~pop_i;
+    assign empty_o = ~push_i;
+    assign full_o  = ~pop_i;
   end else begin : gen_fifo
-      assign full_o  = (status_cnt_q == FifoDepth);
-      assign empty_o = (status_cnt_q == 0) & ~(FallThrough & push_i);
+    assign full_o  = (status_cnt_q == FifoDepth);
+    assign empty_o = (status_cnt_q == 0) & ~(FallThrough & push_i);
   end
 
   // Read and write combinational logic
   always_comb begin : read_write_comb
 
-      // Default assignments
-      read_pointer_n  = read_pointer_q;
-      write_pointer_n = write_pointer_q;
-      status_cnt_n    = status_cnt_q;
-      data_o          = (FifoDepth == 0) ? data_i : mem_q[read_pointer_q];
-      mem_n           = mem_q;
+    // Default assignments
+    read_pointer_n  = read_pointer_q;
+    write_pointer_n = write_pointer_q;
+    status_cnt_n    = status_cnt_q;
+    data_o          = (FifoDepth == 0) ? data_i : mem_q[read_pointer_q];
+    mem_n           = mem_q;
 
-      //---------------------------
-      // Push logic
-      //---------------------------
+    //---------------------------
+    // Push logic
+    //---------------------------
 
-      // Can push as long as queue is not full
-      // Handling incoming data must come
-      // from the outside and not in here
-      if (push_i && ~full_o) begin
+    // Can push as long as queue is not full
+    // Handling incoming data must come
+    // from the outside and not in here
+    if (push_i && ~full_o) begin
 
-          // Push the data onto the queue
-          mem_n[write_pointer_q] = data_i;
+      // Push the data onto the queue
+      mem_n[write_pointer_q] = data_i;
 
-          // Increment the write counter
-          // this is dead code when FifoDepth is a power of two
-          if (write_pointer_q == FifoDepth-1)
-              write_pointer_n = '0;
-          else
-              write_pointer_n = write_pointer_q + 1;
+      // Increment the write counter
+      // this is dead code when FifoDepth is a power of two
+      if (write_pointer_q == FifoDepth-1)
+          write_pointer_n = '0;
+      else
+          write_pointer_n = write_pointer_q + 1;
 
-          // Increment the overall counter
-          status_cnt_n= status_cnt_q + 1;
+      // Increment the overall counter
+      status_cnt_n= status_cnt_q + 1;
+    end
+
+    //---------------------------
+    // Pop logic
+    //---------------------------
+
+    // Can pop as long as queue is not empty
+    // Handling incoming data must come
+    // from the outside and not in here
+    if (pop_i && ~empty_o) begin
+
+      // Read from the queue is a default assignment
+      // but increment the read pointer when success
+      if (read_pointer_n == FifoDepth-1)
+          read_pointer_n = '0;
+      else
+          read_pointer_n = read_pointer_q + 1;
+
+      // Decerement the overall counter
+      status_cnt_n   = status_cnt_q - 1;
+    end
+
+    // Keep the count pointer for simultaneous push and pop
+    // and as long as it's neither full nor empty
+    if (push_i && pop_i &&  ~full_o && ~empty_o)
+      status_cnt_n   = status_cnt_q;
+
+    // FIFO is in pass through mode -> do not change the pointers
+    if (FallThrough && (status_cnt_q == 0) && push_i) begin
+      data_o = data_i;
+      if (pop_i) begin
+          status_cnt_n = status_cnt_q;
+          read_pointer_n = read_pointer_q;
+          write_pointer_n = write_pointer_q;
       end
-
-      //---------------------------
-      // Pop logic
-      //---------------------------
-
-      // Can pop as long as queue is not empty
-      // Handling incoming data must come
-      // from the outside and not in here
-      if (pop_i && ~empty_o) begin
-
-          // Read from the queue is a default assignment
-          // but increment the read pointer when success
-          if (read_pointer_n == FifoDepth-1)
-              read_pointer_n = '0;
-          else
-              read_pointer_n = read_pointer_q + 1;
-
-          // Decerement the overall counter
-          status_cnt_n   = status_cnt_q - 1;
-      end
-
-      // Keep the count pointer for simultaneous push and pop
-      // and as long as it's neither full nor empty
-      if (push_i && pop_i &&  ~full_o && ~empty_o)
-          status_cnt_n   = status_cnt_q;
-
-      // FIFO is in pass through mode -> do not change the pointers
-      if (FallThrough && (status_cnt_q == 0) && push_i) begin
-          data_o = data_i;
-          if (pop_i) begin
-              status_cnt_n = status_cnt_q;
-              read_pointer_n = read_pointer_q;
-              write_pointer_n = write_pointer_q;
-          end
-      end
+    end
   end
 
   //---------------------------
   // State updates
   //---------------------------
   always_ff @(posedge clk_i or negedge rst_ni) begin
-      if(~rst_ni) begin
-          read_pointer_q  <= '0;
-          write_pointer_q <= '0;
-          status_cnt_q    <= '0;
+    if(~rst_ni) begin
+      read_pointer_q  <= '0;
+      write_pointer_q <= '0;
+      status_cnt_q    <= '0;
+    end else begin
+      if (clr_i) begin
+        read_pointer_q  <= '0;
+        write_pointer_q <= '0;
+        status_cnt_q    <= '0;
       end else begin
-          if (clr_i) begin
-              read_pointer_q  <= '0;
-              write_pointer_q <= '0;
-              status_cnt_q    <= '0;
-            end else begin
-              read_pointer_q  <= read_pointer_n;
-              write_pointer_q <= write_pointer_n;
-              status_cnt_q    <= status_cnt_n;
-          end
+        read_pointer_q  <= read_pointer_n;
+        write_pointer_q <= write_pointer_n;
+        status_cnt_q    <= status_cnt_n;
       end
+    end
   end
 
   //---------------------------
   // Actual fifo updates
   //---------------------------
   always_ff @(posedge clk_i or negedge rst_ni) begin
-      if(~rst_ni) begin
-          mem_q <= '0;
-      end else begin
-          mem_q <= mem_n;
-      end
+    if(~rst_ni) begin
+      mem_q <= '0;
+    end else begin
+      mem_q <= mem_n;
+    end
   end
 
   //---------------------------
