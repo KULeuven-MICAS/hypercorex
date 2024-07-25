@@ -159,9 +159,9 @@ def hv_alu_out(hv_a, hv_b, shift_amt, hv_dim, op):
     mask_val = 2**hv_dim - 1
 
     if op == 1:
-        result = hv_a & hv_b
+        result = hv_a
     elif op == 2:
-        result = hv_a | hv_b
+        result = hv_b
     elif op == 3:
         # Workaround because github CI fails
         # At shifting more than 64 bits

@@ -37,14 +37,14 @@ module hv_alu_pe #(
   // Logic table:
   // op_i | operation         |
   // 0    | XOR               |
-  // 1    | AND               |
-  // 2    | OR                |
+  // 1    | A_i pass through  |
+  // 2    | B_i pass through  |
   // 3    | Circular shifts   |
   //---------------------------
   always_comb begin : alu_logic
     case (op_i)
-      2'b01:   C_o = A_i & B_i;
-      2'b10:   C_o = A_i | B_i;
+      2'b01:   C_o = A_i;
+      2'b10:   C_o = B_i;
       2'b11:   C_o = circular_shift_res;
       default: C_o = A_i ^ B_i;
     endcase
