@@ -59,7 +59,7 @@ def list2str(input_list):
 # both the control code for sanity checking
 # and the equiavalent instruction code
 # Both are in lists for clarity
-def decode_inst(asm_line, sanity_check=False, convert_str=False):
+def decode_inst(asm_line, sanity_check=False, convert_str=False, print_ctrl=False):
     # asm_line always expects that
     # the first argument is the instruction
     # the succeeding are other arguments
@@ -142,8 +142,6 @@ def decode_inst(asm_line, sanity_check=False, convert_str=False):
         reg_wr_en = [1]
         alu_ops = [0, 0]
         reg_wr_addr = num2list(asm_line[1], 2)
-        reg_rd_addr_a = num2list(asm_line[2], 2)
-        reg_rd_addr_b = num2list(asm_line[3], 2)
     elif asm_inst == "ima_perm_reg":
         inst_type = num2list(0, TYPE_LEN)
         func_type = num2list(4, FUNC_LEN)
@@ -182,14 +180,14 @@ def decode_inst(asm_line, sanity_check=False, convert_str=False):
         inst_type = num2list(2, TYPE_LEN)
         func_type = num2list(1, FUNC_LEN)
         im_a_pop = [1]
-        bund_mux_a = [0, 1]
-        bund_valid_a = [0]
+        bund_mux_a = [1, 0]
+        bund_valid_a = [1]
     elif asm_inst == "ima_bundb":
         inst_type = num2list(2, TYPE_LEN)
         func_type = num2list(2, FUNC_LEN)
         im_a_pop = [1]
-        bund_mux_b = [0, 1]
-        bund_valid_b = [0]
+        bund_mux_b = [1, 0]
+        bund_valid_b = [1]
     elif asm_inst == "imab_bind_bunda":
         inst_type = num2list(2, TYPE_LEN)
         func_type = num2list(3, FUNC_LEN)
@@ -197,7 +195,7 @@ def decode_inst(asm_line, sanity_check=False, convert_str=False):
         im_b_pop = [1]
         alu_mux_a = [0, 0]
         alu_mux_b = [0, 0]
-        bund_mux_a = [0, 1]
+        bund_mux_a = [0, 0]
         bund_valid_a = [1]
         alu_ops = [0, 0]
     elif asm_inst == "imab_bind_bundb":
@@ -207,7 +205,7 @@ def decode_inst(asm_line, sanity_check=False, convert_str=False):
         im_b_pop = [1]
         alu_mux_a = [0, 0]
         alu_mux_b = [0, 0]
-        bund_mux_b = [0, 1]
+        bund_mux_b = [0, 0]
         bund_valid_b = [1]
         alu_ops = [0, 0]
     elif asm_inst == "ima_perm_bunda":
@@ -377,7 +375,7 @@ def decode_inst(asm_line, sanity_check=False, convert_str=False):
         bund_clr_a = [1]
     elif asm_inst == "clr_bundb":
         inst_type = num2list(5, TYPE_LEN)
-        func_type = num2list(3, FUNC_LEN)
+        func_type = num2list(4, FUNC_LEN)
         bund_clr_b = [1]
     # QHV
     elif asm_inst == "mv_reg_qhv":
@@ -390,9 +388,14 @@ def decode_inst(asm_line, sanity_check=False, convert_str=False):
         func_type = num2list(2, FUNC_LEN)
         qhv_mux = [1, 0]
         qhv_wen = [1]
-    elif asm_inst == "clr_qhv":
+    elif asm_inst == "mv_bundb_qhv":
         inst_type = num2list(6, TYPE_LEN)
         func_type = num2list(3, FUNC_LEN)
+        qhv_mux = [1, 1]
+        qhv_wen = [1]
+    elif asm_inst == "clr_qhv":
+        inst_type = num2list(6, TYPE_LEN)
+        func_type = num2list(4, FUNC_LEN)
         qhv_clr = [1]
     elif asm_inst == "am_search":
         inst_type = num2list(7, TYPE_LEN)
@@ -400,7 +403,7 @@ def decode_inst(asm_line, sanity_check=False, convert_str=False):
         am_search = [1]
     elif asm_inst == "am_load":
         inst_type = num2list(7, TYPE_LEN)
-        func_type = num2list(1, FUNC_LEN)
+        func_type = num2list(2, FUNC_LEN)
         am_load = [1]
     else:
         raise ValueError(f"Instruction incorrect {asm_line}")
@@ -409,11 +412,36 @@ def decode_inst(asm_line, sanity_check=False, convert_str=False):
     inst_code = (
         func_type
         + inst_type
-        + reg_rd_addr_a
         + alu_shift_amt
-        + reg_rd_addr_b
         + reg_wr_addr
+        + reg_rd_addr_a
+        + reg_rd_addr_b
     )
+
+    # For debug purposes
+    if print_ctrl:
+        print(f"im_a_pop: {im_a_pop}")
+        print(f"im_b_pop: {im_b_pop}")
+        print(f"alu_mux_a: {alu_mux_a}")
+        print(f"alu_mux_b: {alu_mux_b}")
+        print(f"alu_ops: {alu_ops}")
+        print(f"alu_shift_amt: {alu_shift_amt}")
+        print(f"bund_mux_a: {bund_mux_a}")
+        print(f"bund_mux_b: {bund_mux_b}")
+        print(f"bund_valid_a: {bund_valid_a}")
+        print(f"bund_valid_b: {bund_valid_b}")
+        print(f"bund_clr_a: {bund_clr_a}")
+        print(f"bund_clr_b: {bund_clr_b}")
+        print(f"reg_mux: {reg_mux}")
+        print(f"reg_rd_addr_a: {reg_rd_addr_a}")
+        print(f"reg_rd_addr_b: {reg_rd_addr_b}")
+        print(f"reg_wr_addr: {reg_wr_addr}")
+        print(f"reg_wr_en: {reg_wr_en}")
+        print(f"qhv_clr: {qhv_clr}")
+        print(f"qhv_wen: {qhv_wen}")
+        print(f"qhv_mux: {qhv_mux}")
+        print(f"am_search: {am_search}")
+        print(f"am_load: {am_load}")
 
     # Control code
     control_code = (
