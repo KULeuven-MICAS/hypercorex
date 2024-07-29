@@ -17,3 +17,13 @@ jobs:
         run: |
           pytest
 
+  sw-test:
+    name: Test Compiler for ASM
+    runs-on: ubuntu-22.04
+    container:
+      image: ghcr.io/kuleuven-micas/hypercorex:main
+    steps:
+      - uses: actions/checkout@v3
+      - name: Running Compiler
+        run: |
+          python3 sw/hypercorex_compiler.py
