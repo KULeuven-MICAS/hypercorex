@@ -11,13 +11,14 @@ import set_parameters
 import cocotb
 from cocotb.clock import Clock
 import pytest
+import random
 
 from util import setup_and_run, gen_rand_bits, clock_and_time, check_result
 
 
 def clear_inputs_no_clock(dut):
+    dut.start_i.value = 0
     dut.clr_i.value = 0
-    dut.en_i.value = 0
     dut.stall_i.value = 0
     dut.inst_wr_addr_i.value = 0
     dut.inst_wr_data_i.value = 0
@@ -56,6 +57,20 @@ async def inst_control_dut(dut):
     clear_inputs_no_clock(dut)
     dut.rst_ni.value = 0
 
+    # Initialize CSR related values
+    dut.start_i.value = 0
+
+    dut.inst_loop_mode_i.value = 0
+    dut.inst_loop_jump_addr1_i.value = 0
+    dut.inst_loop_jump_addr2_i.value = 0
+    dut.inst_loop_jump_addr3_i.value = 0
+    dut.inst_loop_end_addr1_i.value = 0
+    dut.inst_loop_end_addr2_i.value = 0
+    dut.inst_loop_end_addr3_i.value = 0
+    dut.inst_loop_count_addr1_i.value = 0
+    dut.inst_loop_count_addr2_i.value = 0
+    dut.inst_loop_count_addr3_i.value = 0
+
     # Initialize clock always
     clock = Clock(dut.clk_i, 10, units="ns")
     cocotb.start_soon(clock.start(start_high=False))
@@ -77,6 +92,17 @@ async def inst_control_dut(dut):
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("     Check values with program counter      ")
     cocotb.log.info(" ------------------------------------------ ")
+
+    # Need to configure loop by setting loop mode to 1
+    # For the first temporal loop only
+    # Set jump address to 0 to set where it goes after
+    # Set value to be all the instruction memories
+    # Set the count to 1 to set the end
+    dut.inst_loop_mode_i.value = 1
+    dut.inst_loop_jump_addr1_i.value = 0
+    dut.inst_loop_end_addr1_i.value = set_parameters.INST_MEM_DEPTH - 1
+    dut.inst_loop_count_addr1_i.value = 1
+
     # Write the data to instruction memory
     for i in range(set_parameters.INST_MEM_DEPTH):
         await write_inst_mem(dut, i, golden_data_list[i])
@@ -84,7 +110,11 @@ async def inst_control_dut(dut):
     # Check result immediatley through program counter
     # first activate or enable the program counter
     # then for every clock cycle check the output data
-    dut.en_i.value = 1
+    dut.start_i.value = 1
+
+    await clock_and_time(dut.clk_i)
+
+    dut.start_i.value = 0
 
     for i in range(set_parameters.INST_MEM_DEPTH):
         # Extract the 1st data that is readily available
@@ -129,7 +159,9 @@ async def inst_control_dut(dut):
     clear_inputs_no_clock(dut)
 
     # Enable again
-    dut.en_i.value = 1
+    dut.start_i.value = 1
+    await clock_and_time(dut.clk_i)
+    clear_inputs_no_clock(dut)
 
     # Check only the output and results need to be 0
     for i in range(set_parameters.INST_MEM_DEPTH):
@@ -138,6 +170,112 @@ async def inst_control_dut(dut):
 
         check_result(inst_data_val, 0)
 
+        await clock_and_time(dut.clk_i)
+
+    cocotb.log.info(" ------------------------------------------ ")
+    cocotb.log.info("             Test loop control              ")
+    cocotb.log.info(" ------------------------------------------ ")
+
+    # Clear inputs
+    clear_inputs_no_clock(dut)
+
+    # Write the data to instruction memory
+    for i in range(set_parameters.INST_MEM_DEPTH):
+        await write_inst_mem(dut, i, golden_data_list[i])
+
+    # Clear first
+    clear_inputs_no_clock(dut)
+
+    # Chunk size chosen
+    # arbitrarily for test purposes only
+    chunk_size = 10
+    loop_size = 3
+
+    # Loop values
+    loop1_end_addr = random.randint(5, 5 + chunk_size)
+    loop2_end_addr = random.randint(loop1_end_addr + 1, loop1_end_addr + chunk_size)
+    loop3_end_addr = random.randint(loop2_end_addr + 1, loop2_end_addr + chunk_size)
+
+    loop1_count = random.randint(2, 2 + loop_size)
+    loop2_count = random.randint(loop1_count + 1, loop1_count + loop_size)
+    loop3_count = random.randint(loop2_count + 1, loop2_count + loop_size)
+
+    cocotb.log.info(" ------------------------------------------ ")
+    cocotb.log.info(
+        f"loop1_end: {loop1_end_addr}; \
+        loop2_end: {loop2_end_addr}; \
+        loop3_end: {loop3_end_addr};"
+    )
+    cocotb.log.info(
+        f"loop1_count: {loop1_count}; \
+        loop2_count: {loop2_count}; \
+        loop3_count: {loop3_count};"
+    )
+    cocotb.log.info(" ------------------------------------------ ")
+
+    # Start the system
+    dut.start_i.value = 1
+
+    dut.inst_loop_mode_i.value = 3
+    dut.inst_loop_jump_addr1_i.value = 0
+    dut.inst_loop_jump_addr2_i.value = 0
+    dut.inst_loop_jump_addr3_i.value = 0
+    dut.inst_loop_end_addr1_i.value = loop1_end_addr
+    dut.inst_loop_end_addr2_i.value = loop2_end_addr
+    dut.inst_loop_end_addr3_i.value = loop3_end_addr
+    dut.inst_loop_count_addr1_i.value = loop1_count
+    dut.inst_loop_count_addr2_i.value = loop2_count
+    dut.inst_loop_count_addr3_i.value = loop3_count
+
+    await clock_and_time(dut.clk_i)
+
+    # Clear
+    dut.start_i.value = 0
+
+    # Check for PC if it's correct
+    # But consider the 3D loop
+
+    # Initialize the golden workgin address
+    current_addr = 0
+
+    for i in range(loop3_count):
+        for j in range(loop2_count):
+            for k in range(loop1_count):
+                current_addr = 0
+                while current_addr <= loop1_end_addr:
+                    # Extract the 1st data that is readily available
+                    pc_val = dut.inst_pc_o.value.integer
+                    inst_data_val = dut.inst_rd_o.value.integer
+
+                    check_result(pc_val, current_addr)
+                    check_result(inst_data_val, golden_data_list[current_addr])
+
+                    await clock_and_time(dut.clk_i)
+                    current_addr += 1
+
+            while current_addr <= loop2_end_addr:
+                # Extract the 1st data that is readily available
+                pc_val = dut.inst_pc_o.value.integer
+                inst_data_val = dut.inst_rd_o.value.integer
+
+                check_result(pc_val, current_addr)
+                check_result(inst_data_val, golden_data_list[current_addr])
+
+                await clock_and_time(dut.clk_i)
+                current_addr += 1
+
+        while current_addr <= loop3_end_addr:
+            # Extract the 1st data that is readily available
+            pc_val = dut.inst_pc_o.value.integer
+            inst_data_val = dut.inst_rd_o.value.integer
+
+            check_result(pc_val, current_addr)
+            check_result(inst_data_val, golden_data_list[current_addr])
+
+            await clock_and_time(dut.clk_i)
+            current_addr += 1
+
+    for i in range(10):
         await clock_and_time(dut.clk_i)
 
 
@@ -154,6 +292,7 @@ async def inst_control_dut(dut):
 def test_inst_control(simulator, parameters, waves):
     verilog_sources = [
         "/rtl/common/reg_file_1w1r.sv",
+        "/rtl/inst_memory/inst_loop_control.sv",
         "/rtl/inst_memory/inst_control.sv",
     ]
 
