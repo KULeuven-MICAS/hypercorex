@@ -473,8 +473,8 @@ def compile_hypercorex_asm(filepath):
 
 if __name__ == "__main__":
     current_directory = os.path.dirname(os.path.abspath(__file__))
-    print(current_directory)
-
     filepath = current_directory + "/asm/train_char_recog.asm"
 
     inst_code_list, control_code_list = compile_hypercorex_asm(filepath)
+
+    print("Done compiling ASM files!")
