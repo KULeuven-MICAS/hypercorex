@@ -23,9 +23,13 @@ module inst_control # (
   input  logic                    clr_i,
   input  logic                    start_i,
   input  logic                    stall_i,
+  // Instruction update signals
+  input  logic                    inst_pc_reset_i,
+  input  logic                    inst_wr_mode_i,
   input  logic [RegAddrWidth-1:0] inst_wr_addr_i,
+  input  logic                    inst_wr_addr_en_i,
   input  logic [RegAddrWidth-1:0] inst_wr_data_i,
-  input  logic                    inst_wr_en_i,
+  input  logic                    inst_wr_data_en_i,
   output logic [RegAddrWidth-1:0] inst_pc_o,
   output logic [RegAddrWidth-1:0] inst_rd_o,
   // CSR control for loop control
@@ -126,15 +130,36 @@ module inst_control # (
     if (!rst_ni) begin
       program_counter <= {InstMemAddrWidth{1'b0}};
     end else begin
-      if(clr_i) begin
+
+      // General clear
+      if(clr_i || inst_pc_reset_i) begin
         program_counter <= {InstMemAddrWidth{1'b0}};
+
+      // Instruction write mode
+      end else if (inst_wr_mode_i) begin
+        // Over-write program counter when we write
+        // a new write address
+        if (inst_wr_addr_en_i) begin
+          // Make sure to slice to fit the program counter properly
+          program_counter <= inst_wr_addr_i[InstMemAddrWidth-1:0];
+        end else if (inst_wr_data_en_i) begin
+          // Auto-increment program counter when we write new data
+          program_counter <= program_counter + 1;
+        end else begin
+          program_counter <= program_counter;
+        end
+
+      // Normal operation mode
       end else if (enable_core && !stall_i && !dbg_en_i) begin
+
         // Allow instruction address jumping
         if (inst_jump) begin
           program_counter <= inst_jump_addr;
         end else begin
           program_counter <= program_counter + 1;
         end
+
+      // Default stall
       end else begin
         program_counter <= program_counter;
       end
@@ -148,20 +173,20 @@ module inst_control # (
   //---------------------------
 
   reg_file_1w1r #(
-    .DataWidth  ( RegAddrWidth                         ),
-    .NumRegs    ( InstMemDepth                         )
+    .DataWidth  ( RegAddrWidth      ),
+    .NumRegs    ( InstMemDepth      )
   ) i_inst_mem (
     // Clocks and resets
-    .clk_i      ( clk_i                                ),
-    .rst_ni     ( rst_ni                               ),
+    .clk_i      ( clk_i             ),
+    .rst_ni     ( rst_ni            ),
     // Write port
-    .clr_i      ( clr_i                                ),
-    .wr_addr_i  ( inst_wr_addr_i[InstMemAddrWidth-1:0] ),
-    .wr_data_i  ( inst_wr_data_i                       ),
-    .wr_en_i    ( inst_wr_en_i                         ),
+    .clr_i      ( clr_i             ),
+    .wr_addr_i  ( program_counter   ),
+    .wr_data_i  ( inst_wr_data_i    ),
+    .wr_en_i    ( inst_wr_data_en_i ),
     // Read port A
-    .rd_addr_i  ( inst_rd_addr                         ),
-    .rd_data_o  ( inst_rd_o                            )
+    .rd_addr_i  ( inst_rd_addr      ),
+    .rd_data_o  ( inst_rd_o         )
   );
 
 endmodule
