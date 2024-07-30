@@ -16,28 +16,42 @@ import random
 from util import setup_and_run, gen_rand_bits, clock_and_time, check_result
 
 
+# Default clearing of values
 def clear_inputs_no_clock(dut):
     dut.start_i.value = 0
     dut.clr_i.value = 0
     dut.stall_i.value = 0
+    dut.inst_pc_reset_i.value = 0
     dut.inst_wr_addr_i.value = 0
+    dut.inst_wr_addr_en_i.value = 0
     dut.inst_wr_data_i.value = 0
-    dut.inst_wr_en_i.value = 0
+    dut.inst_wr_data_en_i.value = 0
     dut.dbg_en_i.value = 0
     dut.dbg_addr_i.value = 0
     return
 
 
-async def write_inst_mem(dut, inst_addr, inst_data):
+# For over-writing program counter first
+async def write_inst_addr(dut, inst_addr):
     clear_inputs_no_clock(dut)
     dut.inst_wr_addr_i.value = inst_addr
-    dut.inst_wr_data_i.value = inst_data
-    dut.inst_wr_en_i.value = 1
+    dut.inst_wr_addr_en_i.value = 1
     await clock_and_time(dut.clk_i)
     clear_inputs_no_clock(dut)
     return
 
 
+# For over-writing instruction memory
+async def write_inst_data(dut, inst_data):
+    clear_inputs_no_clock(dut)
+    dut.inst_wr_data_i.value = inst_data
+    dut.inst_wr_data_en_i.value = 1
+    await clock_and_time(dut.clk_i)
+    clear_inputs_no_clock(dut)
+    return
+
+
+# Activate debug mode and read directly
 async def read_dbg(dut, addr):
     clear_inputs_no_clock(dut)
     dut.dbg_en_i.value = 1
@@ -60,6 +74,10 @@ async def inst_control_dut(dut):
     # Initialize CSR related values
     dut.start_i.value = 0
 
+    # For instruction writing
+    dut.inst_wr_mode_i.value = 0
+
+    # For loop writing
     dut.inst_loop_mode_i.value = 0
     dut.inst_loop_jump_addr1_i.value = 0
     dut.inst_loop_jump_addr2_i.value = 0
@@ -93,6 +111,33 @@ async def inst_control_dut(dut):
     cocotb.log.info("     Check values with program counter      ")
     cocotb.log.info(" ------------------------------------------ ")
 
+    # Write the data to instruction memory
+    # First enable the write mode
+    dut.inst_wr_mode_i.value = 1
+
+    # Propagate the mode
+    await clock_and_time(dut.clk_i)
+
+    # Over-write program counter at beginning
+    await write_inst_addr(dut, 0)
+
+    # Write data but check if PC increments properly
+    for i in range(set_parameters.INST_MEM_DEPTH):
+        actual_pc_val = dut.inst_pc_o.value.integer
+        check_result(actual_pc_val, i)
+
+        await write_inst_data(dut, golden_data_list[i])
+
+    # Disable write mode and soft reset
+    dut.inst_wr_mode_i.value = 0
+    dut.inst_pc_reset_i.value = 1
+
+    # Propagate logic in time
+    await clock_and_time(dut.clk_i)
+
+    # Clear all signals
+    clear_inputs_no_clock(dut)
+
     # Need to configure loop by setting loop mode to 1
     # For the first temporal loop only
     # Set jump address to 0 to set where it goes after
@@ -102,10 +147,6 @@ async def inst_control_dut(dut):
     dut.inst_loop_jump_addr1_i.value = 0
     dut.inst_loop_end_addr1_i.value = set_parameters.INST_MEM_DEPTH - 1
     dut.inst_loop_count_addr1_i.value = 1
-
-    # Write the data to instruction memory
-    for i in range(set_parameters.INST_MEM_DEPTH):
-        await write_inst_mem(dut, i, golden_data_list[i])
 
     # Check result immediatley through program counter
     # first activate or enable the program counter
@@ -179,11 +220,30 @@ async def inst_control_dut(dut):
     # Clear inputs
     clear_inputs_no_clock(dut)
 
-    # Write the data to instruction memory
-    for i in range(set_parameters.INST_MEM_DEPTH):
-        await write_inst_mem(dut, i, golden_data_list[i])
+    # Write data again into memory
+    dut.inst_wr_mode_i.value = 1
 
-    # Clear first
+    # Propagate the mode
+    await clock_and_time(dut.clk_i)
+
+    # Over-write program counter at beginning
+    await write_inst_addr(dut, 0)
+
+    # Write data but check if PC increments properly
+    for i in range(set_parameters.INST_MEM_DEPTH):
+        actual_pc_val = dut.inst_pc_o.value.integer
+        check_result(actual_pc_val, i)
+
+        await write_inst_data(dut, golden_data_list[i])
+
+    # Disable write mode and soft reset
+    dut.inst_wr_mode_i.value = 0
+    dut.inst_pc_reset_i.value = 1
+
+    # Propagate logic in time
+    await clock_and_time(dut.clk_i)
+
+    # Clear all signals
     clear_inputs_no_clock(dut)
 
     # Chunk size chosen
