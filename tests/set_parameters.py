@@ -6,6 +6,8 @@
   This contains the parameters used across all tests.
 """
 
+import math
+
 # Test Parameters
 TEST_RUNS = 20
 NUM_CLASSES = 10
@@ -23,6 +25,7 @@ CA90_MODE = "ca90_hier"
 # Instruction memory parameters
 INST_MEM_WIDTH = REG_FILE_WIDTH
 INST_MEM_DEPTH = 128
+INST_MEM_ADDR_WIDTH = int(math.log2(INST_MEM_DEPTH))
 HOLD_FIFO_DEPTH = 4
 
 # Encoder parameters
@@ -38,3 +41,32 @@ REG_NUM = 4
 # because the shifts is from 0 to some dimension
 # here, we restrict shift amount to be half of the total dimension
 MAX_SHIFT_AMT = 4
+
+# ---------------------------
+# Register addressing
+# ---------------------------
+
+# CORE Settings
+CORE_SET_REG_ADDR = 0
+
+# AM Settings
+AM_NUM_PREDICT_REG_ADDR = 1
+AM_PREDICT_REG_ADDR = 2
+
+# Instruction controls
+INST_CTRL_REG_ADDR = 3
+INST_WRITE_ADDR_REG_ADDR = 4
+INST_WRITE_DATA_REG_ADDR = 5
+INST_RDDBG_ADDR_REG_ADDR = 6
+INST_PC_ADDR_REG_ADDR = 7
+INST_INST_AT_ADDR_ADDR_REG_ADDR = 8
+
+# Instruction loop control
+INST_LOOP_CTRL_REG_ADDR = 9
+INST_LOOP_JUMP_ADDR_REG_ADDR = 10
+INST_LOOP_END_ADDR_REG_ADDR = 11
+INST_LOOP_COUNT_REG_ADDR = 12
+
+# IM seeds
+CIM_SEED_REG_ADDR = 13
+IM_BASE_SEED_REG_ADDR = 14
