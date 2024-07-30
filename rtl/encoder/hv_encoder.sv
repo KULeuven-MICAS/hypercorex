@@ -25,8 +25,8 @@ module hv_encoder #(
   parameter int unsigned RegAddrWidth   = $clog2(RegNum        )
 )(
   // Clocks and reset
-  input  logic clk_i,
-  input  logic rst_ni,
+  input  logic                    clk_i,
+  input  logic                    rst_ni,
   // Item memory inputs
   input  logic [ HVDimension-1:0] im_rd_a_i,
   input  logic [ HVDimension-1:0] im_rd_b_i,
@@ -80,15 +80,21 @@ module hv_encoder #(
   //---------------------------
   // HV register file MUX
   //---------------------------
-  always_comb begin
-    case ( reg_mux_i )
-      2'b01:   reg_wr_data = im_rd_a_i;
-      2'b10:   reg_wr_data = bund_output_a;
-      2'b11:   reg_wr_data = bund_output_b;
-      default: reg_wr_data = alu_output;
-    endcase
+  logic [3:0][HVDimension-1:0] reg_mux_in;
 
-  end
+  assign reg_mux_in[0] = alu_output;
+  assign reg_mux_in[1] = im_rd_a_i;
+  assign reg_mux_in[2] = bund_output_a;
+  assign reg_mux_in[3] = bund_output_b;
+
+  mux #(
+    .DataWidth  ( HVDimension ),
+    .NumSel     ( 4           )
+  ) i_reg_mux (
+    .sel_i      ( reg_mux_i   ),
+    .signal_i   ( reg_mux_in  ),
+    .signal_o   ( reg_wr_data )
+  );
 
   //---------------------------
   // HV register file
@@ -116,23 +122,37 @@ module hv_encoder #(
   //---------------------------
   // MUX-ing for ALU inputs
   //---------------------------
-  always_comb begin
-    // For port A
-    case ( alu_mux_a_i )
-      2'b01:   alu_input_a = reg_rd_data_a;
-      2'b10:   alu_input_a = bund_output_a;
-      2'b11:   alu_input_a = bund_output_b;
-      default: alu_input_a = im_rd_a_i;
-    endcase
+  logic [3:0][HVDimension-1:0] alu_mux_a_in;
 
-    // For port B
-    case ( alu_mux_b_i )
-      2'b01:   alu_input_b = reg_rd_data_b;
-      2'b10:   alu_input_b = bund_output_a;
-      2'b11:   alu_input_b = bund_output_b;
-      default: alu_input_b = im_rd_b_i;
-    endcase
-  end
+  assign alu_mux_a_in[0] = im_rd_a_i;
+  assign alu_mux_a_in[1] = reg_rd_data_a;
+  assign alu_mux_a_in[2] = bund_output_a;
+  assign alu_mux_a_in[3] = bund_output_b;
+
+  mux #(
+    .DataWidth  ( HVDimension  ),
+    .NumSel     ( 4            )
+  ) i_alu_mux_a (
+    .sel_i      ( alu_mux_a_i  ),
+    .signal_i   ( alu_mux_a_in ),
+    .signal_o   ( alu_input_a  )
+  );
+
+  logic [3:0][HVDimension-1:0] alu_mux_b_in;
+
+  assign alu_mux_b_in[0] = im_rd_b_i;
+  assign alu_mux_b_in[1] = reg_rd_data_b;
+  assign alu_mux_b_in[2] = bund_output_a;
+  assign alu_mux_b_in[3] = bund_output_b;
+
+  mux #(
+    .DataWidth  ( HVDimension  ),
+    .NumSel     ( 4            )
+  ) i_alu_mux_b (
+    .sel_i      ( alu_mux_b_i  ),
+    .signal_i   ( alu_mux_b_in ),
+    .signal_o   ( alu_input_b  )
+  );
 
   //---------------------------
   // HV ALU unit
@@ -155,24 +175,37 @@ module hv_encoder #(
   //---------------------------
   // MUX-ing for bundling units
   //---------------------------
-  always_comb begin
-    // For bundler A
-    case ( bund_mux_a_i )
-      2'b01:   bund_input_a = bund_output_b;
-      2'b10:   bund_input_a = im_rd_a_i;
-      2'b11:   bund_input_a = reg_rd_data_a;
-      default: bund_input_a = alu_output;
-    endcase
+  logic [3:0][HVDimension-1:0] bund_mux_a_in;
 
-    // For bundler B
-    case ( bund_mux_b_i )
-      2'b01:   bund_input_b = bund_output_a;
-      2'b10:   bund_input_b = im_rd_a_i;
-      2'b11:   bund_input_b = reg_rd_data_a;
-      default: bund_input_b = alu_output;
-    endcase
-  end
+  assign bund_mux_a_in[0] = alu_output;
+  assign bund_mux_a_in[1] = bund_output_b;
+  assign bund_mux_a_in[2] = im_rd_a_i;
+  assign bund_mux_a_in[3] = reg_rd_data_a;
 
+  mux #(
+    .DataWidth  ( HVDimension   ),
+    .NumSel     ( 4             )
+  ) i_bund_mux_a (
+    .sel_i      ( bund_mux_a_i  ),
+    .signal_i   ( bund_mux_a_in ),
+    .signal_o   ( bund_input_a  )
+  );
+
+  logic [3:0][HVDimension-1:0] bund_mux_b_in;
+
+  assign bund_mux_b_in[0] = alu_output;
+  assign bund_mux_b_in[1] = bund_output_a;
+  assign bund_mux_b_in[2] = im_rd_a_i;
+  assign bund_mux_b_in[3] = reg_rd_data_a;
+
+  mux #(
+    .DataWidth  ( HVDimension   ),
+    .NumSel     ( 4             )
+  ) i_bund_mux_b (
+    .sel_i      ( bund_mux_b_i  ),
+    .signal_i   ( bund_mux_b_in ),
+    .signal_o   ( bund_input_b  )
+  );
 
   //---------------------------
   // Bundler unit A
@@ -211,15 +244,21 @@ module hv_encoder #(
   //---------------------------
   // Query HV MUX
   //---------------------------
-  always_comb begin
-    case(qhv_mux_i)
-      2'b01:   qhv_input = reg_rd_data_a;
-      2'b10:   qhv_input = bund_output_a;
-      2'b11:   qhv_input = bund_output_b;
-      default: qhv_input = alu_output;
-    endcase
+  logic [3:0][HVDimension-1:0] qhv_mux_in;
 
-  end
+  assign qhv_mux_in[0] = alu_output;
+  assign qhv_mux_in[1] = reg_rd_data_a;
+  assign qhv_mux_in[2] = bund_output_a;
+  assign qhv_mux_in[3] = bund_output_b;
+
+  mux #(
+    .DataWidth  ( HVDimension ),
+    .NumSel     ( 4           )
+  ) i_qhv_mux (
+    .sel_i      ( qhv_mux_i   ),
+    .signal_i   ( qhv_mux_in  ),
+    .signal_o   ( qhv_input   )
+  );
 
   //---------------------------
   // Query HV register
