@@ -51,7 +51,8 @@ module csr import csr_addr_pkg::*; #(
   output logic                                      csr_start_o,
   input  logic                                      csr_busy_i,
   output logic                                      csr_seq_test_mode_o,
-  output logic                                      csr_port_a_cim_o,
+  output logic                  [1:0]               csr_port_a_cim_o,
+  output logic                                      csr_port_b_cim_o,
   output logic                                      csr_clr_o,
   // AM settings
   output logic [    RegDataWidth-1:0]               csr_am_num_pred_o,
@@ -136,13 +137,14 @@ module csr import csr_addr_pkg::*; #(
     case(csr_req_addr_i)
       CORE_SET_REG_ADDR: begin
         csr_rd_data = {
-                                                                // verilog_lint: waive-start line-length
-                                      {(RegDataWidth-5){1'b0}}, // [31:5] -- Unused
-                                                          1'b0, //    [4] WO Core clear (generates pulse)
-        csr_set[CORE_SET_REG_ADDR][ CORE_SET_IMA_CIM_BIT_ADDR], //    [3] RW IMA CiM
-        csr_set[CORE_SET_REG_ADDR][CORE_SET_SEQ_TEST_BIT_ADDR], //    [2] RW Sequential test
-                                                    csr_busy_i, //    [1] RO Busy
-                                                          1'b0  //    [0] WO Start Core (generates pulse)
+                                                                 // verilog_lint: waive-start line-length
+                                       {(RegDataWidth-5){1'b0}}, // [31:5] -- Unused
+                                                           1'b0, //    [6] WO Core clear (generates pulse)
+        csr_set[CORE_SET_REG_ADDR][  CORE_SET_IMB_MUX_BIT_ADDR], //    [5] RW IMB MUX
+        csr_set[CORE_SET_REG_ADDR][4:CORE_SET_IMA_MUX_BIT_ADDR], //    [4:3] RW IMA MUX
+        csr_set[CORE_SET_REG_ADDR][ CORE_SET_SEQ_TEST_BIT_ADDR], //    [2] RW Sequential test
+                                                     csr_busy_i, //    [1] RO Busy
+                                                           1'b0  //    [0] WO Start Core (generates pulse)
                                                                 // verilog_lint: waive-stop line-length
         };
       end
@@ -243,8 +245,9 @@ module csr import csr_addr_pkg::*; #(
     csr_clr_o                  = csr_write_req &&
                                 (csr_req_addr_i == CORE_SET_REG_ADDR) &&
                                  csr_req_data_i[CORE_SET_CORE_CLR_BIT_ADDR];
-    csr_seq_test_mode_o        = csr_set[CORE_SET_REG_ADDR][CORE_SET_SEQ_TEST_BIT_ADDR];
-    csr_port_a_cim_o           = csr_set[CORE_SET_REG_ADDR][CORE_SET_IMA_CIM_BIT_ADDR];
+    csr_seq_test_mode_o        = csr_set[CORE_SET_REG_ADDR][ CORE_SET_SEQ_TEST_BIT_ADDR];
+    csr_port_b_cim_o           = csr_set[CORE_SET_REG_ADDR][  CORE_SET_IMB_MUX_BIT_ADDR];
+    csr_port_a_cim_o           = csr_set[CORE_SET_REG_ADDR][4:CORE_SET_IMA_MUX_BIT_ADDR];
 
     //---------------------------
     // AM settings
