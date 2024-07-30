@@ -202,6 +202,64 @@ async def hv_encoder_dut(dut):
         # Compare results
         check_result(actual_hv_bundle, golden_hv_bundle)
 
+    cocotb.log.info(" ------------------------------------------------ ")
+    cocotb.log.info("         IM > Reg > QHV > Check AM load           ")
+    cocotb.log.info(" ------------------------------------------------ ")
+
+    # Not that this matters anymore but let's say
+    # we go through a sample routine
+    await load_im_to_reg(dut, im_a_list[0], 0)
+    await load_reg_to_qhv(dut, 0)
+
+    # Extract answers
+    qhv_val = dut.qhv_o.value.integer
+    golden_val = im_a_list[0]
+
+    # Check if QHV is correct
+    check_result(qhv_val, golden_val)
+
+    # Assert the AM signal
+    dut.qhv_am_load_i.value = 1
+
+    # Let time propagate
+    await clock_and_time(dut.clk_i)
+
+    # Set back to 0
+    dut.qhv_am_load_i.value = 0
+
+    # Let time propagate again
+    await clock_and_time(dut.clk_i)
+
+    # Check valid signal
+    valid_val = dut.qhv_valid_o.value.integer
+    check_result(valid_val, 1)
+
+    # Do random time
+    for i in range(random.randint(2, 10)):
+        await clock_and_time(dut.clk_i)
+
+    # Check again and the valid should be high
+    valid_val = dut.qhv_valid_o.value.integer
+    check_result(valid_val, 1)
+
+    # Assert ready to pull it low
+    dut.qhv_ready_i.value = 1
+
+    # Let time propagate
+    await clock_and_time(dut.clk_i)
+
+    # Check valid signal, this time should be low
+    valid_val = dut.qhv_valid_o.value.integer
+    check_result(valid_val, 0)
+
+    # Do random time
+    for i in range(random.randint(2, 10)):
+        await clock_and_time(dut.clk_i)
+
+    # Check valid signal, should still be low
+    valid_val = dut.qhv_valid_o.value.integer
+    check_result(valid_val, 0)
+
     # Some trailing cycles only
     for i in range(10):
         await clock_and_time(dut.clk_i)
@@ -225,10 +283,14 @@ async def hv_encoder_dut(dut):
 )
 def test_hv_encoder(simulator, parameters, waves):
     verilog_sources = [
+        # Level 0
         "/rtl/common/reg_file_1w2r.sv",
         "/rtl/encoder/hv_alu_pe.sv",
         "/rtl/encoder/bundler_unit.sv",
+        "/rtl/encoder/qhv.sv",
+        # Level 1
         "/rtl/encoder/bundler_set.sv",
+        # Level 2
         "/rtl/encoder/hv_encoder.sv",
     ]
 
