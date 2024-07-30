@@ -54,10 +54,8 @@ module item_memory #(
   //---------------------------
   // Input MUX for CiM
   //---------------------------
-  assign mux_cim_addr_in = {
-    im_a_addr_i[CimSelWidth-1:0],
-    {CimSelWidth{1'b0}}
-  };
+  assign mux_cim_addr_in[0] = {CimSelWidth{1'b0}};
+  assign mux_cim_addr_in[1] = im_a_addr_i[CimSelWidth-1:0];
 
   mux #(
     .DataWidth  ( CimSelWidth       ),
@@ -83,10 +81,8 @@ module item_memory #(
   //---------------------------
   // Input MUX for iM
   //---------------------------
-  assign mux_im_addr_in = {
-    {ImSelWidth{1'b0}},
-    im_a_addr_i[ImSelWidth-1:0]
-  };
+  assign mux_im_addr_in[0] = im_a_addr_i[ImSelWidth-1:0];
+  assign mux_im_addr_in[1] = {ImSelWidth{1'b0}};
 
   mux #(
     .DataWidth  ( ImSelWidth      ),
@@ -116,10 +112,8 @@ module item_memory #(
   //---------------------------
   // Output MUX
   //---------------------------
-  assign mux_porta_out_in = {
-    cim_a,
-    im_a
-  };
+  assign mux_porta_out_in[0] = im_a;
+  assign mux_porta_out_in[1] = cim_a;
 
   mux #(
     .DataWidth  ( HVDimension      ),
