@@ -119,7 +119,7 @@ async def reg_file_1w1r_dut(dut):
         }
     ],
 )
-def test_reg_file_1w1r(simulator, parameters):
+def test_reg_file_1w1r(simulator, parameters, waves):
     verilog_sources = ["/rtl/common/reg_file_1w1r.sv"]
 
     toplevel = "reg_file_1w1r"
@@ -132,4 +132,5 @@ def test_reg_file_1w1r(simulator, parameters):
         module=module,
         simulator=simulator,
         parameters=parameters,
+        waves=waves,
     )
