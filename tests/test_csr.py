@@ -95,6 +95,9 @@ async def csr_dut(dut):
     check_result(test_val, 1)
 
     test_val = dut.csr_port_a_cim_o.value.integer
+    check_result(test_val, 3)
+
+    test_val = dut.csr_port_b_cim_o.value.integer
     check_result(test_val, 1)
 
     test_val = dut.csr_clr_o.value.integer
@@ -111,6 +114,9 @@ async def csr_dut(dut):
     check_result(test_val, 1)
 
     test_val = dut.csr_port_a_cim_o.value.integer
+    check_result(test_val, 3)
+
+    test_val = dut.csr_port_b_cim_o.value.integer
     check_result(test_val, 1)
 
     test_val = dut.csr_clr_o.value.integer
@@ -118,7 +124,7 @@ async def csr_dut(dut):
 
     # Request read and check if values are correct for return value
     csr_read_val = await read_csr(dut, set_parameters.CORE_SET_REG_ADDR)
-    golden_val = int(0x0000_000E)
+    golden_val = int(0x0000_003E)
 
     check_result(csr_read_val, golden_val)
 

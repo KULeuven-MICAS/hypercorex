@@ -18,8 +18,9 @@ package csr_addr_pkg;
   localparam logic [ 4:0] CORE_SET_START_CORE_BIT_ADDR    = 5'd0;
   localparam logic [ 4:0] CORE_SET_BUSY_BIT_ADDR          = 5'd1;
   localparam logic [ 4:0] CORE_SET_SEQ_TEST_BIT_ADDR      = 5'd2;
-  localparam logic [ 4:0] CORE_SET_IMA_CIM_BIT_ADDR       = 5'd3;
-  localparam logic [ 4:0] CORE_SET_CORE_CLR_BIT_ADDR      = 5'd4;
+  localparam logic [ 4:0] CORE_SET_IMA_MUX_BIT_ADDR       = 5'd3;
+  localparam logic [ 4:0] CORE_SET_IMB_MUX_BIT_ADDR       = 5'd5;
+  localparam logic [ 4:0] CORE_SET_CORE_CLR_BIT_ADDR      = 5'd6;
 
   // AM Settings
   localparam logic [31:0] AM_NUM_PREDICT_REG_ADDR         = 32'd1;
