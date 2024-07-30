@@ -33,13 +33,14 @@ from hdc_util import gen_square_cim, gen_ca90_im_set  # noqa: E402
 # Working functions
 def clear_inputs_no_clock(dut):
     # Initialize all other ports to 0
-    # Exclude seeds ports
-    dut.port_a_cim_i.value = 0
+    # Exclude CSR related ports
 
-    dut.im_a_addr_i.value = 0
+    dut.lowdim_a_data_i.value = 0
+    dut.highdim_a_data_i.value = 0
     dut.im_a_addr_valid_i.value = 0
 
-    dut.im_b_addr_i.value = 0
+    dut.lowdim_b_data_i.value = 0
+    dut.highdim_b_data_i.value = 0
     dut.im_b_addr_valid_i.value = 0
 
     dut.im_a_pop_i.value = 0
@@ -48,31 +49,36 @@ def clear_inputs_no_clock(dut):
     return
 
 
-async def load_im_addr(dut, addr, port="a"):
-    clear_inputs_no_clock(dut)
+async def load_im_addr(dut, data, port="a", high_dim=False, seq_exe=True):
     if port == "a":
-        dut.im_a_addr_i.value = addr
+        if high_dim:
+            dut.highdim_a_data_i.value = data
+        else:
+            dut.lowdim_a_data_i.value = data
         dut.im_a_addr_valid_i.value = 1
     else:
-        dut.im_b_addr_i.value = addr
+        if high_dim:
+            dut.highdim_b_data_i.value = data
+        else:
+            dut.lowdim_b_data_i.value = data
         dut.im_b_addr_valid_i.value = 1
-    await clock_and_time(dut.clk_i)
-    clear_inputs_no_clock(dut)
+    if seq_exe:
+        await clock_and_time(dut.clk_i)
+        clear_inputs_no_clock(dut)
     return
 
 
-async def read_and_pop(dut, port="a"):
-    clear_inputs_no_clock(dut)
+async def read_and_pop(dut, port="a", seq_exe=True):
     if port == "a":
         im_val = dut.im_a_o.value.integer
         dut.im_a_pop_i.value = 1
     else:
         im_val = dut.im_b_o.value.integer
         dut.im_b_pop_i.value = 1
-
     im_val = numbin2list(im_val, set_parameters.HV_DIM)
-    await clock_and_time(dut.clk_i)
-    clear_inputs_no_clock(dut)
+    if seq_exe:
+        await clock_and_time(dut.clk_i)
+        clear_inputs_no_clock(dut)
     return im_val
 
 
@@ -90,6 +96,8 @@ async def item_memory_top_dut(dut):
     dut.rst_ni.value = 0
     dut.cim_seed_hv_i.value = 0
     dut.im_seed_hv_i.value = 0
+    dut.port_a_cim_i.value = 0
+    dut.port_b_cim_i.value = 0
     dut.en_i.value = 0
 
     # Initialize clock always
@@ -181,6 +189,47 @@ async def item_memory_top_dut(dut):
 
     fifo_b_full = dut.im_b_addr_ready_o.value.integer
     check_result(fifo_b_full, 1)
+
+    cocotb.log.info(" ------------------------------------------ ")
+    cocotb.log.info("           In-and-Out LowDim FIFO           ")
+    cocotb.log.info(" ------------------------------------------ ")
+
+    for i in range(set_parameters.TEST_RUNS):
+        # Disable clock to allow parallel load
+        await load_im_addr(dut, i, port="a", seq_exe=False)
+        await load_im_addr(dut, i, port="b")
+
+        # Read and check value firsts
+        im_a_val = await read_and_pop(dut, port="a", seq_exe=False)
+        check_result_array(im_a_val, golden_im[i])
+
+        im_b_val = await read_and_pop(dut, port="b")
+        check_result_array(im_b_val, golden_im[i])
+
+    # For the next test
+    clear_inputs_no_clock(dut)
+    await clock_and_time(dut.clk_i)
+
+    cocotb.log.info(" ------------------------------------------ ")
+    cocotb.log.info("          In-and-Out HighDim FIFO           ")
+    cocotb.log.info(" ------------------------------------------ ")
+
+    # Set control signals to activate high-dimensional ports only
+    dut.port_a_cim_i.value = 2
+    dut.port_b_cim_i.value = 1
+
+    for i in range(set_parameters.TEST_RUNS):
+        # Disable clock to allow parallel load
+        highdim_data = hvlist2num(golden_im[i])
+        await load_im_addr(dut, highdim_data, port="a", high_dim=True, seq_exe=False)
+        await load_im_addr(dut, highdim_data, port="b", high_dim=True)
+
+        # Read and check value firsts
+        im_a_val = await read_and_pop(dut, port="a", seq_exe=False)
+        check_result_array(im_a_val, golden_im[i])
+
+        im_b_val = await read_and_pop(dut, port="b")
+        check_result_array(im_b_val, golden_im[i])
 
     # This is for waveform checking later
     for i in range(set_parameters.TEST_RUNS):
