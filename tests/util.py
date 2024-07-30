@@ -241,6 +241,8 @@ def clear_encode_inputs_no_clock(dut):
     dut.qhv_clr_i.value = 0
     dut.qhv_wen_i.value = 0
     dut.qhv_mux_i.value = 0
+    dut.qhv_am_load_i.value = 0
+    dut.qhv_ready_i.value = 0
 
     return
 

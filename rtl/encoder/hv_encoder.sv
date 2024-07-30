@@ -49,9 +49,12 @@ module hv_encoder #(
   input  logic [RegAddrWidth-1:0] reg_wr_addr_i,
   input  logic                    reg_wr_en_i,
   // Control ports for query HV
-  input  logic                    qhv_clr_i,
   input  logic                    qhv_wen_i,
+  input  logic                    qhv_clr_i,
   input  logic [  QvMuxWidth-1:0] qhv_mux_i,
+  input  logic                    qhv_am_load_i,
+  input  logic                    qhv_ready_i,
+  output logic                    qhv_valid_o,
   output logic [ HVDimension-1:0] qhv_o
 );
 
@@ -221,19 +224,20 @@ module hv_encoder #(
   //---------------------------
   // Query HV register
   //---------------------------
-
-  always_ff @ (posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      qhv_o <= {HVDimension{1'b0}};
-    end else begin
-      if (qhv_clr_i) begin
-        qhv_o <= {HVDimension{1'b0}};
-      end else if ( qhv_wen_i ) begin
-        qhv_o <= qhv_input;
-      end else begin
-        qhv_o <= qhv_o;
-      end
-    end
-  end
+  qhv #(
+    .HVDimension   ( HVDimension   )
+  ) i_qhv (
+    // Clocks and reset
+    .clk_i         ( clk_i         ),
+    .rst_ni        ( rst_ni        ),
+    // Control ports for query HV
+    .qhv_i         ( qhv_input     ),
+    .qhv_wen_i     ( qhv_wen_i     ),
+    .qhv_clr_i     ( qhv_clr_i     ),
+    .qhv_am_load_i ( qhv_am_load_i ),
+    .qhv_o         ( qhv_o         ),
+    .qhv_valid_o   ( qhv_valid_o   ),
+    .qhv_ready_i   ( qhv_ready_i   )
+  );
 
 endmodule
