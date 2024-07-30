@@ -23,16 +23,19 @@ module item_memory_top #(
   input  logic                                  clk_i,
   input  logic                                  rst_ni,
   // Configurations from CSR
-  input  logic                                  port_a_cim_i,
+  input  logic                            [1:0] port_a_cim_i,
+  input  logic                                  port_b_cim_i,
   input  logic                [  SeedWidth-1:0] cim_seed_hv_i,
   input  logic [NumImSets-1:0][  SeedWidth-1:0] im_seed_hv_i,
   // Enable signal for system enable
   input  logic                                  en_i,
   // Inputs from the fetcher side
-  input  logic                [ImAddrWidth-1:0] im_a_addr_i,
+  input  logic                [ImAddrWidth-1:0] lowdim_a_data_i,
+  input  logic                [HVDimension-1:0] highdim_a_data_i,
   input  logic                                  im_a_addr_valid_i,
   output logic                                  im_a_addr_ready_o,
-  input  logic                [ImAddrWidth-1:0] im_b_addr_i,
+  input  logic                [ImAddrWidth-1:0] lowdim_b_data_i,
+  input  logic                [HVDimension-1:0] highdim_b_data_i,
   input  logic                                  im_b_addr_valid_i,
   output logic                                  im_b_addr_ready_o,
   // Outputs towards the encoder
@@ -60,6 +63,7 @@ module item_memory_top #(
   logic fifo_push_a, fifo_push_b;
   logic fifo_pop_a, fifo_pop_b;
 
+  logic [HVDimension-1:0] project_im_a, project_im_b;
   logic [HVDimension-1:0] im_a, im_b;
 
   //---------------------------
@@ -78,19 +82,50 @@ module item_memory_top #(
   // Combinational item memory
   //---------------------------
   item_memory #(
-    .HVDimension   ( HVDimension   ),
-    .NumTotIm      ( NumTotIm      ),
-    .NumPerImBank  ( NumPerImBank  ),
-    .ImAddrWidth   ( ImAddrWidth   ),
-    .SeedWidth     ( SeedWidth     )
+    .HVDimension   ( HVDimension     ),
+    .NumTotIm      ( NumTotIm        ),
+    .NumPerImBank  ( NumPerImBank    ),
+    .ImAddrWidth   ( ImAddrWidth     ),
+    .SeedWidth     ( SeedWidth       )
   ) i_item_memory (
-    .port_a_cim_i  ( port_a_cim_i  ),
-    .cim_seed_hv_i ( cim_seed_hv_i ),
-    .im_seed_hv_i  ( im_seed_hv_i  ),
-    .im_a_addr_i   ( im_a_addr_i   ),
-    .im_b_addr_i   ( im_b_addr_i   ),
-    .im_a_o        ( im_a        ),
-    .im_b_o        ( im_b        )
+    .port_a_cim_i  ( port_a_cim_i[0] ),
+    .cim_seed_hv_i ( cim_seed_hv_i   ),
+    .im_seed_hv_i  ( im_seed_hv_i    ),
+    .im_a_addr_i   ( lowdim_a_data_i ),
+    .im_b_addr_i   ( lowdim_b_data_i ),
+    .im_a_o        ( project_im_a    ),
+    .im_b_o        ( project_im_b    )
+  );
+
+  //---------------------------
+  // MUX-ing before getting into FIFOs
+  //---------------------------
+  logic [1:0][HVDimension-1:0] mux_ima_in;
+
+  assign mux_ima_in[0] = project_im_a;
+  assign mux_ima_in[1] = highdim_a_data_i;
+
+  mux #(
+    .DataWidth  ( HVDimension     ),
+    .NumSel     ( 2               )
+  ) i_mux_ima (
+    .sel_i      ( port_a_cim_i[1] ),
+    .signal_i   ( mux_ima_in      ),
+    .signal_o   ( im_a            )
+  );
+
+  logic [1:0][HVDimension-1:0] mux_imb_in;
+
+  assign mux_imb_in[0] = project_im_b;
+  assign mux_imb_in[1] = highdim_b_data_i;
+
+  mux #(
+    .DataWidth  ( HVDimension  ),
+    .NumSel     ( 2            )
+  ) i_mux_imb (
+    .sel_i      ( port_b_cim_i ),
+    .signal_i   ( mux_imb_in   ),
+    .signal_o   ( im_b         )
   );
 
   //---------------------------
