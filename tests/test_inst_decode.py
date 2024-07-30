@@ -21,15 +21,15 @@ import random
 
 from util import get_root, setup_and_run, hvlist2num
 
-# From compiler
-from hypercorex_compiler import decode_inst, list2str
-
 # Add hdc utility functions
 hdc_exp_path = get_root() + "/hdc_exp/"
 sys.path.append(hdc_exp_path)
 
 sw_path = get_root() + "/sw/"
 sys.path.append(sw_path)
+
+# From compiler
+from hypercorex_compiler import decode_inst, list2str  # noqa: E402
 
 # Some parameter
 DEBUG = False
