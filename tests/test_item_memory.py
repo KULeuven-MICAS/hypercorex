@@ -148,7 +148,7 @@ async def item_memory_dut(dut):
         }
     ],
 )
-def test_item_memory(simulator, parameters):
+def test_item_memory(simulator, parameters, waves):
     verilog_sources = [
         "/rtl/common/mux.sv",
         "/rtl/item_memory/ca90_unit.sv",
@@ -169,5 +169,5 @@ def test_item_memory(simulator, parameters):
         module=module,
         simulator=simulator,
         parameters=parameters,
-        waves=True,
+        waves=waves,
     )

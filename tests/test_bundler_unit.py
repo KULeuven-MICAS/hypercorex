@@ -179,8 +179,8 @@ async def bundler_unit_dut(dut):
 @pytest.mark.parametrize(
     "parameters", [{"CounterWidth": str(set_parameters.BUNDLER_COUNT_WIDTH)}]
 )
-def test_bundler_unit(simulator, parameters):
-    verilog_sources = ["/rtl/bundler_unit.sv"]
+def test_bundler_unit(simulator, parameters, waves):
+    verilog_sources = ["/rtl/encoder/bundler_unit.sv"]
 
     toplevel = "bundler_unit"
 
@@ -192,4 +192,5 @@ def test_bundler_unit(simulator, parameters):
         module=module,
         simulator=simulator,
         parameters=parameters,
+        waves=waves,
     )

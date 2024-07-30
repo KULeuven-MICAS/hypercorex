@@ -194,8 +194,8 @@ async def bundler_set_dut(dut):
         }
     ],
 )
-def test_hv_alu_pe(simulator, parameters):
-    verilog_sources = ["/rtl/bundler_unit.sv", "/rtl/bundler_set.sv"]
+def test_hv_alu_pe(simulator, parameters, waves):
+    verilog_sources = ["/rtl/encoder/bundler_unit.sv", "/rtl/encoder/bundler_set.sv"]
 
     toplevel = "bundler_set"
 
@@ -207,4 +207,5 @@ def test_hv_alu_pe(simulator, parameters):
         module=module,
         simulator=simulator,
         parameters=parameters,
+        waves=waves,
     )

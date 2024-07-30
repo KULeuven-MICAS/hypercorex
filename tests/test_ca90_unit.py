@@ -78,7 +78,7 @@ async def ca90_unit_dut(dut):
         }
     ],
 )
-def test_ca90_unit(simulator, parameters):
+def test_ca90_unit(simulator, parameters, waves):
     verilog_sources = ["/rtl/item_memory/ca90_unit.sv"]
 
     toplevel = "ca90_unit"
@@ -91,5 +91,5 @@ def test_ca90_unit(simulator, parameters):
         module=module,
         simulator=simulator,
         parameters=parameters,
-        waves=True,
+        waves=waves,
     )

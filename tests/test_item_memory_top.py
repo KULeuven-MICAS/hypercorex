@@ -202,7 +202,7 @@ async def item_memory_top_dut(dut):
         }
     ],
 )
-def test_item_memory_top(simulator, parameters):
+def test_item_memory_top(simulator, parameters, waves):
     verilog_sources = [
         # Level 0
         "/rtl/common/fifo.sv",
@@ -230,5 +230,5 @@ def test_item_memory_top(simulator, parameters):
         module=module,
         simulator=simulator,
         parameters=parameters,
-        waves=True,
+        waves=waves,
     )

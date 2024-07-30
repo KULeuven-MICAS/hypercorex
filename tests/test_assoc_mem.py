@@ -165,8 +165,11 @@ async def assoc_mem_dut(dut):
         }
     ],
 )
-def test_assoc_mem(simulator, parameters):
-    verilog_sources = ["/rtl/ham_dist.sv", "/rtl/assoc_mem.sv"]
+def test_assoc_mem(simulator, parameters, waves):
+    verilog_sources = [
+        "/rtl/assoc_memory/ham_dist.sv",
+        "/rtl/assoc_memory/assoc_mem.sv",
+    ]
 
     toplevel = "assoc_mem"
 
@@ -178,4 +181,5 @@ def test_assoc_mem(simulator, parameters):
         module=module,
         simulator=simulator,
         parameters=parameters,
+        waves=waves,
     )

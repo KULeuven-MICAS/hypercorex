@@ -59,8 +59,8 @@ async def ham_dist_dut(dut):
         }
     ],
 )
-def test_ham_dist(simulator, parameters):
-    verilog_sources = ["/rtl/ham_dist.sv"]
+def test_ham_dist(simulator, parameters, waves):
+    verilog_sources = ["/rtl/assoc_memory/ham_dist.sv"]
 
     toplevel = "ham_dist"
 
@@ -72,4 +72,5 @@ def test_ham_dist(simulator, parameters):
         module=module,
         simulator=simulator,
         parameters=parameters,
+        waves=waves,
     )
