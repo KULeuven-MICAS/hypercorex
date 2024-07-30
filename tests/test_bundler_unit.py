@@ -180,7 +180,7 @@ async def bundler_unit_dut(dut):
     "parameters", [{"CounterWidth": str(set_parameters.BUNDLER_COUNT_WIDTH)}]
 )
 def test_bundler_unit(simulator, parameters):
-    verilog_sources = ["/rtl/bundler_unit.sv"]
+    verilog_sources = ["/rtl/encoder/bundler_unit.sv"]
 
     toplevel = "bundler_unit"
 

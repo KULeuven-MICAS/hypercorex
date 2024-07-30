@@ -226,10 +226,10 @@ async def hv_encoder_dut(dut):
 def test_hv_encoder(simulator, parameters, waves):
     verilog_sources = [
         "/rtl/common/reg_file_1w2r.sv",
-        "/rtl/hv_alu_pe.sv",
-        "/rtl/bundler_unit.sv",
-        "/rtl/bundler_set.sv",
-        "/rtl/hv_encoder.sv",
+        "/rtl/encoder/hv_alu_pe.sv",
+        "/rtl/encoder/bundler_unit.sv",
+        "/rtl/encoder/bundler_set.sv",
+        "/rtl/encoder/hv_encoder.sv",
     ]
 
     toplevel = "hv_encoder"

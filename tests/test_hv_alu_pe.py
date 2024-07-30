@@ -105,7 +105,7 @@ async def hv_alu_pe_dut(dut):
     ],
 )
 def test_hv_alu_pe(simulator, parameters, waves):
-    verilog_sources = ["/rtl/hv_alu_pe.sv"]
+    verilog_sources = ["/rtl/encoder/hv_alu_pe.sv"]
 
     toplevel = "hv_alu_pe"
 
