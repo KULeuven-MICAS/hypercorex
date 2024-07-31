@@ -139,6 +139,18 @@ def check_result_array(actual_val_array, golden_val_array, debug_on=False):
     return
 
 
+def check_result_list(actual_val_array, golden_val_array, debug_on=False):
+    if debug_on:
+        for i in range(len(golden_val_array)):
+            cocotb.log.info(
+                f"Golden val: {golden_val_array[i]}; Actual val: {actual_val_array[i]}"
+            )
+    assert (
+        golden_val_array == actual_val_array
+    ), f"Error! Golden Val: {golden_val_array}; Actual Val: {actual_val_array}"
+    return
+
+
 """
     Set of functions for data generation
 """
@@ -459,3 +471,209 @@ async def load_bundler_to_qhv(dut, bundler_addr):
     # Make sure to clear first
     clear_encode_inputs_no_clock(dut)
     return
+
+
+"""
+    Functions for testbench memory control
+"""
+
+
+# Clearing the testbench inputs
+def clear_tb_inputs(dut):
+    # Exclude hard settings in here
+
+    # ---------------------
+    # CSR ports
+    # ---------------------
+    # Request
+    dut.csr_req_data_i.value = 0
+    dut.csr_req_addr_i.value = 0
+    dut.csr_req_write_i.value = 0
+    dut.csr_req_valid_i.value = 0
+    # Response
+    dut.csr_rsp_ready_i.value = 0
+
+    # ---------------------
+    # IM ports
+    # ---------------------
+    dut.im_a_lowdim_wr_addr_i.value = 0
+    dut.im_a_lowdim_wr_data_i.value = 0
+    dut.im_a_lowdim_wr_en_i.value = 0
+    dut.im_a_lowdim_rd_addr_i.value = 0
+
+    dut.im_a_highdim_wr_addr_i.value = 0
+    dut.im_a_highdim_wr_data_i.value = 0
+    dut.im_a_highdim_wr_en_i.value = 0
+    dut.im_a_highdim_rd_addr_i.value = 0
+
+    dut.im_b_lowdim_wr_addr_i.value = 0
+    dut.im_b_lowdim_wr_data_i.value = 0
+    dut.im_b_lowdim_wr_en_i.value = 0
+    dut.im_b_lowdim_rd_addr_i.value = 0
+
+    dut.im_b_highdim_wr_addr_i.value = 0
+    dut.im_b_highdim_wr_data_i.value = 0
+    dut.im_b_highdim_wr_en_i.value = 0
+    dut.im_b_highdim_rd_addr_i.value = 0
+
+    # ---------------------
+    # AM ports
+    # ---------------------
+    dut.am_wr_addr_i.value = 0
+    dut.am_wr_data_i.value = 0
+    dut.am_wr_en_i.value = 0
+    dut.am_rd_addr_i.value = 0
+
+    # ---------------------
+    # QHV ports
+    # ---------------------
+    dut.qhv_rd_addr_i.value = 0
+
+    return
+
+
+# To load unto low dimensional block
+# choosable between A and B
+async def load_im_lowdim(dut, im_data, im_addr, im_sel="A"):
+    if im_sel == "A":
+        dut.im_a_lowdim_wr_addr_i.value = im_addr
+        dut.im_a_lowdim_wr_data_i.value = im_data
+        dut.im_a_lowdim_wr_en_i.value = 1
+    else:
+        dut.im_b_lowdim_wr_addr_i.value = im_addr
+        dut.im_b_lowdim_wr_data_i.value = im_data
+        dut.im_b_lowdim_wr_en_i.value = 1
+
+    # Wait for one cycle
+    await clock_and_time(dut.clk_i)
+
+    clear_tb_inputs(dut)
+    return
+
+
+# Loading to high dimensional block
+# choosable between A and B
+async def load_im_highdim(dut, im_data, im_addr, im_sel="A"):
+    if im_sel == "A":
+        dut.im_a_highdim_wr_addr_i.value = im_addr
+        dut.im_a_highdim_wr_data_i.value = im_data
+        dut.im_a_highdim_wr_en_i.value = 1
+    else:
+        dut.im_b_highdim_wr_addr_i.value = im_addr
+        dut.im_b_highdim_wr_data_i.value = im_data
+        dut.im_b_highdim_wr_en_i.value = 1
+
+    # Wait for one cycle
+    await clock_and_time(dut.clk_i)
+
+    clear_tb_inputs(dut)
+    return
+
+
+# Loading to the associative memory
+async def load_am(dut, am_data, am_addr):
+    dut.am_wr_addr_i.value = am_addr
+    dut.am_wr_data_i.value = am_data
+    dut.am_wr_en_i.value = 1
+
+    # Wait for one cycle
+    await clock_and_time(dut.clk_i)
+
+    clear_tb_inputs(dut)
+    return
+
+
+# Reading data from lowdim ports
+# choosable between A and B
+async def read_im_lowdim(dut, im_addr, im_sel="A"):
+    if im_sel == "A":
+        dut.im_a_lowdim_rd_addr_i.value = im_addr
+    else:
+        dut.im_b_lowdim_rd_addr_i.value = im_addr
+
+    # Wait for one cycle
+    await clock_and_time(dut.clk_i)
+
+    # Extract data
+    if im_sel == "A":
+        data_val = dut.im_a_lowdim_rd_data_o.value.integer
+    else:
+        data_val = dut.im_b_lowdim_rd_data_o.value.integer
+
+    clear_tb_inputs(dut)
+    return data_val
+
+
+# Reading data from highdim ports
+# choosable between A and B
+async def read_im_highdim(dut, im_addr, im_sel="A"):
+    if im_sel == "A":
+        dut.im_a_highdim_rd_addr_i.value = im_addr
+    else:
+        dut.im_b_highdim_rd_addr_i.value = im_addr
+
+    # Wait for one cycle
+    await clock_and_time(dut.clk_i)
+
+    # Extract data
+    if im_sel == "A":
+        data_val = dut.im_a_highdim_rd_data_o.value.integer
+    else:
+        data_val = dut.im_b_highdim_rd_data_o.value.integer
+
+    clear_tb_inputs(dut)
+    return data_val
+
+
+# Reading data from the associative memory
+async def read_am(dut, am_addr):
+    dut.am_rd_addr_i.value = am_addr
+
+    # Wait for one cycle
+    await clock_and_time(dut.clk_i)
+
+    # Extract data
+    data_val = dut.am_rd_data_o.value.integer
+
+    clear_tb_inputs(dut)
+    return data_val
+
+
+# Loading a list of data into the low or high dimensional block
+# Selectable between the two modes and the two blocks
+async def load_im_list(dut, im_data_list, im_start_addr, im_sel="A", im_dim="low"):
+    for i, im_data in enumerate(im_data_list):
+        if im_dim == "low":
+            await load_im_lowdim(dut, im_data, im_start_addr + i, im_sel)
+        else:
+            await load_im_highdim(dut, im_data, im_start_addr + i, im_sel)
+    return
+
+
+# Loading a list of data into the associative memory
+async def load_am_list(dut, am_data_list, am_start_addr):
+    for i, am_data in enumerate(am_data_list):
+        await load_am(dut, am_data, am_start_addr + i)
+    return
+
+
+# Reading a list of data from the low or high dimensional block
+# Selectable between the two modes and the two blocks
+# Given the size to be read
+async def read_im_list(dut, im_start_addr, im_size, im_sel="A", im_dim="low"):
+    im_data_list = []
+    for i in range(im_size):
+        if im_dim == "low":
+            im_data_list.append(await read_im_lowdim(dut, im_start_addr + i, im_sel))
+        else:
+            im_data_list.append(await read_im_highdim(dut, im_start_addr + i, im_sel))
+    return im_data_list
+
+
+# Reading a list of data from the associative memory
+# Given the size to be read
+async def read_am_list(dut, am_start_addr, am_size):
+    am_data_list = []
+    for i in range(am_size):
+        am_data_list.append(await read_am(dut, am_start_addr + i))
+    return am_data_list
