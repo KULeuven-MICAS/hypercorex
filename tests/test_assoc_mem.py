@@ -14,6 +14,7 @@ from util import (
     clock_and_time,
     hvlist2num,
     numbin2list,
+    check_result,
 )
 
 import cocotb
@@ -39,7 +40,7 @@ def clear_inputs_no_clock(dut):
     dut.am_start_i.value = 0
     dut.class_hv_i.value = 0
     dut.class_hv_valid_i.value = 0
-    dut.csr_am_num_class_i.value = 0
+    dut.am_num_class_i.value = 0
     return
 
 
@@ -132,24 +133,47 @@ async def assoc_mem_dut(dut):
         )
 
         # Set this as a CSR controlled value
-        dut.csr_am_num_class_i.value = NUM_CLASSES
+        dut.am_num_class_i.value = NUM_CLASSES
 
         # Start of data loop
         await load_query_hv(dut, query_hv)
 
+        # Randomly between the number of classes checked
+        # Set the index where the stall will be asserted
+        random_stall = random.randint(0, NUM_CLASSES - 1)
+
         # Feed associative memory data
         # And allow the similarity search to progress
         for i in range(NUM_CLASSES):
+            # Check if stall does assert
+            if i == random_stall:
+                dut.am_start_i.value = 1
+
+                # Allow time to propagate
+                await clock_and_time(dut.clk_i)
+
+                # Check if stall signal is high
+                am_stall = dut.am_stall_o.value.integer
+                check_result(am_stall, 1)
+
+                # Clear the stall signal
+                dut.am_start_i.value = 0
+
+                # Allow time to propagate
+                await clock_and_time(dut.clk_i)
+
+                # Check if stall signal is low
+                am_stall = dut.am_stall_o.value.integer
+                check_result(am_stall, 0)
+
+            # Load the associative memory
             await load_am_hv(dut, assoc_mem[i])
 
         # Check if predicted result is the correct HV
-        actual_idx = dut.csr_max_arg_idx_o.value.integer
+        actual_idx = dut.max_arg_idx_o.value.integer
 
         # Log info
-        cocotb.log.info(f"Golden index: {golden_idx}; Actual index: {actual_idx}")
-        assert (
-            golden_idx == actual_idx
-        ), f"Error! Golden index: {golden_idx}; Actual index: {actual_idx}"
+        check_result(actual_idx, golden_idx)
 
     for i in range(set_parameters.TEST_RUNS):
         await clock_and_time(dut.clk_i)

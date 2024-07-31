@@ -20,13 +20,14 @@ module assoc_mem #(
   input  logic [HVDimension-1:0] query_hv_i,
   input  logic                   am_start_i,
   output logic                   am_busy_o,
+  output logic                   am_stall_o,
   // AM side control
   input  logic [HVDimension-1:0] class_hv_i,
   input  logic                   class_hv_valid_i,
   output logic                   class_hv_ready_o,
   // CSR output side
-  input  logic [DataWidth-1:0]   csr_am_num_class_i,
-  output logic [DataWidth-1:0]   csr_max_arg_idx_o
+  input  logic [  DataWidth-1:0] am_num_class_i,
+  output logic [  DataWidth-1:0] max_arg_idx_o
 );
 
   //---------------------------
@@ -45,7 +46,7 @@ module assoc_mem #(
   //---------------------------
   // Combinational logic
   //---------------------------
-  assign counter_done        = (am_counter == (csr_am_num_class_i-1)) ? 1'b1 : 1'b0;
+  assign counter_done        = (am_counter == (am_num_class_i-1)) ? 1'b1 : 1'b0;
   assign class_hv_success    = (class_hv_ready_o && class_hv_valid_i);
   assign overwrite_sim_score = (ham_dist_score <= curr_sim_score) ? 1'b1 : 1'b0;
 
@@ -55,7 +56,11 @@ module assoc_mem #(
   assign class_hv_ready_o = busy_reg;
 
   // Output CSR register for the max argument
-  assign csr_max_arg_idx_o = max_arg_idx;
+  assign max_arg_idx_o = max_arg_idx;
+
+  // Stall happens when busy register is high
+  // and when an am start signal is present
+  assign am_stall_o = busy_reg && am_start_i;
 
   //---------------------------
   // AM counter control
