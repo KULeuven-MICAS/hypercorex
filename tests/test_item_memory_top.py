@@ -39,11 +39,11 @@ def clear_inputs_no_clock(dut):
 
     dut.lowdim_a_data_i.value = 0
     dut.highdim_a_data_i.value = 0
-    dut.im_a_addr_valid_i.value = 0
+    dut.im_a_data_valid_i.value = 0
 
     dut.lowdim_b_data_i.value = 0
     dut.highdim_b_data_i.value = 0
-    dut.im_b_addr_valid_i.value = 0
+    dut.im_b_data_valid_i.value = 0
 
     dut.im_a_pop_i.value = 0
     dut.im_b_pop_i.value = 0
@@ -57,13 +57,13 @@ async def load_im_addr(dut, data, port="a", high_dim=False, seq_exe=True):
             dut.highdim_a_data_i.value = data
         else:
             dut.lowdim_a_data_i.value = data
-        dut.im_a_addr_valid_i.value = 1
+        dut.im_a_data_valid_i.value = 1
     else:
         if high_dim:
             dut.highdim_b_data_i.value = data
         else:
             dut.lowdim_b_data_i.value = data
-        dut.im_b_addr_valid_i.value = 1
+        dut.im_b_data_valid_i.value = 1
     if seq_exe:
         await clock_and_time(dut.clk_i)
         clear_inputs_no_clock(dut)
@@ -165,10 +165,10 @@ async def item_memory_top_dut(dut):
     # Since we filled the entire buffer
     # we check if it's full and it should set
     # the ready ports of the streamer side to 0
-    fifo_a_full = dut.im_a_addr_ready_o.value.integer
+    fifo_a_full = dut.im_a_data_ready_o.value.integer
     check_result(fifo_a_full, 0)
 
-    fifo_b_full = dut.im_b_addr_ready_o.value.integer
+    fifo_b_full = dut.im_b_data_ready_o.value.integer
     check_result(fifo_b_full, 0)
 
     # For wave-form viewing purposes
@@ -186,10 +186,10 @@ async def item_memory_top_dut(dut):
 
     # The FIFOs need to be empty at this point
     # check if the ready signal is asserted
-    fifo_a_full = dut.im_a_addr_ready_o.value.integer
+    fifo_a_full = dut.im_a_data_ready_o.value.integer
     check_result(fifo_a_full, 1)
 
-    fifo_b_full = dut.im_b_addr_ready_o.value.integer
+    fifo_b_full = dut.im_b_data_ready_o.value.integer
     check_result(fifo_b_full, 1)
 
     cocotb.log.info(" ------------------------------------------ ")
