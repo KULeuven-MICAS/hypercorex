@@ -29,6 +29,7 @@ module item_memory_top #(
   input  logic [NumImSets-1:0][  SeedWidth-1:0] im_seed_hv_i,
   // Enable signal for system enable
   input  logic                                  en_i,
+  output logic                                  stall_o,
   // Inputs from the fetcher side
   input  logic                [ImAddrWidth-1:0] lowdim_a_data_i,
   input  logic                [HVDimension-1:0] highdim_a_data_i,
@@ -77,6 +78,9 @@ module item_memory_top #(
 
   assign fifo_pop_a  = im_a_pop_i && !fifo_empty_a;
   assign fifo_pop_b  = im_b_pop_i && !fifo_empty_b;
+
+  // Stall occurs when a FIFO pops but it is empty
+  assign stall_o = (im_a_pop_i && fifo_empty_a) || (im_b_pop_i && fifo_empty_b);
 
   //---------------------------
   // Combinational item memory
