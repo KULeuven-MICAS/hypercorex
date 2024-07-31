@@ -35,6 +35,7 @@ from hdc_util import gen_square_cim, gen_ca90_im_set  # noqa: E402
 def clear_inputs_no_clock(dut):
     # Initialize all other ports to 0
     # Exclude CSR related ports
+    dut.clr_i.value = 0
 
     dut.lowdim_a_data_i.value = 0
     dut.highdim_a_data_i.value = 0
@@ -99,7 +100,7 @@ async def item_memory_top_dut(dut):
     dut.im_seed_hv_i.value = 0
     dut.port_a_cim_i.value = 0
     dut.port_b_cim_i.value = 0
-    dut.en_i.value = 0
+    dut.enable_i.value = 0
 
     # Initialize clock always
     clock = Clock(dut.clk_i, 10, units="ns")
@@ -147,7 +148,7 @@ async def item_memory_top_dut(dut):
     dut.im_seed_hv_i.value = im_seed_input
 
     # Enable system too
-    dut.en_i.value = 1
+    dut.enable_i.value = 1
 
     # Propagate time for logic
     await clock_and_time(dut.clk_i)

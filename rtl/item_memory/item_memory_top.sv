@@ -28,7 +28,8 @@ module item_memory_top #(
   input  logic                [  SeedWidth-1:0] cim_seed_hv_i,
   input  logic [NumImSets-1:0][  SeedWidth-1:0] im_seed_hv_i,
   // Enable signal for system enable
-  input  logic                                  en_i,
+  input  logic                                  clr_i,
+  input  logic                                  enable_i,
   output logic                                  stall_o,
   // Inputs from the fetcher side
   input  logic                [ImAddrWidth-1:0] lowdim_a_data_i,
@@ -70,8 +71,8 @@ module item_memory_top #(
   //---------------------------
   // Combinational assignments
   //---------------------------
-  assign im_a_addr_ready_o = !fifo_full_a;
-  assign im_b_addr_ready_o = !fifo_full_b;
+  assign im_a_addr_ready_o = !fifo_full_a && enable_i;
+  assign im_b_addr_ready_o = !fifo_full_b && enable_i;
 
   assign fifo_push_a = im_a_addr_valid_i && im_a_addr_ready_o;
   assign fifo_push_b = im_b_addr_valid_i && im_b_addr_ready_o;
@@ -143,7 +144,7 @@ module item_memory_top #(
     .clk_i           ( clk_i         ),
     .rst_ni          ( rst_ni        ),
     // Software synchronous clear
-    .clr_i           ( !en_i         ),
+    .clr_i           ( clr_i         ),
     // Status flags
     .full_o          ( fifo_full_a   ),
     .empty_o         ( fifo_empty_a  ),
@@ -165,7 +166,7 @@ module item_memory_top #(
     .clk_i           ( clk_i         ),
     .rst_ni          ( rst_ni        ),
     // Software synchronous clear
-    .clr_i           ( !en_i         ),
+    .clr_i           ( clr_i         ),
     // Status flags
     .full_o          ( fifo_full_b   ),
     .empty_o         ( fifo_empty_b  ),
