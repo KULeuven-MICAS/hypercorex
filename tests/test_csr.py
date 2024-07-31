@@ -508,8 +508,8 @@ async def csr_dut(dut):
         {
             "NumTotIm": str(set_parameters.NUM_TOT_IM),
             "NumPerImBank": str(set_parameters.NUM_PER_IM_BANK),
-            "RegDataWidth": str(set_parameters.REG_FILE_WIDTH),
-            "RegAddrWidth": str(set_parameters.REG_FILE_WIDTH),
+            "CsrDataWidth": str(set_parameters.REG_FILE_WIDTH),
+            "CsrAddrWidth": str(set_parameters.REG_FILE_WIDTH),
             "InstMemDepth": str(set_parameters.INST_MEM_DEPTH),
         }
     ],
