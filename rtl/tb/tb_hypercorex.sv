@@ -315,5 +315,68 @@ module tb_hypercorex # (
     .wr_acc_ready_o         ( qhv_ready            )
   );
 
+  //---------------------------
+  // Hypercore Top Module
+  //---------------------------
+  hypercorex_top # (
+    .HVDimension        ( HVDimension      ),
+    .CsrDataWidth       ( CsrDataWidth     ),
+    .CsrAddrWidth       ( CsrAddrWidth     ),
+    .NumTotIm           ( NumTotIm         ),
+    .NumPerImBank       ( NumPerImBank     ),
+    .ImAddrWidth        ( ImAddrWidth      ),
+    .SeedWidth          ( SeedWidth        ),
+    .HoldFifoDepth      ( HoldFifoDepth    ),
+    .InstMemDepth       ( InstMemDepth     ),
+    .BundCountWidth     ( BundCountWidth   ),
+    .BundMuxWidth       ( BundMuxWidth     ),
+    .ALUMuxWidth        ( ALUMuxWidth      ),
+    .ALUMaxShiftAmt     ( ALUMaxShiftAmt   ),
+    .RegMuxWidth        ( RegMuxWidth      ),
+    .QvMuxWidth         ( QvMuxWidth       ),
+    .RegNum             ( RegNum           )
+  ) i_hypercorex_top (
+    //---------------------------
+    // Clocks and reset
+    //---------------------------
+    .clk_i              ( clk_i            ),
+    .rst_ni             ( rst_ni           ),
+    //---------------------------
+    // CSR RW control signals
+    //---------------------------
+    // Request
+    .csr_req_data_i     ( csr_req_data_i   ),
+    .csr_req_addr_i     ( csr_req_addr_i   ),
+    .csr_req_write_i    ( csr_req_write_i  ),
+    .csr_req_valid_i    ( csr_req_valid_i  ),
+    .csr_req_ready_o    ( csr_req_ready_o  ),
+    // Response
+    .csr_rsp_data_o     ( csr_rsp_data_o   ),
+    .csr_rsp_ready_i    ( csr_rsp_ready_i  ),
+    .csr_rsp_valid_o    ( csr_rsp_valid_o  ),
+    //---------------------------
+    // IM ports
+    //---------------------------
+    .lowdim_a_data_i    ( lowdim_a_data   ),
+    .highdim_a_data_i   ( highdim_a_data  ),
+    .im_a_data_valid_i  ( im_a_data_valid ),
+    .im_a_data_ready_o  ( im_a_data_ready ),
+    .lowdim_b_data_i    ( lowdim_b_data   ),
+    .highdim_b_data_i   ( highdim_b_data  ),
+    .im_b_data_valid_i  ( im_b_data_valid ),
+    .im_b_data_ready_o  ( im_b_data_ready ),
+    //---------------------------
+    // QHV ports
+    //---------------------------
+    .qhv_ready_i        ( qhv_ready       ),
+    .qhv_valid_o        ( qhv_valid       ),
+    .qhv_o              ( qhv             ),
+    //---------------------------
+    // AM ports
+    //---------------------------
+    .class_hv_i         ( class_hv       ),
+    .class_hv_valid_i   ( class_hv_valid ),
+    .class_hv_ready_o   ( class_hv_ready )
+  );
 
 endmodule

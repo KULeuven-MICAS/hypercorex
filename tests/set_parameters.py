@@ -9,7 +9,7 @@
 import math
 
 # Test Parameters
-TEST_RUNS = 20
+TEST_RUNS = 50
 NUM_CLASSES = 10
 
 # Working dimensions
@@ -71,3 +71,82 @@ INST_LOOP_COUNT_REG_ADDR = 12
 # IM seeds
 CIM_SEED_REG_ADDR = 13
 IM_BASE_SEED_REG_ADDR = 14
+
+
+# ---------------------------
+# Complete filelist
+# ---------------------------
+HYPERCOREX_FILELIST = [
+    # ----------------------------
+    # Common
+    # ----------------------------
+    # Level 0
+    "/rtl/common/mux.sv",
+    "/rtl/common/fifo.sv",
+    "/rtl/common/reg_file_1w1r.sv",
+    "/rtl/common/reg_file_1w2r.sv",
+    # ----------------------------
+    # Encoder
+    # ----------------------------
+    # Level 0
+    "/rtl/encoder/hv_alu_pe.sv",
+    "/rtl/encoder/bundler_unit.sv",
+    "/rtl/encoder/qhv.sv",
+    # Level 1
+    "/rtl/encoder/bundler_set.sv",
+    # Level 2
+    "/rtl/encoder/hv_encoder.sv",
+    # ----------------------------
+    # Associative memory
+    # ----------------------------
+    # Level 0
+    "/rtl/assoc_memory/ham_dist.sv",
+    # Level 1
+    "/rtl/assoc_memory/assoc_mem.sv",
+    # ----------------------------
+    # CSR
+    # ----------------------------
+    # Level 0
+    "/rtl/csr/csr_addr_pkg.sv",
+    # Level 1
+    "/rtl/csr/csr.sv",
+    # ----------------------------
+    # Instruction memory
+    # ----------------------------
+    # Level 0
+    "/rtl/inst_memory/hypercorex_inst_pkg.sv",
+    "/rtl/inst_memory/inst_loop_control.sv",
+    # Level 1
+    "/rtl/inst_memory/inst_decode.sv",
+    "/rtl/inst_memory/inst_control.sv",
+    # ----------------------------
+    # Item memory
+    # ----------------------------
+    # Level 0
+    "/rtl/item_memory/ca90_unit.sv",
+    "/rtl/item_memory/cim_bit_flip.sv",
+    # Level 1
+    "/rtl/item_memory/ca90_hier_base.sv",
+    "/rtl/item_memory/cim.sv",
+    # Level 2
+    "/rtl/item_memory/ca90_item_memory.sv",
+    # Level 3
+    "/rtl/item_memory/item_memory.sv",
+    # Level 4
+    "/rtl/item_memory/item_memory_top.sv",
+    # ----------------------------
+    # Hypercorex top
+    # ----------------------------
+    "/rtl/hypercorex_top.sv",
+]
+
+TB_HYPERCOREX_FILELIST = [
+    # ----------------------------
+    # Testbench
+    # ----------------------------
+    # Level 0
+    "/rtl/tb/tb_rd_memory.sv",
+    "/rtl/tb/tb_wr_memory.sv",
+    # Level 1
+    "/rtl/tb/tb_hypercorex.sv",
+]

@@ -3,7 +3,8 @@
   Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
   Description:
-  This tests the vectorized bundler unit
+  This tests the hypercorex's testbench memory
+  modules while compling with the hypercorex
 """
 
 import set_parameters
@@ -33,14 +34,11 @@ print(hdc_util_path)
 sys.path.append(hdc_util_path)
 
 
-# Some local parameters
-
-
 # Actual test routines
 @cocotb.test()
 async def tb_hypercorex_dut(dut):
     cocotb.log.info(" ------------------------------------------ ")
-    cocotb.log.info("              Testing Hypercorex            ")
+    cocotb.log.info("            Testing Hypercorex              ")
     cocotb.log.info(" ------------------------------------------ ")
 
     # Initialize input values
@@ -144,23 +142,9 @@ async def tb_hypercorex_dut(dut):
     ],
 )
 def test_tb_hypercorex(simulator, parameters, waves):
-    verilog_sources = [
-        # Level 0
-        "/rtl/tb/tb_rd_memory.sv",
-        "/rtl/tb/tb_wr_memory.sv",
-        # Level 10
-        "/rtl/tb/tb_hypercorex.sv",
-        # # Level 0
-        # "/rtl/common/mux.sv",
-        # "/rtl/common/reg_file_1w2r.sv",
-        # "/rtl/encoder/hv_alu_pe.sv",
-        # "/rtl/encoder/bundler_unit.sv",
-        # "/rtl/encoder/qhv.sv",
-        # # Level 1
-        # "/rtl/encoder/bundler_set.sv",
-        # # Level 2
-        # "/rtl/encoder/hv_encoder.sv",
-    ]
+    verilog_sources = (
+        set_parameters.HYPERCOREX_FILELIST + set_parameters.TB_HYPERCOREX_FILELIST
+    )
 
     toplevel = "tb_hypercorex"
 
