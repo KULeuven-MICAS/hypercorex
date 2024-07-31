@@ -20,6 +20,7 @@ REG_FILE_WIDTH = 32
 # Item memory parameters
 NUM_TOT_IM = 256
 NUM_PER_IM_BANK = int(HV_DIM // 4)
+NUM_IM_SETS = int(NUM_TOT_IM // NUM_PER_IM_BANK)
 CA90_MODE = "ca90_hier"
 IM_FIFO_DEPTH = 2
 
