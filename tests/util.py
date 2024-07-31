@@ -676,3 +676,43 @@ async def read_am_list(dut, am_start_addr, am_size):
     for i in range(am_size):
         am_data_list.append(await read_am(dut, am_start_addr + i))
     return am_data_list
+
+
+"""
+    Functions for CSR control
+"""
+
+
+# Clear CSR signals
+def clear_csr_req_no_clock(dut):
+    dut.csr_req_addr_i.value = 0
+    dut.csr_req_data_i.value = 0
+    dut.csr_req_write_i.value = 0
+    dut.csr_req_valid_i.value = 0
+    return
+
+
+# Writes to csr registers of the hypercorex
+async def write_csr(dut, addr, data):
+    dut.csr_req_addr_i.value = addr
+    dut.csr_req_data_i.value = data
+    dut.csr_req_write_i.value = 1
+    dut.csr_req_valid_i.value = 1
+    await clock_and_time(dut.clk_i)
+    clear_csr_req_no_clock(dut)
+    return
+
+
+# Reads from csr registers of the hypercorex
+async def read_csr(dut, addr):
+    dut.csr_req_addr_i.value = addr
+    dut.csr_req_data_i.value = 0
+    dut.csr_req_write_i.value = 0
+    dut.csr_req_valid_i.value = 1
+    await clock_and_time(dut.clk_i)
+    read_csr_data = dut.csr_rsp_data_o.value.integer
+    clear_csr_req_no_clock(dut)
+    # Set this to high just in case the next cylce
+    # needs to clear or flush the fifo
+    dut.csr_rsp_ready_i.value = 1
+    return read_csr_data
