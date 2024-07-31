@@ -171,7 +171,7 @@ module fifo #(
   // Sanity checking
   //---------------------------
 `ifndef SYNTHESIS
-`ifndef COMMON_CELLS_ASSERTS_OFF
+`ifdef ASSERT_CHECKS_ON
   initial begin
       assert (FifoDepth > 0) else $error("FifoDepth must be greater than 0.");
   end
