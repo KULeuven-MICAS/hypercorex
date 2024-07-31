@@ -55,7 +55,8 @@ module hv_encoder #(
   input  logic                    qhv_am_load_i,
   input  logic                    qhv_ready_i,
   output logic                    qhv_valid_o,
-  output logic [ HVDimension-1:0] qhv_o
+  output logic [ HVDimension-1:0] qhv_o,
+  output logic                    qhv_stall_o
 );
 
   //---------------------------
@@ -276,7 +277,8 @@ module hv_encoder #(
     .qhv_am_load_i ( qhv_am_load_i ),
     .qhv_o         ( qhv_o         ),
     .qhv_valid_o   ( qhv_valid_o   ),
-    .qhv_ready_i   ( qhv_ready_i   )
+    .qhv_ready_i   ( qhv_ready_i   ),
+    .qhv_stall_o   ( qhv_stall_o   )
   );
 
 endmodule

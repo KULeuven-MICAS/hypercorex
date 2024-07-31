@@ -22,7 +22,8 @@ module qhv #(
   input  logic                   qhv_am_load_i,
   output logic [HVDimension-1:0] qhv_o,
   output logic                   qhv_valid_o,
-  input  logic                   qhv_ready_i
+  input  logic                   qhv_ready_i,
+  output logic                   qhv_stall_o
 );
 
   //---------------------------
@@ -45,7 +46,6 @@ module qhv #(
   //---------------------------
   // Control for the valid-ready signals
   //---------------------------
-
   logic  qhv_load_success;
   assign qhv_load_success = qhv_valid_o & qhv_ready_i;
 
@@ -64,5 +64,12 @@ module qhv #(
       end
     end
   end
+
+  //---------------------------
+  // QHV logic stall
+  //---------------------------
+  // Stall happens when query is still loaded
+  // the valid signal indicates that previous write has not completed yet
+  assign qhv_stall_o = qhv_am_load_i && qhv_valid_o;
 
 endmodule
