@@ -47,8 +47,12 @@ module hypercorex_top # (
   //---------------------------
   // Don't touch!
   //---------------------------
+  parameter int unsigned NumALUOps        = 4,
+  parameter int unsigned ALUOpsWidth      = $clog2(NumALUOps     ),
+  parameter int unsigned ShiftWidth       = $clog2(ALUMaxShiftAmt),
+  parameter int unsigned RegAddrWidth     = $clog2(RegNum        ),
   parameter int unsigned NumImSets        = NumTotIm/NumPerImBank,
-  parameter int unsigned InstMemAddrWidth = $clog2(InstMemDepth)
+  parameter int unsigned InstMemAddrWidth = $clog2(InstMemDepth  )
 )(
   //---------------------------
   // Clocks and reset
@@ -92,6 +96,7 @@ module hypercorex_top # (
   input  logic                    class_hv_valid_i,
   output logic                    class_hv_ready_o
 );
+
   //---------------------------
   // CSR Control Signals
   //---------------------------
@@ -167,7 +172,7 @@ module hypercorex_top # (
   logic [  QvMuxWidth-1:0] qhv_mux;
   // Control port for the AM
   logic                    am_search;
-  logic                    am_load_o;
+  logic                    am_load;
 
   //---------------------------
   // Stall Signal
@@ -314,7 +319,7 @@ module hypercorex_top # (
   // Instruction Decoder
   //---------------------------
   inst_decode #(
-    .InstWidth                  ( InstWidth            ),
+    .InstWidth                  ( CsrDataWidth         ),
     .ALUMuxWidth                ( ALUMuxWidth          ),
     .ALUMaxShiftAmt             ( ALUMaxShiftAmt       ),
     .BundMuxWidth               ( BundMuxWidth         ),
@@ -445,7 +450,7 @@ module hypercorex_top # (
     .qhv_wen_i                  ( qhv_wen              ),
     .qhv_clr_i                  ( qhv_clr              ),
     .qhv_mux_i                  ( qhv_mux              ),
-    .qhv_am_load_i              ( qhv_am_load          ),
+    .qhv_am_load_i              ( am_load              ),
     .qhv_ready_i                ( qhv_ready_i          ),
     .qhv_valid_o                ( qhv_valid_o          ),
     .qhv_o                      ( qhv                  ),
