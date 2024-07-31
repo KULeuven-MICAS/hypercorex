@@ -261,7 +261,7 @@ module csr import csr_addr_pkg::*; #(
     csr_inst_ctrl_clr_o        =  csr_write_req &&
                                  (csr_req_addr_i == INST_CTRL_REG_ADDR) &&
                                   csr_req_data_i[INST_CTRL_INST_CLR_BIT_ADDR];
-    csr_inst_wr_addr_o         = csr_req_data_i;
+    csr_inst_wr_addr_o         = csr_req_data_i[InstMemAddrWidth-1:0];
     csr_inst_wr_addr_en_o      = csr_write_req && (csr_req_addr_i == INST_WRITE_ADDR_REG_ADDR);
     csr_inst_wr_data_o         = csr_req_data_i;
     csr_inst_wr_data_en_o      = csr_write_req && (csr_req_addr_i == INST_WRITE_DATA_REG_ADDR);
