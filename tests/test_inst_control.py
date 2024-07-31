@@ -157,6 +157,10 @@ async def inst_control_dut(dut):
 
     dut.start_i.value = 0
 
+    # Check if core is enabled
+    enable_val = dut.enable_o.value.integer
+    check_result(enable_val, 1)
+
     for i in range(set_parameters.INST_MEM_DEPTH):
         # Extract the 1st data that is readily available
         pc_val = dut.inst_pc_o.value.integer
@@ -166,6 +170,11 @@ async def inst_control_dut(dut):
         check_result(inst_data_val, golden_data_list[i])
 
         await clock_and_time(dut.clk_i)
+
+    # Core should be finished at this time
+    # Check if core is disabled
+    enable_val = dut.enable_o.value.integer
+    check_result(enable_val, 0)
 
     # Redo the test but this time use the debug port
     cocotb.log.info(" ------------------------------------------ ")
