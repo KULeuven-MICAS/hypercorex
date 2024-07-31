@@ -242,6 +242,26 @@ async def hv_encoder_dut(dut):
     valid_val = dut.qhv_valid_o.value.integer
     check_result(valid_val, 1)
 
+    # Force an am load to see if the stall signal asserts
+    dut.qhv_am_load_i.value = 1
+
+    # Let time propagate
+    await clock_and_time(dut.clk_i)
+
+    # Check stall signal
+    stall_val = dut.qhv_stall_o.value.integer
+    check_result(stall_val, 1)
+
+    # Set back to 0
+    dut.qhv_am_load_i.value = 0
+
+    # Let time propagate again
+    await clock_and_time(dut.clk_i)
+
+    # Check stall signal
+    stall_val = dut.qhv_stall_o.value.integer
+    check_result(stall_val, 0)
+
     # Assert ready to pull it low
     dut.qhv_ready_i.value = 1
 
