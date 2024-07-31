@@ -62,7 +62,6 @@ def setup_and_run(
             "--trace-structs",
         ]
         timescale = None
-        defines = ["SIM_VLT"]
     else:
         compile_args = None
         timescale = "1ns/1ps"
