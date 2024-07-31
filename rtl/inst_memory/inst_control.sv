@@ -23,6 +23,7 @@ module inst_control # (
   input  logic                    clr_i,
   input  logic                    start_i,
   input  logic                    stall_i,
+  output logic                    enable_o,
   // Instruction update signals
   input  logic                    inst_pc_reset_i,
   input  logic                    inst_wr_mode_i,
@@ -66,7 +67,7 @@ module inst_control # (
   // Make sure to expand to avoid synthesis errors
   assign inst_pc_o    = {{(RegAddrWidth-InstMemAddrWidth){1'b0}},program_counter};
   assign inst_rd_addr = (dbg_en_i) ? dbg_addr_i[InstMemAddrWidth-1:0] : program_counter;
-
+  assign enable_o     = enable_core;
 
   //---------------------------
   // Enable core register
