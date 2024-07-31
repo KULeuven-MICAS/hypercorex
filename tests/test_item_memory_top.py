@@ -9,6 +9,7 @@
 import set_parameters
 import cocotb
 from cocotb.clock import Clock
+from cocotb.triggers import Timer
 import pytest
 import sys
 
@@ -230,6 +231,81 @@ async def item_memory_top_dut(dut):
 
         im_b_val = await read_and_pop(dut, port="b")
         check_result_array(im_b_val, golden_im[i])
+
+    # For the next test
+    clear_inputs_no_clock(dut)
+    await clock_and_time(dut.clk_i)
+
+    cocotb.log.info(" ------------------------------------------ ")
+    cocotb.log.info("          Testing Stall Signals             ")
+    cocotb.log.info(" ------------------------------------------ ")
+
+    # Note that at this point the FIFOs are empty
+    # because the previous test empties the FIFOs
+
+    # Assert the pop signal and see if stall asserts
+    dut.im_a_pop_i.value = 1
+
+    # Propagate time for logic
+    await clock_and_time(dut.clk_i)
+
+    # Check if the stall signal is asserted
+    stall_val = dut.stall_o.value.integer
+    check_result(stall_val, 1)
+
+    # Set back to 0
+    dut.im_a_pop_i.value = 0
+
+    # Propagate time for logic
+    await clock_and_time(dut.clk_i)
+
+    # Check if the stall signal is de-asserted
+    stall_val = dut.stall_o.value.integer
+    check_result(stall_val, 0)
+
+    # Do the same for other port
+    dut.im_b_pop_i.value = 1
+
+    # Propagate time for logic
+    await clock_and_time(dut.clk_i)
+
+    # Check if the stall signal is asserted
+    stall_val = dut.stall_o.value.integer
+    check_result(stall_val, 1)
+
+    # Set back to 0
+    dut.im_b_pop_i.value = 0
+
+    # Propagate time for logic
+    await clock_and_time(dut.clk_i)
+
+    # Check if the stall signal is de-asserted
+    stall_val = dut.stall_o.value.integer
+    check_result(stall_val, 0)
+
+    # This time, we first load the FIFOs
+    # a single element only
+    highdim_data = hvlist2num(golden_im[0])
+    await load_im_addr(dut, highdim_data, port="a", high_dim=True, seq_exe=False)
+    await load_im_addr(dut, highdim_data, port="b", high_dim=True)
+
+    # Assert the pop signal and see if stall asserts
+    dut.im_a_pop_i.value = 1
+    dut.im_b_pop_i.value = 1
+
+    # Propagate time but not clock
+    await Timer(1, units="ps")
+
+    # Check and see that the stall signal should not be asserted
+    stall_val = dut.stall_o.value.integer
+    check_result(stall_val, 0)
+
+    # Propagate time for logic
+    await clock_and_time(dut.clk_i)
+
+    # Bring pops to 0
+    dut.im_a_pop_i.value = 0
+    dut.im_b_pop_i.value = 0
 
     # This is for waveform checking later
     for i in range(set_parameters.TEST_RUNS):
