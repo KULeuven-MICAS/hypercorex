@@ -34,12 +34,12 @@ module item_memory_top #(
   // Inputs from the fetcher side
   input  logic                [ImAddrWidth-1:0] lowdim_a_data_i,
   input  logic                [HVDimension-1:0] highdim_a_data_i,
-  input  logic                                  im_a_addr_valid_i,
-  output logic                                  im_a_addr_ready_o,
+  input  logic                                  im_a_data_valid_i,
+  output logic                                  im_a_data_ready_o,
   input  logic                [ImAddrWidth-1:0] lowdim_b_data_i,
   input  logic                [HVDimension-1:0] highdim_b_data_i,
-  input  logic                                  im_b_addr_valid_i,
-  output logic                                  im_b_addr_ready_o,
+  input  logic                                  im_b_data_valid_i,
+  output logic                                  im_b_data_ready_o,
   // Outputs towards the encoder
   output logic                [HVDimension-1:0] im_a_o,
   input  logic                                  im_a_pop_i,
@@ -71,11 +71,11 @@ module item_memory_top #(
   //---------------------------
   // Combinational assignments
   //---------------------------
-  assign im_a_addr_ready_o = !fifo_full_a && enable_i;
-  assign im_b_addr_ready_o = !fifo_full_b && enable_i;
+  assign im_a_data_ready_o = !fifo_full_a && enable_i;
+  assign im_b_data_ready_o = !fifo_full_b && enable_i;
 
-  assign fifo_push_a = im_a_addr_valid_i && im_a_addr_ready_o;
-  assign fifo_push_b = im_b_addr_valid_i && im_b_addr_ready_o;
+  assign fifo_push_a = im_a_data_valid_i && im_a_data_ready_o;
+  assign fifo_push_b = im_b_data_valid_i && im_b_data_ready_o;
 
   assign fifo_pop_a  = im_a_pop_i && !fifo_empty_a;
   assign fifo_pop_b  = im_b_pop_i && !fifo_empty_b;

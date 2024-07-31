@@ -16,15 +16,15 @@
 module csr import csr_addr_pkg::*; #(
   parameter int unsigned NumTotIm         = 1024,
   parameter int unsigned NumPerImBank     = 128,
-  parameter int unsigned RegDataWidth     = 32,
-  parameter int unsigned RegAddrWidth     = 32,
+  parameter int unsigned CsrDataWidth     = 32,
+  parameter int unsigned CsrAddrWidth     = 32,
   parameter int unsigned InstMemDepth     = 32,
   // Don't touch!
   parameter int unsigned NumImSets        = NumTotIm/NumPerImBank,
   // Total number of registers + N number if IM seeds
   parameter int unsigned NumRegs          = (14+NumImSets),
   parameter int unsigned InstMemAddrWidth = $clog2(InstMemDepth),
-  parameter int unsigned RegBitAddrWidth  = $clog2(RegAddrWidth)
+  parameter int unsigned RegBitAddrWidth  = $clog2(CsrAddrWidth)
 )(
   //---------------------------
   // Clocks and reset
@@ -35,13 +35,13 @@ module csr import csr_addr_pkg::*; #(
   // CSR RW control signals
   //---------------------------
   // Request
-  input  logic [    RegDataWidth-1:0]               csr_req_data_i,
-  input  logic [    RegAddrWidth-1:0]               csr_req_addr_i,
+  input  logic [    CsrDataWidth-1:0]               csr_req_data_i,
+  input  logic [    CsrAddrWidth-1:0]               csr_req_addr_i,
   input  logic                                      csr_req_write_i,
   input  logic                                      csr_req_valid_i,
   output logic                                      csr_req_ready_o,
   // Response
-  output logic [    RegDataWidth-1:0]               csr_rsp_data_o,
+  output logic [    CsrDataWidth-1:0]               csr_rsp_data_o,
   input  logic                                      csr_rsp_ready_i,
   output logic                                      csr_rsp_valid_o,
   //---------------------------
@@ -55,19 +55,19 @@ module csr import csr_addr_pkg::*; #(
   output logic                                      csr_port_b_cim_o,
   output logic                                      csr_clr_o,
   // AM settings
-  output logic [    RegDataWidth-1:0]               csr_am_num_pred_o,
-  input  logic [    RegDataWidth-1:0]               csr_am_pred_i,
+  output logic [    CsrDataWidth-1:0]               csr_am_num_pred_o,
+  input  logic [    CsrDataWidth-1:0]               csr_am_pred_i,
   // Instruction control settings
   output logic                                      csr_inst_ctrl_write_mode_o,
   output logic                                      csr_inst_ctrl_dbg_o,
   output logic                                      csr_inst_ctrl_clr_o,
   output logic [InstMemAddrWidth-1:0]               csr_inst_wr_addr_o,
   output logic                                      csr_inst_wr_addr_en_o,
-  output logic [    RegDataWidth-1:0]               csr_inst_wr_data_o,
+  output logic [    CsrDataWidth-1:0]               csr_inst_wr_data_o,
   output logic                                      csr_inst_wr_data_en_o,
   output logic [InstMemAddrWidth-1:0]               csr_inst_rddbg_addr_o,
   input  logic [InstMemAddrWidth-1:0]               csr_inst_pc_i,
-  input  logic [    RegDataWidth-1:0]               csr_inst_at_addr_i,
+  input  logic [    CsrDataWidth-1:0]               csr_inst_at_addr_i,
   // Instruction loop control
   output logic                  [1:0]               csr_inst_loop_mode_o,
   output logic [InstMemAddrWidth-1:0]               csr_loop_jump_addr1_o,
@@ -80,8 +80,8 @@ module csr import csr_addr_pkg::*; #(
   output logic [InstMemAddrWidth-1:0]               csr_loop_count_addr2_o,
   output logic [InstMemAddrWidth-1:0]               csr_loop_count_addr3_o,
   // IM Seeds
-  output logic [RegDataWidth-1:0]                   csr_cim_seed_o,
-  output logic [   NumImSets-1:0][RegDataWidth-1:0] csr_im_seed_o
+  output logic [CsrDataWidth-1:0]                   csr_cim_seed_o,
+  output logic [   NumImSets-1:0][CsrDataWidth-1:0] csr_im_seed_o
 );
 
   //---------------------------
@@ -89,7 +89,7 @@ module csr import csr_addr_pkg::*; #(
   //---------------------------
 
   // Register set
-  logic [NumRegs-1:0][RegDataWidth-1:0] csr_set;
+  logic [NumRegs-1:0][CsrDataWidth-1:0] csr_set;
 
   // For CSR control
   logic csr_req_success;
@@ -99,7 +99,7 @@ module csr import csr_addr_pkg::*; #(
   logic csr_read_req;
 
   // Wiring
-  logic [RegDataWidth-1:0] csr_rd_data;
+  logic [CsrDataWidth-1:0] csr_rd_data;
 
   //---------------------------
   // Always ready to get
@@ -119,7 +119,7 @@ module csr import csr_addr_pkg::*; #(
   always_ff @ (posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       for (int i = 0; i < NumRegs; i++) begin
-        csr_set[i] <= {RegDataWidth{1'b0}};
+        csr_set[i] <= {CsrDataWidth{1'b0}};
       end
     end else begin
       if (csr_write_req) begin
@@ -138,7 +138,7 @@ module csr import csr_addr_pkg::*; #(
       CORE_SET_REG_ADDR: begin
         csr_rd_data = {
                                                                  // verilog_lint: waive-start line-length
-                                       {(RegDataWidth-5){1'b0}}, // [31:5] -- Unused
+                                       {(CsrDataWidth-5){1'b0}}, // [31:5] -- Unused
                                                            1'b0, //    [6] WO Core clear (generates pulse)
         csr_set[CORE_SET_REG_ADDR][  CORE_SET_IMB_MUX_BIT_ADDR], //    [5] RW IMB MUX
         csr_set[CORE_SET_REG_ADDR][4:CORE_SET_IMA_MUX_BIT_ADDR], //    [4:3] RW IMA MUX
@@ -157,7 +157,7 @@ module csr import csr_addr_pkg::*; #(
       INST_CTRL_REG_ADDR: begin
         csr_rd_data = {
                                                                       // verilog_lint: waive-start line-length
-                                            {(RegDataWidth-3){1'b0}}, // [31:3] -- Unused
+                                            {(CsrDataWidth-3){1'b0}}, // [31:3] -- Unused
                                                                 1'b0, //    [2] WO Instruction clear
           csr_set[INST_CTRL_REG_ADDR][  INST_CTRL_DBG_MODE_BIT_ADDR], //    [1] RW Instruction debug mode
           csr_set[INST_CTRL_REG_ADDR][INST_CTRL_WRITE_MODE_BIT_ADDR]  //    [0] RW Instruction write mode
@@ -167,7 +167,7 @@ module csr import csr_addr_pkg::*; #(
       end
       INST_WRITE_ADDR_REG_ADDR,
       INST_WRITE_DATA_REG_ADDR: begin
-        csr_rd_data = {RegDataWidth{1'b0}};
+        csr_rd_data = {CsrDataWidth{1'b0}};
       end
       INST_RDDBG_ADDR_REG_ADDR: begin
         csr_rd_data = csr_set[INST_RDDBG_ADDR_REG_ADDR];
@@ -180,7 +180,7 @@ module csr import csr_addr_pkg::*; #(
       end
       INST_LOOP_CTRL_REG_ADDR: begin
         csr_rd_data = {
-                       {(RegDataWidth-2){1'b0}}, // [31:2] -- Unused
+                       {(CsrDataWidth-2){1'b0}}, // [31:2] -- Unused
           csr_set[INST_LOOP_CTRL_REG_ADDR][1:0]  //  [1:0] RW Instruction loop mode
         };
       end
@@ -188,7 +188,7 @@ module csr import csr_addr_pkg::*; #(
       INST_LOOP_END_ADDR_REG_ADDR,
       INST_LOOP_COUNT_REG_ADDR: begin
         csr_rd_data = {
-                                                  {(RegDataWidth-2){1'b0}}, // [31:22] -- Unused
+                                                  {(CsrDataWidth-2){1'b0}}, // [31:22] -- Unused
           csr_set[csr_req_addr_i][3*InstMemAddrWidth-1:2*InstMemAddrWidth], //   [7:0] RW Loop addr3
           csr_set[csr_req_addr_i][2*InstMemAddrWidth-1:  InstMemAddrWidth], //   [7:0] RW Loop addr2
           csr_set[csr_req_addr_i][  InstMemAddrWidth-1:                 0]  //   [7:0] RW Loop addr1
@@ -203,7 +203,7 @@ module csr import csr_addr_pkg::*; #(
            (csr_req_addr_i < (IM_BASE_SEED_REG_ADDR + NumImSets))) begin
           csr_rd_data = csr_set[csr_req_addr_i];
         end else begin
-          csr_rd_data = {RegDataWidth{1'b0}};
+          csr_rd_data = {CsrDataWidth{1'b0}};
         end
       end
 
@@ -215,14 +215,14 @@ module csr import csr_addr_pkg::*; #(
   //---------------------------
   always_ff @ (posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      csr_rsp_data_o  <= {RegDataWidth{1'b0}};
+      csr_rsp_data_o  <= {CsrDataWidth{1'b0}};
       csr_rsp_valid_o <= 1'b0;
     end else begin
       if (csr_read_req) begin
         csr_rsp_data_o  <= csr_rd_data;
         csr_rsp_valid_o <= 1'b1;
       end else if (csr_rsp_success) begin
-        csr_rsp_data_o  <= {RegDataWidth{1'b0}};
+        csr_rsp_data_o  <= {CsrDataWidth{1'b0}};
         csr_rsp_valid_o <= 1'b0;
       end else begin
         csr_rsp_data_o  <= csr_rsp_data_o;
