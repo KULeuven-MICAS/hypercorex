@@ -400,6 +400,7 @@ def gen_ca90_im_set(
         # Get the confusion matrix!
         conf_mat = gen_conf_mat(num_total_im, ortho_im)
 
+        # Plot the heatmap
         heatmap_plot(conf_mat)
 
     else:
@@ -511,7 +512,7 @@ def prediction_set(assoc_mem, query_hv_set, hv_type="binary"):
 
 # Measuring accuracy for the test set
 # The correct set needs to be in correct order
-def measure_acc(assoc_mem, predict_set, correct_set):
+def measure_acc(predict_set, correct_set):
     len_predict_set = len(predict_set)
 
     # Count number of correct elements
