@@ -143,7 +143,7 @@ def check_result_array(actual_val_array, golden_val_array, debug_on=False):
             )
     assert (
         golden_val_array == actual_val_array
-    ).any(), f"Error! Golden Val: {golden_val_array}; Actual Val: {actual_val_array}"
+    ).all(), f"Error! Golden Val: {golden_val_array}; Actual Val: {actual_val_array}"
     return
 
 
