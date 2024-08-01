@@ -229,7 +229,7 @@ module hypercorex_top # (
     //---------------------------
     // Core settings
     .csr_start_o                ( start                 ),
-    .csr_busy_i                 ( busy                  ),
+    .csr_busy_i                 ( enable                ),
     .csr_seq_test_mode_o        ( seq_test_mode         ),
     .csr_port_a_cim_o           ( port_a_cim            ),
     .csr_port_b_cim_o           ( port_b_cim            ),
@@ -328,7 +328,8 @@ module hypercorex_top # (
     .RegNum                     ( RegNum               )
   ) i_inst_decode (
     // Input instruction
-    .inst_code_i                ( inst_pc              ),
+    .inst_code_i                ( inst_at_addr         ),
+    .enable_i                   ( enable               ),
     // Control ports for IM
     .im_a_pop_o                 ( im_a_pop             ),
     .im_b_pop_o                 ( im_b_pop             ),
