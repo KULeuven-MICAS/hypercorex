@@ -14,8 +14,8 @@ NUM_CLASSES = 10
 
 # Working dimensions
 HV_DIM = 256
-SEED_DIM = 64
 REG_FILE_WIDTH = 32
+SEED_DIM = REG_FILE_WIDTH
 
 # Item memory parameters
 NUM_TOT_IM = 256

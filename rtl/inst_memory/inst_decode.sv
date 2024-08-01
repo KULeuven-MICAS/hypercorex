@@ -34,6 +34,7 @@ module inst_decode import hypercorex_inst_pkg::*; #(
 )(
   // Input instruction
   input  logic [   InstWidth-1:0] inst_code_i,
+  input  logic                    enable_i,
   // Control ports for IM
   output logic                    im_a_pop_o,
   output logic                    im_b_pop_o,
@@ -65,21 +66,21 @@ module inst_decode import hypercorex_inst_pkg::*; #(
 );
 
   //---------------------------
-  // Local parameters
-  //---------------------------
-
-  //---------------------------
   // Wiring
   //---------------------------
+  logic [InstWidth-1:0] inst_code;
 
 
   //---------------------------
-  // Slice assignments
+  // Assignments
   //---------------------------
-  assign reg_rd_addr_b_o = inst_code_i[1:0];
-  assign reg_rd_addr_a_o = inst_code_i[3:2];
-  assign reg_wr_addr_o   = inst_code_i[5:4];
-  assign alu_shift_amt_o = inst_code_i[7:6];
+  assign reg_rd_addr_b_o = inst_code[1:0];
+  assign reg_rd_addr_a_o = inst_code[3:2];
+  assign reg_wr_addr_o   = inst_code[5:4];
+  assign alu_shift_amt_o = inst_code[7:6];
+
+  // For disabling the control signals if not yet used
+  assign inst_code = (enable_i) ? inst_code_i : {InstWidth{1'b0}};
 
   //---------------------------
   // Main instruction decoder
@@ -122,7 +123,7 @@ module inst_decode import hypercorex_inst_pkg::*; #(
     am_search_o = '0;
     am_load_o   = '0;
 
-    unique casez (inst_code_i)
+    unique casez (inst_code)
       // Default for when unknown instructions come in
       default: begin
         // Contorl ports for IM

@@ -140,6 +140,9 @@ async def inst_decode_dut(dut):
     # Initialize all other ports to 0
     dut.inst_code_i.value = 0
 
+    # Ensure that instruction decode is enabled
+    dut.enable_i.value = 1
+
     # Do this in multiple loops
     for i in range(set_parameters.TEST_RUNS):
         inst_test_list = [

@@ -687,6 +687,20 @@ async def read_am_list(dut, am_start_addr, am_size):
     return am_data_list
 
 
+# Read from QHV memory
+async def read_qhv(dut, qhv_addr):
+    dut.qhv_rd_addr_i.value = qhv_addr
+
+    # Wait for one cycle
+    await clock_and_time(dut.clk_i)
+
+    # Extract data
+    qhv_data = dut.qhv_rd_data_o.value.integer
+
+    clear_tb_inputs(dut)
+    return qhv_data
+
+
 """
     Functions for CSR control
 """
