@@ -19,6 +19,7 @@ from hdc_util import (
     prediction_set,
     simple_plot2d,
     gen_ri_hv,
+    gen_ca90_im_set,
 )
 from tqdm import tqdm
 import numpy as np
@@ -41,7 +42,7 @@ IMG_PIXEL_NUM = IMG_ROW_NUM * IMG_COL_NUM
 
 # Characteristics of HV
 HV_TYPE = "binary"
-HV_DIM = 1024
+HV_DIM = 256
 P_DENSE = 0.5
 HV_SEED_DIM = HV_DIM
 HV_SEED_DENSE = 1 / 2
@@ -54,6 +55,20 @@ TEST_RUNS = 10
 """
     Other useful useful functions for this test only
 """
+
+
+# Extract character recognition data set
+# and return the integer array form
+def char_recog_dataset(file_path):
+    # Extract data
+    dataset = extract_dataset(file_path)
+
+    # Minor data clean to make the data a list
+    # of binary numbers instead of characters
+    for i in range(len(dataset)):
+        dataset[i] = np.array(list(map(int, list(dataset[i]))))
+
+    return dataset
 
 
 # This test randomly distorts some pixels
@@ -100,14 +115,32 @@ def distort_inputs(orig_dataset, num_distort, img_len):
 
 # Encoding every character first
 # The output is a binarized encoded hypervector
-def encode_character(hv_dim, ortho_im, character_input, threshold, hv_type="binary"):
+def encode_character(
+    hv_dim,
+    ortho_im,
+    character_input,
+    threshold,
+    non_perm_encode=False,
+    hv_type="binary",
+):
     # Initialize empty character hypervector
     char_hv = gen_empty_hv(hv_dim)
 
     # Cycle through every pixel
     for i in range(len(character_input)):
+        # If pixel value is a 1
         if character_input[i] == 1:
-            char_hv += circ_perm_hv(ortho_im[i], 1)
+            # For non permutative encoding
+            # We only select a different
+            # orthogonal HV from the ortho im set
+            if non_perm_encode:
+                char_hv += ortho_im[35 + i]
+            # Otherwise we do the normal orothogonal
+            # pemuting based on the original feature
+            else:
+                char_hv += circ_perm_hv(ortho_im[i], 1)
+        # If pixel is black, we just select
+        # the base othorgonal HV
         else:
             char_hv += ortho_im[i]
 
@@ -117,13 +150,63 @@ def encode_character(hv_dim, ortho_im, character_input, threshold, hv_type="bina
     return char_hv
 
 
-# Entire characte recognition run
-def run_char_recog(dataset, max_distort, test_runs, hv_seed_dim, im_gen="random"):
-    # Minor data clean to make the data a list
-    # of binary numbers instead of characters
-    for i in range(len(dataset)):
-        dataset[i] = np.array(list(map(int, list(dataset[i]))))
+# Encoding with indices
+def encode_with_idx(hv_dim, ortho_im, character_input, threshold, hv_type="binary"):
+    # Initialize empty character hypervector
+    char_hv = gen_empty_hv(hv_dim)
 
+    # Cycle through every pixel
+    for i in character_input:
+        char_hv += ortho_im[i]
+
+    # Binarize the bundled HV
+    char_hv = binarize_hv(char_hv, threshold, hv_type)
+
+    return char_hv
+
+
+# Convert pixel and position into im indices
+def convert_to_data_indices(dataset):
+    data_indices = []
+    for i in range(len(dataset)):
+        data_idx = []
+        for j in range(len(dataset[i])):
+            if dataset[i][j] == 1:
+                data_idx.append(35 + j)
+            else:
+                data_idx.append(j)
+        data_indices.append(data_idx)
+    return data_indices
+
+
+# Training the character recognition set
+def train_char_recog(
+    dataset, hv_dim, ortho_im, threshold, non_perm_encode=False, hv_type="binary"
+):
+    # Initialize empty assoc mem list
+    assoc_mem = []
+
+    # For each item in data set to train
+    for i in range(len(dataset)):
+        # Append the encoded character
+        assoc_mem.append(
+            encode_character(
+                hv_dim=hv_dim,
+                ortho_im=ortho_im,
+                character_input=dataset[i],
+                threshold=threshold,
+                non_perm_encode=non_perm_encode,
+                hv_type=hv_type,
+            )
+        )
+
+    return assoc_mem
+
+
+# Entire character recognition run
+def run_char_recog_test(
+    dataset, max_distort, test_runs, hv_seed_dim, non_perm_encode=False, im_gen="random"
+):
     # Correct answer set (this is fixed for char recog)
     correct_set = list(range(NUM_CLASSSES))
 
@@ -135,8 +218,13 @@ def run_char_recog(dataset, max_distort, test_runs, hv_seed_dim, im_gen="random"
         # This case covers CA 90
         hv_seed = gen_ri_hv(hv_seed_dim, P_DENSE)
 
+    if non_perm_encode:
+        num_hv = 2 * IMG_PIXEL_NUM
+    else:
+        num_hv = IMG_PIXEL_NUM
+
     ortho_im = gen_orthogonal_im(
-        num_hv=IMG_PIXEL_NUM,
+        num_hv=num_hv,
         hv_dim=HV_DIM,
         p_dense=P_DENSE,
         hv_seed=hv_seed,
@@ -146,11 +234,14 @@ def run_char_recog(dataset, max_distort, test_runs, hv_seed_dim, im_gen="random"
 
     # Encode the characters into AM
     # This is the training part
-    assoc_mem = []
-    for i in range(len(dataset)):
-        assoc_mem.append(
-            encode_character(HV_DIM, ortho_im, dataset[i], THRESHOLD, hv_type=HV_TYPE)
-        )
+    assoc_mem = train_char_recog(
+        dataset=dataset,
+        hv_dim=HV_DIM,
+        ortho_im=ortho_im,
+        threshold=THRESHOLD,
+        non_perm_encode=non_perm_encode,
+        hv_type=HV_TYPE,
+    )
 
     # This is the testing part
     # Test for different distortions
@@ -175,7 +266,12 @@ def run_char_recog(dataset, max_distort, test_runs, hv_seed_dim, im_gen="random"
             for j in range(len(distort_items)):
                 query_hv_set.append(
                     encode_character(
-                        HV_DIM, ortho_im, distort_items[j], THRESHOLD, hv_type=HV_TYPE
+                        HV_DIM,
+                        ortho_im,
+                        distort_items[j],
+                        THRESHOLD,
+                        non_perm_encode=non_perm_encode,
+                        hv_type=HV_TYPE,
                     )
                 )
 
@@ -198,11 +294,12 @@ def run_char_recog(dataset, max_distort, test_runs, hv_seed_dim, im_gen="random"
     return avg_acc
 
 
-# Main function to run the character recognition program
-if __name__ == "__main__":
+# Experiemnt 1 to display trends for distortion
+# TODO: clean me later
+def exp_distort_test():
     # Get original data set
     file_path = "./data_set/char_recog/characters.txt"
-    dataset = extract_dataset(file_path)
+    dataset = char_recog_dataset(file_path)
 
     # Set max number of distortions
     max_distort = 20
@@ -212,8 +309,13 @@ if __name__ == "__main__":
 
     # Run the character recognition sets
     # First get the normal item memory generation
-    avg_acc_random_im = run_char_recog(
-        dataset, max_distort, TEST_RUNS, hv_seed_dim=0, im_gen="random"
+    avg_acc_random_im = run_char_recog_test(
+        dataset,
+        max_distort,
+        TEST_RUNS,
+        hv_seed_dim=0,
+        non_perm_encode=True,
+        im_gen="random",
     )
 
     # Get the CA 90 dependent generations
@@ -222,14 +324,14 @@ if __name__ == "__main__":
 
     for i in range(8):
         # Run the character recognition per CA 90
-        avg_acc_ca90_iter_im = run_char_recog(
+        avg_acc_ca90_iter_im = run_char_recog_test(
             dataset,
             max_distort,
             TEST_RUNS,
             hv_seed_dim=int(HV_DIM / (2**i)),
             im_gen="ca90_iter",
         )
-        avg_acc_ca90_hier_im = run_char_recog(
+        avg_acc_ca90_hier_im = run_char_recog_test(
             dataset,
             max_distort,
             TEST_RUNS,
@@ -294,3 +396,60 @@ if __name__ == "__main__":
         marker="o",
         single_plot=False,
     )
+    return
+
+
+# Main function to run the character recognition program
+if __name__ == "__main__":
+    # Some working parameters
+    seed_size = 32
+    hv_dim = 256
+    num_total_im = 256
+    num_per_im_bank = int(hv_dim // 4)
+    threshold = THRESHOLD
+
+    # Get original data set
+    file_path = "./data_set/char_recog/characters.txt"
+    dataset = char_recog_dataset(file_path)
+
+    # Correct result
+    correct_set = list(range(26))
+
+    # Prepare data indices for the accelerator
+    data_indices = convert_to_data_indices(dataset)
+
+    # Get a CA90 seed that's working
+    seed_list, ortho_im, conf_mat = gen_ca90_im_set(
+        seed_size,
+        hv_dim,
+        num_total_im,
+        num_per_im_bank,
+        ca90_mode="hier",
+        display_heatmap=False,
+    )
+
+    # Training of AM and extracting
+    # Converted data list
+    assoc_mem = []
+
+    assoc_mem = train_char_recog(
+        dataset, hv_dim, ortho_im, threshold, non_perm_encode=True, hv_type="binary"
+    )
+
+    # Encode query_hv_list
+    query_hv_set = []
+
+    for i in range(NUM_CLASSSES):
+        query_hv = encode_with_idx(
+            hv_dim, ortho_im, data_indices[i], threshold, hv_type="binary"
+        )
+
+        query_hv_set.append(query_hv)
+
+    # Get prediction set
+    predict_set = prediction_set(assoc_mem, query_hv_set, hv_type="binary")
+
+    # Accuracy measurement
+    acc = measure_acc(predict_set, correct_set)
+
+    print(f"Accuracy: {acc*100}")
