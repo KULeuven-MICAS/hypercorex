@@ -110,19 +110,16 @@ module tb_rd_memory # (
   // Output data will always be valid
   // in this synthetic memory read module
   // since contentions will never happend
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      rd_acc_data_o  <= 0;
-      rd_acc_valid_o <= 0;
+  always_comb begin
+
+    if (en_i) begin
+      rd_acc_valid_o = 1;
     end else begin
-      if (en_i) begin
-        rd_acc_data_o  <= mem[acc_addr];
-        rd_acc_valid_o <= 1;
-      end else begin
-        rd_acc_data_o  <= 0;
-        rd_acc_valid_o <= 0;
-      end
+      rd_acc_valid_o = 0;
     end
+
+    rd_acc_data_o = mem[acc_addr];
+
   end
 
   //---------------------------
