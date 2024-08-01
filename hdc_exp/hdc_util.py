@@ -289,7 +289,7 @@ def gen_hv_ca90_hierarchical_rows(hv_seed, hv_dim, permute_base=1):
     # Iterate until we reach HV size
     while len_gen_hv != hv_dim:
         gen_ca90_hv = gen_ca90(gen_hv, permute_base)
-        gen_hv = np.concatenate((gen_hv, gen_ca90_hv))
+        gen_hv = np.concatenate((gen_ca90_hv, gen_hv))
         len_gen_hv = len(gen_hv)
 
     return gen_hv
@@ -419,11 +419,11 @@ def gen_ca90_im_set(
 # depending on the dimension size
 def gen_square_cim(hv_dim, seed_size, im_type="random"):
     # Set a pre-determined seed
-    hv_seed_list = ca90_extract_seeds(seed_size, 1, hv_dim, ca90_mode=im_type)
+    lowdim_seed_list = ca90_extract_seeds(seed_size, 1, hv_dim, ca90_mode=im_type)
 
-    print(f"CiM seed: {hv_seed_list[0]}")
+    print(f"CiM seed: {lowdim_seed_list[0]}")
 
-    hv_seed = numbin2list(hv_seed_list[0], hv_dim)
+    lowdim_hv_seed = numbin2list(lowdim_seed_list[0], seed_size)
 
     # Half of the distance
     # which marks the number of levels
@@ -433,9 +433,9 @@ def gen_square_cim(hv_dim, seed_size, im_type="random"):
     # Depending on which mode we choose
     # Do this for initialize first seed first
     if im_type == "ca90_iter":
-        hv_seed = gen_hv_ca90_iterate_rows(hv_seed, hv_dim)
+        hv_seed = gen_hv_ca90_iterate_rows(lowdim_hv_seed, hv_dim)
     elif im_type == "ca90_hier":
-        hv_seed = gen_hv_ca90_hierarchical_rows(hv_seed, hv_dim)
+        hv_seed = gen_hv_ca90_hierarchical_rows(lowdim_hv_seed, hv_dim)
     else:
         hv_seed = gen_ri_hv(hv_dim=hv_dim, p_dense=0.5, hv_type="binary")
 
@@ -455,7 +455,7 @@ def gen_square_cim(hv_dim, seed_size, im_type="random"):
             cim[i] = cim[i - 1]
             cim[i][2 * i - 1] = 0
 
-    return hv_seed, cim
+    return lowdim_hv_seed, cim
 
 
 """
