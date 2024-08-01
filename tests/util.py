@@ -27,6 +27,15 @@ def get_root():
     return os.getcwd()
 
 
+# For getting directory of the file
+def get_dir():
+    # Get the absolute path of the current script
+    script_path = os.path.abspath(__file__)
+    # Get the directory of the script
+    script_dir = os.path.dirname(script_path)
+    return script_dir
+
+
 # Setup and run functions
 # Extracts necessary definitions and filelists
 # Then invokes the run simulator
