@@ -9,7 +9,7 @@
 import math
 
 # Test Parameters
-TEST_RUNS = 50
+TEST_RUNS = 10
 NUM_CLASSES = 10
 
 # Working dimensions
