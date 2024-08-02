@@ -537,6 +537,11 @@ def clear_tb_inputs(dut):
     # ---------------------
     dut.qhv_rd_addr_i.value = 0
 
+    # ---------------------
+    # AM predict ports
+    # ---------------------
+    dut.predict_rd_addr_i.value = 0
+
     return
 
 

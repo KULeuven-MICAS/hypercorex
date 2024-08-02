@@ -27,7 +27,10 @@ module assoc_mem #(
   output logic                   class_hv_ready_o,
   // CSR output side
   input  logic [  DataWidth-1:0] am_num_class_i,
-  output logic [  DataWidth-1:0] max_arg_idx_o
+  // Low-dim prediction
+  output logic [  DataWidth-1:0] predict_o,
+  output logic                   predict_valid_o,
+  input  logic                   predict_ready_i
 );
 
   //---------------------------
@@ -42,6 +45,7 @@ module assoc_mem #(
   logic counter_done;
   logic class_hv_success;
   logic overwrite_sim_score;
+  logic finished_predict;
 
   //---------------------------
   // Combinational logic
@@ -49,6 +53,7 @@ module assoc_mem #(
   assign counter_done        = (am_counter == (am_num_class_i-1)) ? 1'b1 : 1'b0;
   assign class_hv_success    = (class_hv_ready_o && class_hv_valid_i);
   assign overwrite_sim_score = (ham_dist_score <= curr_sim_score) ? 1'b1 : 1'b0;
+  assign finished_predict    = (counter_done && class_hv_success) ? 1'b1 : 1'b0;
 
   // Class HV side is always ready when started
   // Same as busy register
@@ -56,7 +61,7 @@ module assoc_mem #(
   assign class_hv_ready_o = busy_reg;
 
   // Output CSR register for the max argument
-  assign max_arg_idx_o = max_arg_idx;
+  assign predict_o = max_arg_idx;
 
   // Stall happens when busy register is high
   // and when an am start signal is present
@@ -75,7 +80,7 @@ module assoc_mem #(
     if (!rst_ni) begin
       am_counter <= {DataWidth{1'b0}};
     end else begin
-      if (counter_done && class_hv_success) begin
+      if (finished_predict) begin
         am_counter <= {DataWidth{1'b0}};
       end else if (busy_reg && class_hv_success) begin
         am_counter <= am_counter + 1;
@@ -97,7 +102,7 @@ module assoc_mem #(
     if (!rst_ni) begin
       busy_reg <= 1'b0;
     end else begin
-      if (counter_done && class_hv_success) begin
+      if (finished_predict) begin
         busy_reg <= 1'b0;
       end else if (!busy_reg && am_start_i) begin
         busy_reg <= 1'b1;
@@ -156,6 +161,23 @@ module assoc_mem #(
         max_arg_idx <= am_counter;
       end else begin
         max_arg_idx <= max_arg_idx;
+      end
+    end
+  end
+
+  //---------------------------
+  // Valid-ready control for class HV
+  //---------------------------
+  always_ff @ (posedge clk_i  or negedge rst_ni) begin
+    if (!rst_ni) begin
+      predict_valid_o <= 1'b0;
+    end else begin
+      if (finished_predict) begin
+        predict_valid_o <= 1'b1;
+      end else if (predict_ready_i) begin
+        predict_valid_o <= 1'b0;
+      end else begin
+        predict_valid_o <= predict_valid_o;
       end
     end
   end

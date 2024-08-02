@@ -46,7 +46,9 @@ module tb_hypercorex # (
   parameter int unsigned NumImSets        = NumTotIm/NumPerImBank,
   parameter int unsigned InstMemAddrWidth = $clog2(InstMemDepth),
   parameter int unsigned TbMemDepth       = 512,
-  parameter int unsigned TbMemAddrWidth   = CsrAddrWidth
+  parameter int unsigned TbMemAddrWidth   = CsrAddrWidth,
+  parameter int unsigned TbAMMemDepth     = 32,
+  parameter int unsigned TbQHVMemDepth    = 32
 )(
   //---------------------------
   // Clocks and reset
@@ -106,6 +108,9 @@ module tb_hypercorex # (
   // QHV signals
   input  logic [TbMemAddrWidth-1:0] qhv_rd_addr_i,
   output logic [   HVDimension-1:0] qhv_rd_data_o,
+  // Predict signals
+  input  logic [TbMemAddrWidth-1:0] predict_rd_addr_i,
+  output logic [  CsrDataWidth-1:0] predict_rd_data_o,
   // Enable signal for memory
   input  logic                      enable_mem_i
 );
@@ -126,6 +131,10 @@ module tb_hypercorex # (
   logic                    qhv_ready;
   logic                    qhv_valid;
   logic [ HVDimension-1:0] qhv;
+
+  logic [CsrDataWidth-1:0] predict;
+  logic                    predict_valid;
+  logic                    predict_ready;
 
   logic [ HVDimension-1:0] class_hv;
   logic                    class_hv_valid;
@@ -265,7 +274,7 @@ module tb_hypercorex # (
   tb_rd_memory # (
     .DataWidth              ( HVDimension          ),
     .AddrWidth              ( CsrAddrWidth         ),
-    .MemDepth               ( TbMemDepth           )
+    .MemDepth               ( TbAMMemDepth         )
   ) i_am_memory (
     // Clock and reset
     .clk_i                  ( clk_i                ),
@@ -295,7 +304,7 @@ module tb_hypercorex # (
   tb_wr_memory # (
     .DataWidth              ( HVDimension          ),
     .AddrWidth              ( CsrAddrWidth         ),
-    .MemDepth               ( TbMemDepth           )
+    .MemDepth               ( TbQHVMemDepth        )
   ) i_qhv_memory (
     // Clock and reset
     .clk_i                  ( clk_i                ),
@@ -313,6 +322,32 @@ module tb_hypercorex # (
     .wr_acc_data_i          ( qhv                  ),
     .wr_acc_valid_i         ( qhv_valid            ),
     .wr_acc_ready_o         ( qhv_ready            )
+  );
+
+  //---------------------------
+  // Predict write memory
+  //---------------------------
+  tb_wr_memory # (
+    .DataWidth              ( CsrDataWidth        ),
+    .AddrWidth              ( CsrAddrWidth        ),
+    .MemDepth               ( TbAMMemDepth        )
+  ) i_predict_memory (
+    // Clock and reset
+    .clk_i                  ( clk_i               ),
+    .rst_ni                 ( rst_ni              ),
+    // Enable signal
+    .en_i                   ( enable_mem_i        ),
+    // Read port
+    .rd_addr_i              ( predict_rd_addr_i   ),
+    .rd_data_o              ( predict_rd_data_o   ),
+    // Force address to be written
+    .set_wr_addr_i          ( '0                  ),
+    .set_wr_en_i            ( '0                  ),
+    // Accelerator access port
+    .wr_acc_addr_o          (                     ),
+    .wr_acc_data_i          ( predict             ),
+    .wr_acc_valid_i         ( predict_valid       ),
+    .wr_acc_ready_o         ( predict_ready       )
   );
 
   //---------------------------
@@ -374,9 +409,15 @@ module tb_hypercorex # (
     //---------------------------
     // AM ports
     //---------------------------
-    .class_hv_i         ( class_hv       ),
-    .class_hv_valid_i   ( class_hv_valid ),
-    .class_hv_ready_o   ( class_hv_ready )
+    .class_hv_i         ( class_hv        ),
+    .class_hv_valid_i   ( class_hv_valid  ),
+    .class_hv_ready_o   ( class_hv_ready  ),
+    //---------------------------
+      // Low-dim prediction
+      //---------------------------
+    .predict_o          ( predict         ),
+    .predict_valid_o    ( predict_valid   ),
+    .predict_ready_i    ( predict_ready   )
   );
 
 endmodule

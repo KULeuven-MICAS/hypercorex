@@ -94,7 +94,13 @@ module hypercorex_top # (
   //---------------------------
   input  logic [ HVDimension-1:0] class_hv_i,
   input  logic                    class_hv_valid_i,
-  output logic                    class_hv_ready_o
+  output logic                    class_hv_ready_o,
+  //---------------------------
+  // Low-dim prediction
+  //---------------------------
+  output logic [CsrDataWidth-1:0] predict_o,
+  output logic                    predict_valid_o,
+  input  logic                    predict_ready_i
 );
 
   //---------------------------
@@ -109,7 +115,6 @@ module hypercorex_top # (
   logic                                          clr;
   // AM settings
   logic [    CsrDataWidth-1:0]                   am_num_pred;
-  logic [    CsrDataWidth-1:0]                   am_pred;
   // Instruction control settings
   logic                                          inst_ctrl_write_mode;
   logic                                          inst_ctrl_dbg;
@@ -236,7 +241,7 @@ module hypercorex_top # (
     .csr_clr_o                  ( clr                   ),
     // AM settings
     .csr_am_num_pred_o          ( am_num_pred           ),
-    .csr_am_pred_i              ( am_pred               ),
+    .csr_am_pred_i              ( predict_o             ),
     // Instruction control settings
     .csr_inst_ctrl_write_mode_o ( inst_ctrl_write_mode  ),
     .csr_inst_ctrl_dbg_o        ( inst_ctrl_dbg         ),
@@ -479,7 +484,10 @@ module hypercorex_top # (
     .class_hv_ready_o           ( class_hv_ready_o     ),
     // CSR output side
     .am_num_class_i             ( am_num_pred          ),
-    .max_arg_idx_o              ( am_pred              )
+    // Low-dim prediction
+    .predict_o                  ( predict_o            ),
+    .predict_valid_o            ( predict_valid_o      ),
+    .predict_ready_i            ( predict_ready_i      )
   );
 
 endmodule
