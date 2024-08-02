@@ -135,6 +135,9 @@ async def assoc_mem_dut(dut):
         # Set this as a CSR controlled value
         dut.am_num_class_i.value = NUM_CLASSES
 
+        # Assume prediction port is always ready
+        dut.predict_ready_i.value = 1
+
         # Start of data loop
         await load_query_hv(dut, query_hv)
 
@@ -166,14 +169,27 @@ async def assoc_mem_dut(dut):
                 am_stall = dut.am_stall_o.value.integer
                 check_result(am_stall, 0)
 
+            # Check if predict valid is low
+            predict_valid = dut.predict_valid_o.value.integer
+            check_result(predict_valid, 0)
+
             # Load the associative memory
             await load_am_hv(dut, assoc_mem[i])
 
         # Check if predicted result is the correct HV
-        actual_idx = dut.max_arg_idx_o.value.integer
-
-        # Log info
+        actual_idx = dut.predict_o.value.integer
         check_result(actual_idx, golden_idx)
+
+        # Check if predict valid is high
+        predict_valid = dut.predict_valid_o.value.integer
+        check_result(predict_valid, 1)
+
+        # Time proagation
+        await clock_and_time(dut.clk_i)
+
+        # Check if predict valid is brought down
+        predict_valid = dut.predict_valid_o.value.integer
+        check_result(predict_valid, 0)
 
     for i in range(set_parameters.TEST_RUNS):
         await clock_and_time(dut.clk_i)
