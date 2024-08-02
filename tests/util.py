@@ -706,6 +706,20 @@ async def read_qhv(dut, qhv_addr):
     return qhv_data
 
 
+# Read from predict memory
+async def read_predict(dut, predict_addr):
+    dut.predict_rd_addr_i.value = predict_addr
+
+    # Wait for one cycle
+    await clock_and_time(dut.clk_i)
+
+    # Extract data
+    predict_data = dut.predict_rd_data_o.value.integer
+
+    clear_tb_inputs(dut)
+    return predict_data
+
+
 """
     Functions for CSR control
 """
@@ -744,3 +758,16 @@ async def read_csr(dut, addr):
     # needs to clear or flush the fifo
     dut.csr_rsp_ready_i.value = 1
     return read_csr_data
+
+
+"""
+    Functions for Instruction Loop control
+"""
+
+
+# For writing the instruction loop parameters
+async def config_inst_ctrl(dut, reg_addr, val1, val2, val3, data_width):
+    data = val1 + (val2 << data_width) + (val3 << 2 * data_width)
+    await write_csr(dut, reg_addr, data)
+
+    return data
