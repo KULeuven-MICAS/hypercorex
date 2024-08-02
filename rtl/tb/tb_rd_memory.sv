@@ -87,17 +87,13 @@ module tb_rd_memory # (
       acc_addr <= 0;
     end else begin
       if (en_i) begin
+        // If auto loop is enabled and the end address is reached
+        // reset the counter to 0 else increment the counter
+        if (auto_loop_end && auto_loop_en_i) begin
+          acc_addr <= '0;
         // Update counter for every successful transaction
-        if (acc_success) begin
-
-          // If auto loop is enabled and the end address is reached
-          // reset the counter to 0 else increment the counter
-          if (auto_loop_end && auto_loop_en_i) begin
-            acc_addr <= '0;
-          end else begin
+        end else if (acc_success) begin
             acc_addr <= acc_addr + 1;
-          end
-
         end else begin
           acc_addr <= acc_addr;
         end
