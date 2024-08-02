@@ -53,6 +53,7 @@ async def read_csr(dut, addr):
 
 # Some parameters for use
 MAX_REG_VAL = (2**set_parameters.REG_FILE_WIDTH) - 1
+MAX_8B_VAL = (2**8) - 1
 
 
 @cocotb.test()
@@ -68,7 +69,8 @@ async def csr_dut(dut):
     # Initialize other signals
     # Put these to 1 for value checking
     dut.csr_busy_i.value = 1
-    dut.csr_am_pred_i.value = MAX_REG_VAL
+    dut.csr_am_pred_i.value = MAX_8B_VAL
+    dut.csr_am_pred_valid_i.value = 1
     dut.csr_inst_pc_i.value = set_parameters.INST_MEM_DEPTH - 1
     dut.csr_inst_at_addr_i.value = MAX_REG_VAL
 
@@ -150,7 +152,7 @@ async def csr_dut(dut):
     cocotb.log.info(" ------------------------------------------ ")
 
     csr_read_val = await read_csr(dut, set_parameters.AM_PREDICT_REG_ADDR)
-    check_result(csr_read_val, MAX_REG_VAL)
+    check_result(csr_read_val, (MAX_REG_VAL & 0x0000_01FF))
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("        Instruction Control Register        ")
