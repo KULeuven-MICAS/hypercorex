@@ -41,6 +41,7 @@ def clear_inputs_no_clock(dut):
     dut.class_hv_i.value = 0
     dut.class_hv_valid_i.value = 0
     dut.am_num_class_i.value = 0
+    dut.am_predict_valid_clr_i.value = 0
     return
 
 
@@ -127,6 +128,9 @@ async def assoc_mem_dut(dut):
         # Set random number of classes more than 10
         NUM_CLASSES = random.randint(10, 32)
 
+        # Clear every new test run
+        clear_inputs_no_clock(dut)
+
         # Generate the golde index answer, the query hv and the assoc mem
         golden_idx, query_hv, assoc_mem = gen_am_and_qv(
             NUM_CLASSES, set_parameters.HV_DIM
@@ -173,6 +177,10 @@ async def assoc_mem_dut(dut):
             predict_valid = dut.predict_valid_o.value.integer
             check_result(predict_valid, 0)
 
+            # Check if CSR predict valid is low
+            csr_predict_valid = dut.am_predict_valid_o.value.integer
+            check_result(csr_predict_valid, 0)
+
             # Load the associative memory
             await load_am_hv(dut, assoc_mem[i])
 
@@ -184,12 +192,23 @@ async def assoc_mem_dut(dut):
         predict_valid = dut.predict_valid_o.value.integer
         check_result(predict_valid, 1)
 
+        # Check if CSR predict valid is high
+        csr_predict_valid = dut.am_predict_valid_o.value.integer
+        check_result(csr_predict_valid, 1)
+
+        # Assert clear to see if the csr valid signal is brought down
+        dut.am_predict_valid_clr_i.value = 1
+
         # Time proagation
         await clock_and_time(dut.clk_i)
 
         # Check if predict valid is brought down
         predict_valid = dut.predict_valid_o.value.integer
         check_result(predict_valid, 0)
+
+        # Check if CSR predict valid is high
+        csr_predict_valid = dut.am_predict_valid_o.value.integer
+        check_result(csr_predict_valid, 0)
 
     for i in range(set_parameters.TEST_RUNS):
         await clock_and_time(dut.clk_i)

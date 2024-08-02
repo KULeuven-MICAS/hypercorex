@@ -27,6 +27,8 @@ module assoc_mem #(
   output logic                   class_hv_ready_o,
   // CSR output side
   input  logic [  DataWidth-1:0] am_num_class_i,
+  output logic                   am_predict_valid_o,
+  input  logic                   am_predict_valid_clr_i,
   // Low-dim prediction
   output logic [  DataWidth-1:0] predict_o,
   output logic                   predict_valid_o,
@@ -178,6 +180,23 @@ module assoc_mem #(
         predict_valid_o <= 1'b0;
       end else begin
         predict_valid_o <= predict_valid_o;
+      end
+    end
+  end
+
+  //---------------------------
+  // Valid-ready control for CSR class HV
+  //---------------------------
+  always_ff @ (posedge clk_i  or negedge rst_ni) begin
+    if (!rst_ni) begin
+      am_predict_valid_o <= 1'b0;
+    end else begin
+      if (finished_predict) begin
+        am_predict_valid_o <= 1'b1;
+      end else if (am_predict_valid_clr_i) begin
+        am_predict_valid_o <= 1'b0;
+      end else begin
+        am_predict_valid_o <= am_predict_valid_o;
       end
     end
   end
