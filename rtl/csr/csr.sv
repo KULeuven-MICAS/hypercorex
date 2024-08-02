@@ -57,6 +57,8 @@ module csr import csr_addr_pkg::*; #(
   // AM settings
   output logic [    CsrDataWidth-1:0]               csr_am_num_pred_o,
   input  logic [    CsrDataWidth-1:0]               csr_am_pred_i,
+  input  logic                                      csr_am_pred_valid_i,
+  output logic                                      csr_am_pred_valid_clr_o,
   // Instruction control settings
   output logic                                      csr_inst_ctrl_write_mode_o,
   output logic                                      csr_inst_ctrl_dbg_o,
@@ -145,14 +147,18 @@ module csr import csr_addr_pkg::*; #(
         csr_set[CORE_SET_REG_ADDR][ CORE_SET_SEQ_TEST_BIT_ADDR], //    [2] RW Sequential test
                                                      csr_busy_i, //    [1] RO Busy
                                                            1'b0  //    [0] WO Start Core (generates pulse)
-                                                                // verilog_lint: waive-stop line-length
+                                                                 // verilog_lint: waive-stop line-length
         };
       end
       AM_NUM_PREDICT_REG_ADDR: begin
         csr_rd_data = csr_set[AM_NUM_PREDICT_REG_ADDR];
       end
       AM_PREDICT_REG_ADDR: begin
-        csr_rd_data = csr_am_pred_i;
+        csr_rd_data = {
+          {(CsrDataWidth-9){1'b0}}, // [31:9] -- Unused
+          csr_am_pred_valid_i,      //    [8] RO Predict valid
+          csr_am_pred_i[7:0]        //  [7:0] RO Predict
+        };
       end
       INST_CTRL_REG_ADDR: begin
         csr_rd_data = {
@@ -253,6 +259,9 @@ module csr import csr_addr_pkg::*; #(
     // AM settings
     //---------------------------
     csr_am_num_pred_o          = csr_set[AM_NUM_PREDICT_REG_ADDR];
+    csr_am_pred_valid_clr_o    = csr_write_req &&
+                                 (csr_req_addr_i == AM_PREDICT_REG_ADDR) &&
+                                  csr_req_data_i[AM_PREDICT_VALID_BIT_ADDR];
     //---------------------------
     // Instruction control settings
     //---------------------------

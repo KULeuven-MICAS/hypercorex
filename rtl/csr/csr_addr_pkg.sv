@@ -25,6 +25,8 @@ package csr_addr_pkg;
   // AM Settings
   localparam logic [31:0] AM_NUM_PREDICT_REG_ADDR         = 32'd1;
   localparam logic [31:0] AM_PREDICT_REG_ADDR             = 32'd2;
+  localparam logic [ 4:0] AM_PREDICT_BIT_ADDR             = 5'd0;
+  localparam logic [ 4:0] AM_PREDICT_VALID_BIT_ADDR       = 5'd8;
 
   // Instruction controls
   localparam logic [31:0] INST_CTRL_REG_ADDR              = 32'd3;
