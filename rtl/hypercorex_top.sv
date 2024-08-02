@@ -115,6 +115,8 @@ module hypercorex_top # (
   logic                                          clr;
   // AM settings
   logic [    CsrDataWidth-1:0]                   am_num_pred;
+  logic                                          am_pred_valid;
+  logic                                          am_pred_valid_clr;
   // Instruction control settings
   logic                                          inst_ctrl_write_mode;
   logic                                          inst_ctrl_dbg;
@@ -242,6 +244,8 @@ module hypercorex_top # (
     // AM settings
     .csr_am_num_pred_o          ( am_num_pred           ),
     .csr_am_pred_i              ( predict_o             ),
+    .csr_am_pred_valid_i        ( am_pred_valid         ),
+    .csr_am_pred_valid_clr_o    ( am_pred_valid_clr     ),
     // Instruction control settings
     .csr_inst_ctrl_write_mode_o ( inst_ctrl_write_mode  ),
     .csr_inst_ctrl_dbg_o        ( inst_ctrl_dbg         ),
@@ -484,6 +488,8 @@ module hypercorex_top # (
     .class_hv_ready_o           ( class_hv_ready_o     ),
     // CSR output side
     .am_num_class_i             ( am_num_pred          ),
+    .am_predict_valid_o         ( am_pred_valid        ),
+    .am_predict_valid_clr_i     ( am_pred_valid_clr    ),
     // Low-dim prediction
     .predict_o                  ( predict_o            ),
     .predict_valid_o            ( predict_valid_o      ),
