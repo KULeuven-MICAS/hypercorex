@@ -108,7 +108,6 @@ module hypercorex_top # (
   //---------------------------
   // Core settings
   logic                                          start;
-  logic                                          busy;
   logic                                          seq_test_mode;
   logic                  [1:0]                   port_a_cim;
   logic                                          port_b_cim;
@@ -204,6 +203,16 @@ module hypercorex_top # (
   assign qhv_o = qhv;
 
   //---------------------------
+  // Busy Signal
+  //---------------------------
+  logic busy;
+  logic am_busy;
+  logic encoder_busy;
+
+  assign encoder_busy = enable;
+  assign busy = encoder_busy || am_busy;
+
+  //---------------------------
   // CSR registers and control
   //---------------------------
   csr #(
@@ -236,7 +245,7 @@ module hypercorex_top # (
     //---------------------------
     // Core settings
     .csr_start_o                ( start                 ),
-    .csr_busy_i                 ( enable                ),
+    .csr_busy_i                 ( busy                  ),
     .csr_seq_test_mode_o        ( seq_test_mode         ),
     .csr_port_a_cim_o           ( port_a_cim            ),
     .csr_port_b_cim_o           ( port_b_cim            ),
@@ -480,7 +489,7 @@ module hypercorex_top # (
     // Encode side control
     .query_hv_i                 ( qhv                  ),
     .am_start_i                 ( am_search            ),
-    .am_busy_o                  (                      ), //TODO: add me to status register later
+    .am_busy_o                  ( am_busy              ),
     .am_stall_o                 ( am_stall             ),
     // AM side control
     .class_hv_i                 ( class_hv_i           ),

@@ -54,6 +54,7 @@ from hypercorex_compiler import compile_hypercorex_asm  # noqa: E402
 # Some parameters about the character recognition set
 TOTAL_PIXEL_FEATURES = 35
 THRESHOLD = TOTAL_PIXEL_FEATURES / 2
+NUM_CLASSES = 26
 
 
 # Actual test routines
@@ -104,7 +105,7 @@ async def tb_hypercorex_dut(dut):
         assoc_mem_int.append(hvlist2num(assoc_mem[i]))
 
     # Correct data set
-    correct_set = list(range(set_parameters.TEST_RUNS))
+    correct_set = list(range(NUM_CLASSES))
 
     # Initialize input values
     clear_tb_inputs(dut)
@@ -113,9 +114,10 @@ async def tb_hypercorex_dut(dut):
     dut.rst_ni.value = 0
 
     # Initialize hard static values
-    dut.am_auto_loop_addr_i.value = 0
     dut.enable_mem_i.value = 0
-    dut.am_auto_loop_addr_i.value = set_parameters.TEST_RUNS - 1
+
+    # This needs to be the number of classes to check
+    dut.am_auto_loop_addr_i.value = NUM_CLASSES - 1
 
     # Initialize clock always
     clock = Clock(dut.clk_i, 10, units="ns")
@@ -139,9 +141,6 @@ async def tb_hypercorex_dut(dut):
         await load_im_list(
             dut, index_based_dataset[i], i * len(index_based_dataset[i]), "A", "low"
         )
-
-    # Enable memories when done loading
-    dut.enable_mem_i.value = 1
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("               Load Data to AM              ")
@@ -169,7 +168,7 @@ async def tb_hypercorex_dut(dut):
     cocotb.log.info("       Write to Number of Predictions       ")
     cocotb.log.info(" ------------------------------------------ ")
 
-    num_predict = set_parameters.TEST_RUNS
+    num_predict = NUM_CLASSES
     await write_csr(dut, set_parameters.AM_NUM_PREDICT_REG_ADDR, num_predict)
 
     cocotb.log.info(" ------------------------------------------ ")
@@ -291,7 +290,7 @@ async def tb_hypercorex_dut(dut):
 
     for i in range(set_parameters.TEST_RUNS):
         predict_val = await read_predict(dut, i)
-        check_result(correct_set[i], predict_val)
+        check_result(predict_val, correct_set[i])
 
     # Some trailing cycles only
     for i in range(100):
