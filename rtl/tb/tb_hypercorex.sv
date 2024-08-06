@@ -119,14 +119,20 @@ module tb_hypercorex # (
   // Wires and Logic
   //---------------------------
   logic [ ImAddrWidth-1:0] lowdim_a_data;
+  logic                    lowdim_a_valid;
+  logic                    lowdim_a_ready;
+
   logic [ HVDimension-1:0] highdim_a_data;
-  logic                    im_a_data_valid;
-  logic                    im_a_data_ready;
+  logic                    highdim_a_valid;
+  logic                    highdim_a_ready;
 
   logic [ ImAddrWidth-1:0] lowdim_b_data;
+  logic                    lowdim_b_valid;
+  logic                    lowdim_b_ready;
+
   logic [ HVDimension-1:0] highdim_b_data;
-  logic                    im_b_data_valid;
-  logic                    im_b_data_ready;
+  logic                    highdim_b_valid;
+  logic                    highdim_b_ready;
 
   logic                    qhv_ready;
   logic                    qhv_valid;
@@ -140,19 +146,7 @@ module tb_hypercorex # (
   logic                    class_hv_valid;
   logic                    class_hv_ready;
 
-  logic                    im_a_lowdim_valid;
-  logic                    im_a_highdim_valid;
-  logic                    im_a_valid;
-
-  logic                    im_b_lowdim_valid;
-  logic                    im_b_highdim_valid;
-  logic                    im_b_valid;
-
   //---------------------------
-  // Depending on Mode to Test
-  //---------------------------
-  assign im_a_data_valid = highdim_mode_i ? im_a_highdim_valid : im_a_lowdim_valid;
-  assign im_b_data_valid = highdim_mode_i ? im_b_highdim_valid : im_b_lowdim_valid;
 
   //---------------------------
   // Memory Modules
@@ -182,8 +176,8 @@ module tb_hypercorex # (
     // Accelerator access port
     .rd_acc_addr_o          (                       ),
     .rd_acc_data_o          ( lowdim_a_data         ),
-    .rd_acc_valid_o         ( im_a_lowdim_valid     ),
-    .rd_acc_ready_i         ( im_a_data_ready       )
+    .rd_acc_valid_o         ( lowdim_a_valid        ),
+    .rd_acc_ready_i         ( lowdim_a_ready        )
   );
 
   // Memory module for high dimensional memory IM B
@@ -210,8 +204,8 @@ module tb_hypercorex # (
     // Accelerator access port
     .rd_acc_addr_o          (                        ),
     .rd_acc_data_o          ( highdim_a_data         ),
-    .rd_acc_valid_o         ( im_a_highdim_valid     ),
-    .rd_acc_ready_i         ( im_a_data_ready        )
+    .rd_acc_valid_o         ( highdim_a_valid        ),
+    .rd_acc_ready_i         ( highdim_a_ready        )
   );
 
   // Memory module for low dimensional memory IM B
@@ -238,8 +232,8 @@ module tb_hypercorex # (
     // Accelerator access port
     .rd_acc_addr_o          (                       ),
     .rd_acc_data_o          ( lowdim_b_data         ),
-    .rd_acc_valid_o         ( im_b_lowdim_valid     ),
-    .rd_acc_ready_i         ( im_b_data_ready       )
+    .rd_acc_valid_o         ( lowdim_b_valid        ),
+    .rd_acc_ready_i         ( lowdim_b_ready        )
   );
 
   // Memory module for high dimensional memory IM B
@@ -266,8 +260,8 @@ module tb_hypercorex # (
     // Accelerator access port
     .rd_acc_addr_o          (                        ),
     .rd_acc_data_o          ( highdim_b_data         ),
-    .rd_acc_valid_o         ( im_b_highdim_valid     ),
-    .rd_acc_ready_i         ( im_b_data_ready        )
+    .rd_acc_valid_o         ( highdim_b_valid        ),
+    .rd_acc_ready_i         ( highdim_b_ready        )
   );
 
   // Memory module for associative memory
@@ -393,13 +387,20 @@ module tb_hypercorex # (
     // IM ports
     //---------------------------
     .lowdim_a_data_i    ( lowdim_a_data   ),
+    .lowdim_a_valid_i   ( lowdim_a_valid  ),
+    .lowdim_a_ready_o   ( lowdim_a_ready  ),
+
     .highdim_a_data_i   ( highdim_a_data  ),
-    .im_a_data_valid_i  ( im_a_data_valid ),
-    .im_a_data_ready_o  ( im_a_data_ready ),
+    .highdim_a_valid_i  ( highdim_a_valid ),
+    .highdim_a_ready_o  ( highdim_a_ready ),
+
     .lowdim_b_data_i    ( lowdim_b_data   ),
+    .lowdim_b_valid_i   ( lowdim_b_valid  ),
+    .lowdim_b_ready_o   ( lowdim_b_ready  ),
+
     .highdim_b_data_i   ( highdim_b_data  ),
-    .im_b_data_valid_i  ( im_b_data_valid ),
-    .im_b_data_ready_o  ( im_b_data_ready ),
+    .highdim_b_valid_i  ( highdim_b_valid ),
+    .highdim_b_ready_o  ( highdim_b_ready ),
     //---------------------------
     // QHV ports
     //---------------------------
