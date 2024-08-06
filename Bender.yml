@@ -4,6 +4,7 @@ package:
     - "Ryan Antonio <ryan.antonio@esat.kuleuven.be>"
 
 sources:
+
   - target: hypercorex
     files:
       #---------------------------
@@ -66,4 +67,15 @@ sources:
       # Hypercorex top
       # ----------------------------
       - rtl/hypercorex_top.sv
+
+  - target: tb_hypercorex
+    files:
+      # ----------------------------
+      # Testbench
+      # ----------------------------
+      # Level 0
+      - rtl/tb/tb_rd_memory.sv
+      - rtl/tb/tb_wr_memory.sv
+      # Level 1
+      - rtl/tb/tb_hypercorex.sv
 
