@@ -9,7 +9,7 @@
 // made from the PULP common cells
 //---------------------------
 
-module fifo #(
+module fifo_buffer #(
   parameter bit          FallThrough   = 1'b0,
   parameter int unsigned DataWidth     = 32,
   parameter int unsigned FifoDepth     = 8,
