@@ -78,4 +78,3 @@ sources:
       - rtl/tb/tb_wr_memory.sv
       # Level 1
       - rtl/tb/tb_hypercorex.sv
-
