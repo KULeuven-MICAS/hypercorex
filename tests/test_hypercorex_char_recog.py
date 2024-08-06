@@ -8,9 +8,11 @@
 
 import set_parameters
 from util import (
+    # Filelist management
+    get_dir,
+    get_bender_filelist,
     # General imports
     get_root,
-    get_dir,
     setup_and_run,
     hvlist2num,
     clock_and_time,
@@ -327,10 +329,10 @@ async def tb_hypercorex_dut(dut):
     ],
 )
 def test_hypercorex_char_recog(simulator, parameters, waves):
-    verilog_sources = (
-        set_parameters.HYPERCOREX_FILELIST + set_parameters.TB_HYPERCOREX_FILELIST
-    )
-
+    bender_path = bender_path = get_dir() + "/../."
+    bender_filelist = get_bender_filelist(bender_path)
+    print(bender_filelist)
+    verilog_sources = bender_filelist
     toplevel = "tb_hypercorex"
 
     module = "test_hypercorex_char_recog"
@@ -342,4 +344,5 @@ def test_hypercorex_char_recog(simulator, parameters, waves):
         simulator=simulator,
         parameters=parameters,
         waves=waves,
+        bender_filelist=True,
     )
