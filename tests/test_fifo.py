@@ -161,9 +161,9 @@ async def fifo_dut(dut):
     ],
 )
 def test_fifo(simulator, parameters, waves):
-    verilog_sources = ["/rtl/common/fifo.sv"]
+    verilog_sources = ["/rtl/common/fifo_buffer.sv"]
 
-    toplevel = "fifo"
+    toplevel = "fifo_buffer"
 
     module = "test_fifo"
 

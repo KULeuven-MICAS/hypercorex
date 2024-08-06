@@ -331,7 +331,7 @@ async def item_memory_top_dut(dut):
 def test_item_memory_top(simulator, parameters, waves):
     verilog_sources = [
         # Level 0
-        "/rtl/common/fifo.sv",
+        "/rtl/common/fifo_buffer.sv",
         "/rtl/common/mux.sv",
         "/rtl/item_memory/ca90_unit.sv",
         "/rtl/item_memory/cim_bit_flip.sv",
