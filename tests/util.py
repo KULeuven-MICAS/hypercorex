@@ -16,6 +16,7 @@ from mako.lookup import TemplateLookup
 from cocotb_test.simulator import run
 from cocotb.triggers import Timer, RisingEdge
 import numpy as np
+import subprocess
 
 """
     Set of functions for test setups
@@ -36,6 +37,19 @@ def get_dir():
     return script_dir
 
 
+# Extracting filelist from Bender
+def get_bender_filelist(bender_path):
+    # Run bender to get the filelist
+    os.chdir(bender_path)
+    terminal_out = subprocess.run(
+        ["bender", "script", "flist", "-t", "hypercorex", "-t", "tb_hypercorex"],
+        capture_output=True,
+        text=True,
+    )
+    filelist = terminal_out.stdout
+    return filelist.strip().split("\n")
+
+
 # Setup and run functions
 # Extracts necessary definitions and filelists
 # Then invokes the run simulator
@@ -48,6 +62,7 @@ def setup_and_run(
     simulator="verilator",
     waves=False,
     parameters=None,
+    bender_filelist=False,
 ):
     # Extract global main root
     git_repo_root = get_root()
@@ -59,8 +74,10 @@ def setup_and_run(
     sim_build = tests_path + "/sim_build/{}/".format(toplevel)
 
     # Append git repo root for all items
-    for i in range(len(verilog_sources)):
-        verilog_sources[i] = git_repo_root + verilog_sources[i]
+    # If using bender filelist no need to append
+    if not bender_filelist:
+        for i in range(len(verilog_sources)):
+            verilog_sources[i] = git_repo_root + verilog_sources[i]
 
     # Setting of compilation arguments
     # and timescale depending on simulator
