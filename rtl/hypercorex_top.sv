@@ -76,13 +76,17 @@ module hypercorex_top # (
   // IM ports
   //---------------------------
   input  logic [ ImAddrWidth-1:0] lowdim_a_data_i,
+  input  logic                    lowdim_a_valid_i,
+  output logic                    lowdim_a_ready_o,
   input  logic [ HVDimension-1:0] highdim_a_data_i,
-  input  logic                    im_a_data_valid_i,
-  output logic                    im_a_data_ready_o,
+  input  logic                    highdim_a_valid_i,
+  output logic                    highdim_a_ready_o,
   input  logic [ ImAddrWidth-1:0] lowdim_b_data_i,
+  input  logic                    lowdim_b_valid_i,
+  output logic                    lowdim_b_ready_o,
   input  logic [ HVDimension-1:0] highdim_b_data_i,
-  input  logic                    im_b_data_valid_i,
-  output logic                    im_b_data_ready_o,
+  input  logic                    highdim_b_valid_i,
+  output logic                    highdim_b_ready_o,
   //---------------------------
   // QHV ports
   //---------------------------
@@ -211,6 +215,24 @@ module hypercorex_top # (
 
   assign encoder_busy = enable;
   assign busy = encoder_busy || am_busy;
+
+  //---------------------------
+  // Valid-ready Control
+  //---------------------------
+  logic im_a_data_valid;
+  logic im_b_data_valid;
+
+  logic im_a_data_ready;
+  logic im_b_data_ready;
+
+  assign im_a_data_valid   = port_a_cim[1] ? highdim_a_valid_i : lowdim_a_valid_i;
+  assign im_b_data_valid   = port_b_cim    ? highdim_b_valid_i : lowdim_b_valid_i;
+
+  assign lowdim_a_ready_o  = port_a_cim[1] ?  1'b0 : im_a_data_ready;
+  assign highdim_a_ready_o = port_a_cim[1] ? im_a_data_ready : 1'b0;
+
+  assign lowdim_b_ready_o  = port_b_cim    ?  1'b0 : im_b_data_ready;
+  assign highdim_b_ready_o = port_b_cim    ? im_b_data_ready : 1'b0;
 
   //---------------------------
   // CSR registers and control
@@ -409,12 +431,12 @@ module hypercorex_top # (
     //---------------------------
     .lowdim_a_data_i            ( lowdim_a_data_i      ),
     .highdim_a_data_i           ( highdim_a_data_i     ),
-    .im_a_data_valid_i          ( im_a_data_valid_i    ),
-    .im_a_data_ready_o          ( im_a_data_ready_o    ),
+    .im_a_data_valid_i          ( im_a_data_valid      ),
+    .im_a_data_ready_o          ( im_a_data_ready      ),
     .lowdim_b_data_i            ( lowdim_b_data_i      ),
     .highdim_b_data_i           ( highdim_b_data_i     ),
-    .im_b_data_valid_i          ( im_b_data_valid_i    ),
-    .im_b_data_ready_o          ( im_b_data_ready_o    ),
+    .im_b_data_valid_i          ( im_b_data_valid      ),
+    .im_b_data_ready_o          ( im_b_data_ready      ),
     //---------------------------
     // Outputs towards the encoder
     //---------------------------
