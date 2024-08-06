@@ -11,7 +11,7 @@ sources:
       # Common Modules
       #---------------------------
       - rtl/common/mux.sv
-      - rtl/common/fifo.sv
+      - rtl/common/fifo_buffer.sv
       - rtl/common/reg_file_1w1r.sv
       - rtl/common/reg_file_1w2r.sv
       #---------------------------
