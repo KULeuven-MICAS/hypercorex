@@ -27,7 +27,7 @@ module hypercorex_top # (
   //---------------------------
   parameter int unsigned NumTotIm         = 1024,
   parameter int unsigned NumPerImBank     = 128,
-  parameter int unsigned ImAddrWidth      = CsrDataWidth,
+  parameter int unsigned ImAddrWidth      = $clog2(NumTotIm),
   parameter int unsigned SeedWidth        = CsrDataWidth,
   parameter int unsigned HoldFifoDepth    = 2,
   //---------------------------
@@ -407,7 +407,6 @@ module hypercorex_top # (
     .HVDimension                ( HVDimension          ),
     .NumTotIm                   ( NumTotIm             ),
     .NumPerImBank               ( NumPerImBank         ),
-    .ImAddrWidth                ( ImAddrWidth          ),
     .SeedWidth                  ( SeedWidth            ),
     .HoldFifoDepth              ( HoldFifoDepth        )
   ) i_item_memory_top (

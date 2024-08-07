@@ -15,16 +15,17 @@ module item_memory #(
   parameter int unsigned HVDimension = 512,
   parameter int unsigned NumTotIm    = 1024,
   parameter int unsigned NumPerImBank= 128,
-  parameter int unsigned ImAddrWidth = 32,
   parameter int unsigned SeedWidth   = 32,
   // Don't touch!
+  parameter int unsigned ImSelWidth  = $clog2(NumTotIm),
   parameter int unsigned NumImSets   = NumTotIm/NumPerImBank
+
 )(
   input  logic                                  port_a_cim_i,
   input  logic                [  SeedWidth-1:0] cim_seed_hv_i,
   input  logic [NumImSets-1:0][  SeedWidth-1:0] im_seed_hv_i,
-  input  logic                [ImAddrWidth-1:0] im_a_addr_i,
-  input  logic                [ImAddrWidth-1:0] im_b_addr_i,
+  input  logic                [ ImSelWidth-1:0] im_a_addr_i,
+  input  logic                [ ImSelWidth-1:0] im_b_addr_i,
   output logic                [HVDimension-1:0] im_a_o,
   output logic                [HVDimension-1:0] im_b_o
 );
@@ -34,7 +35,6 @@ module item_memory #(
   //---------------------------
   localparam int unsigned NumCimLevels = HVDimension/2;
   localparam int unsigned CimSelWidth  = $clog2(NumCimLevels);
-  localparam int unsigned ImSelWidth   = $clog2(NumTotIm);
 
   //---------------------------
   // Wires
