@@ -13,7 +13,8 @@ from util import (
     gen_rand_bits,
     clock_and_time,
     numbip2list,
-    hvlist2num,
+    numbin2list,
+    check_result_array,
 )
 
 import cocotb
@@ -90,18 +91,13 @@ def check_binarize_out(dut, hv_bundle):
 
     # Extract actual data
     actual_val = dut.binarized_hv_o.value.integer
+    actual_val = numbin2list(actual_val, set_parameters.HV_DIM)
 
     # Convert binarized output
-    golden_val = hvlist2num(hv_binarized)
+    golden_val = hv_binarized
 
-    # Log
-    cocotb.log.info(
-        f"Binarize check! Actual output: {actual_val}; Golden output: {golden_val}"
-    )
-
-    assert (
-        golden_val == actual_val
-    ), f"Error! Actual output: {actual_val}; Golden output: {golden_val}"
+    # Check array list
+    check_result_array(actual_val, golden_val)
 
     return
 
