@@ -45,7 +45,7 @@ module bundler_set#(
 
   always_comb begin
     for(int i = 0; i < HVDimension; i++) begin
-      binarized_hv_o[i] = (counter_o[i] >= 0) ? 1'b1 : 1'b0;
+      binarized_hv_o[i] = (counter_o[i][CounterWidth-1]) ? 1'b0 : 1'b1;
     end
   end
 
