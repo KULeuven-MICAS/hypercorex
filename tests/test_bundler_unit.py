@@ -85,6 +85,8 @@ async def bundler_unit_dut(dut):
     # Initialize input values
     clear_inputs_no_clock(dut)
 
+    dut.rst_ni.value = 0
+
     # Initialize clock always
     clock = Clock(dut.clk_i, 10, units="ns")
     cocotb.start_soon(clock.start(start_high=False))

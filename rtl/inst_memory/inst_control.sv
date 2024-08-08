@@ -17,36 +17,36 @@ module inst_control # (
   parameter int unsigned InstMemAddrWidth = $clog2(InstMemDepth)
 )(
   // Clocks and reset
-  input  logic                    clk_i,
-  input  logic                    rst_ni,
+  input  logic                        clk_i,
+  input  logic                        rst_ni,
   // Control signals
-  input  logic                    clr_i,
-  input  logic                    start_i,
-  input  logic                    stall_i,
-  output logic                    enable_o,
+  input  logic                        clr_i,
+  input  logic                        start_i,
+  input  logic                        stall_i,
+  output logic                        enable_o,
   // Instruction update signals
-  input  logic                    inst_pc_reset_i,
-  input  logic                    inst_wr_mode_i,
-  input  logic [RegAddrWidth-1:0] inst_wr_addr_i,
-  input  logic                    inst_wr_addr_en_i,
-  input  logic [RegAddrWidth-1:0] inst_wr_data_i,
-  input  logic                    inst_wr_data_en_i,
-  output logic [RegAddrWidth-1:0] inst_pc_o,
-  output logic [RegAddrWidth-1:0] inst_rd_o,
+  input  logic                        inst_pc_reset_i,
+  input  logic                        inst_wr_mode_i,
+  input  logic [InstMemAddrWidth-1:0] inst_wr_addr_i,
+  input  logic                        inst_wr_addr_en_i,
+  input  logic [RegAddrWidth-1:0]     inst_wr_data_i,
+  input  logic                        inst_wr_data_en_i,
+  output logic [InstMemAddrWidth-1:0] inst_pc_o,
+  output logic [RegAddrWidth-1:0]     inst_rd_o,
   // CSR control for loop control
-  input  logic [LoopNumWidth-1:0] inst_loop_mode_i,
-  input  logic [RegAddrWidth-1:0] inst_loop_jump_addr1_i,
-  input  logic [RegAddrWidth-1:0] inst_loop_jump_addr2_i,
-  input  logic [RegAddrWidth-1:0] inst_loop_jump_addr3_i,
-  input  logic [RegAddrWidth-1:0] inst_loop_end_addr1_i,
-  input  logic [RegAddrWidth-1:0] inst_loop_end_addr2_i,
-  input  logic [RegAddrWidth-1:0] inst_loop_end_addr3_i,
-  input  logic [RegAddrWidth-1:0] inst_loop_count_addr1_i,
-  input  logic [RegAddrWidth-1:0] inst_loop_count_addr2_i,
-  input  logic [RegAddrWidth-1:0] inst_loop_count_addr3_i,
+  input  logic [LoopNumWidth-1:0]     inst_loop_mode_i,
+  input  logic [InstMemAddrWidth-1:0] inst_loop_jump_addr1_i,
+  input  logic [InstMemAddrWidth-1:0] inst_loop_jump_addr2_i,
+  input  logic [InstMemAddrWidth-1:0] inst_loop_jump_addr3_i,
+  input  logic [InstMemAddrWidth-1:0] inst_loop_end_addr1_i,
+  input  logic [InstMemAddrWidth-1:0] inst_loop_end_addr2_i,
+  input  logic [InstMemAddrWidth-1:0] inst_loop_end_addr3_i,
+  input  logic [InstMemAddrWidth-1:0] inst_loop_count_addr1_i,
+  input  logic [InstMemAddrWidth-1:0] inst_loop_count_addr2_i,
+  input  logic [InstMemAddrWidth-1:0] inst_loop_count_addr3_i,
   // Debug control signals
-  input  logic                    dbg_en_i,
-  input  logic [RegAddrWidth-1:0] dbg_addr_i
+  input  logic                        dbg_en_i,
+  input  logic [InstMemAddrWidth-1:0] dbg_addr_i
 );
 
   //---------------------------

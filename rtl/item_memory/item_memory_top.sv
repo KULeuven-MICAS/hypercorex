@@ -13,10 +13,10 @@ module item_memory_top #(
   parameter int unsigned HVDimension   = 512,
   parameter int unsigned NumTotIm      = 1024,
   parameter int unsigned NumPerImBank  = 128,
-  parameter int unsigned ImAddrWidth   = 32,
   parameter int unsigned SeedWidth     = 32,
   parameter int unsigned HoldFifoDepth = 2,
   // Don't touch!
+  parameter int unsigned ImAddrWidth   = $clog2(NumTotIm),
   parameter int unsigned NumImSets     = NumTotIm/NumPerImBank
 )(
   // Clock and resets
@@ -90,7 +90,6 @@ module item_memory_top #(
     .HVDimension   ( HVDimension     ),
     .NumTotIm      ( NumTotIm        ),
     .NumPerImBank  ( NumPerImBank    ),
-    .ImAddrWidth   ( ImAddrWidth     ),
     .SeedWidth     ( SeedWidth       )
   ) i_item_memory (
     .port_a_cim_i  ( port_a_cim_i[0] ),

@@ -97,7 +97,6 @@ module inst_decode import hypercorex_inst_pkg::*; #(
     alu_mux_a_o     = '0;
     alu_mux_b_o     = '0;
     alu_ops_o       = '0;
-    alu_shift_amt_o = '0;
 
     // Control ports for bundlers
     bund_mux_a_o   = '0;
@@ -109,9 +108,6 @@ module inst_decode import hypercorex_inst_pkg::*; #(
 
     // Control ports for register ops
     reg_mux_o       = '0;
-    reg_rd_addr_a_o = '0;
-    reg_rd_addr_b_o = '0;
-    reg_wr_addr_o   = '0;
     reg_wr_en_o     = '0;
 
     // Control ports for query HV
@@ -134,7 +130,6 @@ module inst_decode import hypercorex_inst_pkg::*; #(
         alu_mux_a_o     = '0;
         alu_mux_b_o     = '0;
         alu_ops_o       = '0;
-        alu_shift_amt_o = '0;
 
         // Control ports for bundlers
         bund_mux_a_o   = '0;
@@ -146,9 +141,6 @@ module inst_decode import hypercorex_inst_pkg::*; #(
 
         // Control ports for register ops
         reg_mux_o       = '0;
-        reg_rd_addr_a_o = '0;
-        reg_rd_addr_b_o = '0;
-        reg_wr_addr_o   = '0;
         reg_wr_en_o     = '0;
 
         // Control ports for query HV

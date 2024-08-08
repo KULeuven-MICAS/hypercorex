@@ -17,14 +17,15 @@
 //---------------------------
 
 module ca90_item_memory #(
-  parameter int unsigned HVDimension   = 512,
-  parameter int unsigned NumTotIm      = 1024,
-  parameter int unsigned NumPerImBank  = 128,
-  parameter int unsigned SeedWidth     = 32,
+  parameter int unsigned HVDimension          = 512,
+  parameter int unsigned NumTotIm             = 1024,
+  parameter int unsigned NumPerImBank         = 128,
+  parameter int unsigned SeedWidth            = 32,
   // Don't touch parameters
-  parameter int unsigned Ca90ImPerm    = 7,
-  parameter int unsigned NumImSets     = NumTotIm/NumPerImBank,
-  parameter int unsigned ImSelWidth    = $clog2(NumTotIm)
+  parameter int unsigned Ca90ImPerm           = 7,
+  parameter int unsigned CA90ImPermShiftWidth = $clog2(Ca90ImPerm),
+  parameter int unsigned NumImSets            = NumTotIm/NumPerImBank,
+  parameter int unsigned ImSelWidth           = $clog2(NumTotIm)
 )(
   // Inputs
   input  logic [  NumImSets-1:0][SeedWidth-1:0] seed_hv_i,
@@ -62,11 +63,13 @@ module ca90_item_memory #(
     // Generate IM set with all other bases
     for ( j = 0; j < NumPerImBank-1; j++) begin: gen_per_im_bank
       ca90_unit #(
-        .Dimension   (               HVDimension )
+        .Dimension   (               HVDimension ),
+        // Don't touch but fixed to reduce warnings
+        .ShiftWidth  (                 CA90ImPermShiftWidth )
       ) i_ca90_im_hv (
-        .vector_i    (   item_memory_bases[i][j] ),
-        .shift_amt_i (                Ca90ImPerm ),
-        .vector_o    ( item_memory_bases[i][j+1] )
+        .vector_i    (              item_memory_bases[i][j] ),
+        .shift_amt_i ( Ca90ImPerm[CA90ImPermShiftWidth-1:0] ),
+        .vector_o    (            item_memory_bases[i][j+1] )
       );
 
     end

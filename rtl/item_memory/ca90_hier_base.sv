@@ -42,34 +42,38 @@ module ca90_hier_base #(
   //---------------------------
 
   ca90_unit #(
-    .Dimension   ( 32 )
+    .Dimension   ( 32               ),
+    .ShiftWidth  (  1               )
   ) i_ca90_im_0 (
     .vector_i    (        seed_hv_i ),
-    .shift_amt_i (                1 ),
+    .shift_amt_i (             1'b1 ),
     .vector_o    ( ca90_layer_out_0 )
   );
 
   ca90_unit #(
-    .Dimension   ( 64 )
+    .Dimension   ( 64               ),
+    .ShiftWidth  (  1               )
   ) i_ca90_im_1 (
     .vector_i    (  ca90_layer_in_1 ),
-    .shift_amt_i (                1 ),
+    .shift_amt_i (             1'b1 ),
     .vector_o    ( ca90_layer_out_1 )
   );
 
   ca90_unit #(
-    .Dimension   ( 128 )
+    .Dimension   ( 128              ),
+    .ShiftWidth  (  1               )
   ) i_ca90_im_2 (
     .vector_i    (  ca90_layer_in_2 ),
-    .shift_amt_i (                1 ),
+    .shift_amt_i (             1'b1 ),
     .vector_o    ( ca90_layer_out_2 )
   );
 
   ca90_unit #(
-    .Dimension   ( 256 )
+    .Dimension   ( 256              ),
+    .ShiftWidth  (  1               )
   ) i_ca90_im_3 (
     .vector_i    (  ca90_layer_in_3 ),
-    .shift_amt_i (                1 ),
+    .shift_amt_i (             1'b1 ),
     .vector_o    ( ca90_layer_out_3 )
   );
 

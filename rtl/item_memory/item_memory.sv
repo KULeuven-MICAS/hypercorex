@@ -15,10 +15,11 @@ module item_memory #(
   parameter int unsigned HVDimension = 512,
   parameter int unsigned NumTotIm    = 1024,
   parameter int unsigned NumPerImBank= 128,
-  parameter int unsigned ImAddrWidth = 32,
   parameter int unsigned SeedWidth   = 32,
   // Don't touch!
+  parameter int unsigned ImAddrWidth = $clog2(NumTotIm),
   parameter int unsigned NumImSets   = NumTotIm/NumPerImBank
+
 )(
   input  logic                                  port_a_cim_i,
   input  logic                [  SeedWidth-1:0] cim_seed_hv_i,
@@ -34,7 +35,6 @@ module item_memory #(
   //---------------------------
   localparam int unsigned NumCimLevels = HVDimension/2;
   localparam int unsigned CimSelWidth  = $clog2(NumCimLevels);
-  localparam int unsigned ImSelWidth   = $clog2(NumTotIm);
 
   //---------------------------
   // Wires
@@ -48,8 +48,8 @@ module item_memory #(
   logic      [CimSelWidth-1:0] mux_cim_addr_out;
 
 
-  logic [1:0][ ImSelWidth-1:0] mux_im_addr_in;
-  logic      [ ImSelWidth-1:0] mux_im_addr_out;
+  logic [1:0][ ImAddrWidth-1:0] mux_im_addr_in;
+  logic      [ ImAddrWidth-1:0] mux_im_addr_out;
 
   //---------------------------
   // Input MUX for CiM
@@ -81,11 +81,11 @@ module item_memory #(
   //---------------------------
   // Input MUX for iM
   //---------------------------
-  assign mux_im_addr_in[0] = im_a_addr_i[ImSelWidth-1:0];
-  assign mux_im_addr_in[1] = {ImSelWidth{1'b0}};
+  assign mux_im_addr_in[0] = im_a_addr_i[ImAddrWidth-1:0];
+  assign mux_im_addr_in[1] = {ImAddrWidth{1'b0}};
 
   mux #(
-    .DataWidth  ( ImSelWidth      ),
+    .DataWidth  ( ImAddrWidth     ),
     .NumSel     ( 2               )
   ) i_mux_im_in (
     .sel_i      ( port_a_cim_i    ),
