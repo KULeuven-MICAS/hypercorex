@@ -515,8 +515,6 @@ def clear_tb_inputs(dut):
     dut.csr_req_addr_i.value = 0
     dut.csr_req_write_i.value = 0
     dut.csr_req_valid_i.value = 0
-    # Response
-    dut.csr_rsp_ready_i.value = 0
 
     # ---------------------
     # IM ports
@@ -768,8 +766,11 @@ async def read_csr(dut, addr):
     dut.csr_req_data_i.value = 0
     dut.csr_req_write_i.value = 0
     dut.csr_req_valid_i.value = 1
-    await clock_and_time(dut.clk_i)
+    # Propagate time to get combinationally
+    await Timer(1, units="ps")
     read_csr_data = dut.csr_rsp_data_o.value.integer
+    # Propagate time to finish task
+    await clock_and_time(dut.clk_i)
     clear_csr_req_no_clock(dut)
     # Set this to high just in case the next cylce
     # needs to clear or flush the fifo
