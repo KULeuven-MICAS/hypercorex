@@ -218,24 +218,46 @@ module csr import csr_addr_pkg::*; #(
 
   //---------------------------
   // Read control logic
+  //
+  // The style here is that it's a holding
+  // register to support pass through mechanism
   //---------------------------
+
+  logic [CsrDataWidth-1:0] csr_rsp_data;
+  logic                    csr_rsp_valid;
+
   always_ff @ (posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      csr_rsp_data_o  <= {CsrDataWidth{1'b0}};
-      csr_rsp_valid_o <= 1'b0;
+      csr_rsp_data  <= {CsrDataWidth{1'b0}};
+      csr_rsp_valid <= 1'b0;
     end else begin
-      if (csr_read_req) begin
-        csr_rsp_data_o  <= csr_rd_data;
-        csr_rsp_valid_o <= 1'b1;
+      // If a read succeeds and at the same time
+      // a fully-combinational response happens
+      // then it's a pass through so no need to register
+      if (csr_read_req && !csr_rsp_success) begin
+        csr_rsp_data  <= csr_rd_data;
+        csr_rsp_valid <= 1'b1;
+      // Always clear on a successful response
       end else if (csr_rsp_success) begin
-        csr_rsp_data_o  <= {CsrDataWidth{1'b0}};
-        csr_rsp_valid_o <= 1'b0;
+        csr_rsp_data  <= {CsrDataWidth{1'b0}};
+        csr_rsp_valid <= 1'b0;
       end else begin
-        csr_rsp_data_o  <= csr_rsp_data_o;
-        csr_rsp_valid_o <= csr_rsp_valid_o;
+        csr_rsp_data  <= csr_rsp_data;
+        csr_rsp_valid <= csr_rsp_valid;
       end
     end
   end
+
+  // Data is valid whenever a read request happens
+  // or when the response is always valid
+  // Read is fully combinational!
+  assign csr_rsp_valid_o = csr_read_req || csr_rsp_valid;
+
+  // If the response is valid, that's an indicator
+  // that the holding buffer still contains data
+  // In the event that it's still full, and a request happens
+  // then it overwrites the current state
+  assign csr_rsp_data_o  = (csr_rsp_valid) ? csr_rsp_data : csr_rd_data;
 
   //---------------------------
   // Control signals logic

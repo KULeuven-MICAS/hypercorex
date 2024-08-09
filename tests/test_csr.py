@@ -13,6 +13,7 @@
 import set_parameters
 import cocotb
 from cocotb.clock import Clock
+from cocotb.triggers import Timer
 import pytest
 
 from util import setup_and_run, check_result, clock_and_time, gen_rand_bits
@@ -40,14 +41,18 @@ async def write_csr(dut, data, addr):
 
 
 # Reading from csr
+# But simulate how to read combinationally
 async def read_csr(dut, addr):
     clear_inputs_no_clock(dut)
     dut.csr_req_addr_i.value = addr
     dut.csr_req_write_i.value = 0
     dut.csr_req_valid_i.value = 1
+    # Propagate time to get combinationally
+    await Timer(1, units="ps")
+    csr_val = dut.csr_rsp_data_o.value.integer
+    # Propagate time to finish task
     await clock_and_time(dut.clk_i)
     clear_inputs_no_clock(dut)
-    csr_val = dut.csr_rsp_data_o.value.integer
     return csr_val
 
 
@@ -73,6 +78,9 @@ async def csr_dut(dut):
     dut.csr_am_pred_valid_i.value = 1
     dut.csr_inst_pc_i.value = set_parameters.INST_MEM_DEPTH - 1
     dut.csr_inst_at_addr_i.value = MAX_REG_VAL
+
+    # Assume that host side is always ready
+    dut.csr_rsp_ready_i.value = 1
 
     # Initialize clock always
     clock = Clock(dut.clk_i, 10, units="ns")
