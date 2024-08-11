@@ -43,8 +43,8 @@ module ca90_item_memory #(
   //---------------------------
   // Wires
   //---------------------------
-  logic [NumTotIm-1:0][HVDimension-1:0] item_memory;
-  logic [NumImSets-1:0][NumPerImBank-1:0][HVDimension-1:0] item_memory_bases;
+  logic [HVDimension-1:0] item_memory [NumTotIm];
+  logic [HVDimension-1:0] item_memory_bases [NumImSets][NumPerImBank];
 
   //---------------------------
   // Base Item Memory

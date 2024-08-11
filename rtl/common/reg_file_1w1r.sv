@@ -32,7 +32,7 @@ module reg_file_1w1r #(
   //---------------------------
   // Wires and regs
   //---------------------------
-  logic [NumRegs-1:0][DataWidth-1:0] reg_file;
+  logic [DataWidth-1:0] reg_file [NumRegs];
 
   //---------------------------
   // Register write control

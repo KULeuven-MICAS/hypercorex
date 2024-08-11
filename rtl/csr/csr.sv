@@ -91,7 +91,7 @@ module csr import csr_addr_pkg::*; #(
   //---------------------------
 
   // Register set
-  logic [NumRegs-1:0][CsrDataWidth-1:0] csr_set;
+  logic [CsrDataWidth-1:0] csr_set [NumRegs];
 
   // For CSR control
   logic csr_req_success;
