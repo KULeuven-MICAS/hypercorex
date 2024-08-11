@@ -84,8 +84,11 @@ def setup_and_run(
     if simulator == "verilator":
         compile_args = [
             "-Wno-WIDTH",
+            "-Wno-UNOPTFLAT",
             "--no-timing",
             "--trace-structs",
+            "--unroll-count",
+            "1024",
         ]
         timescale = None
     else:
