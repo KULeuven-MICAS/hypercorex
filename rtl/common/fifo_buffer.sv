@@ -50,7 +50,8 @@ module fifo_buffer #(
   logic [FifoAddrWidth:0] status_cnt_n, status_cnt_q;
 
   // Main FIFO component
-  dtype [FifoDepth-1:0] mem_n, mem_q;
+  dtype mem_n [FifoDepth];
+  dtype mem_q [FifoDepth];
 
   //---------------------------
   // Some useful logic and
@@ -161,7 +162,9 @@ module fifo_buffer #(
   //---------------------------
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if(~rst_ni) begin
-      mem_q <= '0;
+      for (int i = 0; i < FifoDepth; i = i + 1) begin
+        mem_q[i] <= '0;
+      end
     end else begin
       mem_q <= mem_n;
     end
