@@ -44,45 +44,42 @@ module ca90_item_memory #(
   // Wires
   //---------------------------
   logic [HVDimension-1:0] item_memory [NumTotIm];
-  logic [HVDimension-1:0] item_memory_bases [NumImSets][NumPerImBank];
+  logic [HVDimension-1:0] item_memory_bases [NumImSets];
+  //logic [HVDimension-1:0] item_memory_bases [NumImSets][NumPerImBank];
 
-  //---------------------------
-  // Base Item Memory
-  //---------------------------
-  for ( i = 0; i < NumImSets; i++) begin: gen_per_im_set
-
-    // First generate the base
+  // Generate for bases first
+  // this is manually separated to avoid
+  // unoptimized signal lines in Verilator
+  for (i=0; i < NumImSets; i++) begin: gen_item_memory_base
     ca90_hier_base #(
-      .HVDimension ( HVDimension    ),
-      .SeedWidth   ( SeedWidth      )
+      .HVDimension ( HVDimension          ),
+      .SeedWidth   ( SeedWidth            )
     ) i_ca90_hier_base (
-      .seed_hv_i   ( seed_hv_i[i]            ),
-      .base_hv_o   ( item_memory_bases[i][0] )
+      .seed_hv_i   ( seed_hv_i[i]         ),
+      .base_hv_o   ( item_memory_bases[i] )
     );
-
-    // Generate IM set with all other bases
-    for ( j = 0; j < NumPerImBank-1; j++) begin: gen_per_im_bank
-      ca90_unit #(
-        .Dimension   (               HVDimension ),
-        // Don't touch but fixed to reduce warnings
-        .ShiftWidth  (                 CA90ImPermShiftWidth )
-      ) i_ca90_im_hv (
-        .vector_i    (              item_memory_bases[i][j] ),
-        .shift_amt_i ( Ca90ImPerm[CA90ImPermShiftWidth-1:0] ),
-        .vector_o    (            item_memory_bases[i][j+1] )
-      );
-
-    end
   end
 
-  always_comb begin
-    for ( int i = 0; i < NumImSets; i++) begin
-      for ( int j = 0; j < NumPerImBank; j++) begin
-        item_memory[i*NumPerImBank+j] = item_memory_bases[i][j];
+  // Generate for the rest of the item memory
+  for (i=0; i < NumImSets; i++) begin: gen_item_memory_set
+    for( j=0 ; j < NumPerImBank; j++) begin: gen_item_memory_rows
+      // Load the first component
+      if(j == 0) begin: gen_first_base
+        assign item_memory[i*NumPerImBank+j] = item_memory_bases[i];
+      // Generate the rest iteratively
+      end else begin: gen_other_ims
+        ca90_unit #(
+          .Dimension   ( HVDimension                          ),
+          // Don't touch but fixed to reduce warnings
+          .ShiftWidth  ( CA90ImPermShiftWidth                 )
+        ) i_ca90_im_hv (
+          .vector_i    ( item_memory[i*NumPerImBank+j-1]      ),
+          .shift_amt_i ( Ca90ImPerm[CA90ImPermShiftWidth-1:0] ),
+          .vector_o    ( item_memory[i*NumPerImBank+j]        )
+        );
       end
     end
   end
-
 
   //---------------------------
   // Read output ports
