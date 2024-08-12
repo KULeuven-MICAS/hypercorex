@@ -26,8 +26,8 @@ module cim #(
   //---------------------------
   // Wires and logic
   //---------------------------
-  logic [NumCimLevels-1:0][HVDimension-1:0] cim;
-  logic                   [HVDimension-1:0] cim_base;
+  logic [HVDimension-1:0] cim [NumCimLevels];
+  logic [HVDimension-1:0] cim_base;
 
   // First generate the base
   ca90_hier_base #(
