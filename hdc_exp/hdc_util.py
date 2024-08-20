@@ -297,7 +297,7 @@ def gen_hv_ca90_hierarchical_rows(hv_seed, hv_dim, permute_base=1):
 
 # This function is for extracting seeds
 # That give the target 50% density of a base HV
-def ca90_extract_seeds(seed_size, seed_num, hv_dim, ca90_mode="iter"):
+def ca90_extract_seeds(seed_size, seed_num, hv_dim, ca90_mode="iter", debug_info=False):
     hv_half_dim = int(hv_dim / 2)
     seed_list = []
     seed_count = 0
@@ -318,10 +318,11 @@ def ca90_extract_seeds(seed_size, seed_num, hv_dim, ca90_mode="iter"):
             seed_list.append(seed_idx)
             seed_count += 1
 
-    print(f"Search count time: {run_count}")
-    print(f"Target HV Dimension: {hv_dim}")
-    print(f"Seed size: {seed_size}")
-    print(f"Number of seeds: {seed_num}")
+    if debug_info:
+        print(f"Search count time: {run_count}")
+        print(f"Target HV Dimension: {hv_dim}")
+        print(f"Seed size: {seed_size}")
+        print(f"Number of seeds: {seed_num}")
 
     return seed_list
 
@@ -364,6 +365,7 @@ def gen_ca90_im_set(
     num_per_im_bank,
     ca90_mode="hier",
     display_heatmap=False,
+    debug_info=False,
 ):
     # Sanity checker for parameter
     if num_per_im_bank >= int(hv_dim / 2):
@@ -407,9 +409,10 @@ def gen_ca90_im_set(
         conf_mat = None
 
     # Print the IM seeds to use
-    print()  # for new line purposes
-    for i in range(num_ims):
-        print(f"IM seed #{i}: {seed_list[i]}")
+    if debug_info:
+        for i in range(num_ims):
+            print()  # for new line purposes
+            print(f"IM seed #{i}: {seed_list[i]}")
 
     return seed_list, ortho_im, conf_mat
 
