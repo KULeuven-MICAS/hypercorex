@@ -363,6 +363,8 @@ def gen_ca90_im_set(
     hv_dim,
     num_total_im,
     num_per_im_bank,
+    base_seeds=[0],
+    gen_seed=False,
     ca90_mode="hier",
     display_heatmap=False,
     debug_info=False,
@@ -381,7 +383,13 @@ def gen_ca90_im_set(
 
     # Extract seed list that give
     # 50% density of a base HV
-    seed_list = ca90_extract_seeds(seed_size, num_ims, hv_dim, ca90_mode=ca90_mode)
+    if gen_seed:
+        assert (
+            len(base_seeds) >= num_ims
+        ), "Error! Base seed length needs to be same as num of ims."
+        seed_list = base_seeds
+    else:
+        seed_list = ca90_extract_seeds(seed_size, num_ims, hv_dim, ca90_mode=ca90_mode)
 
     # Generate the 1st orthogonal item memory
     hv_seed = numbin2list(seed_list[0], seed_size)
@@ -412,7 +420,7 @@ def gen_ca90_im_set(
     if debug_info:
         for i in range(num_ims):
             print()  # for new line purposes
-            print(f"IM seed #{i}: {seed_list[i]}")
+            print(f"IM seed #{i}: {seed_list[i]}; hex code: {hex(seed_list[i])}")
 
     return seed_list, ortho_im, conf_mat
 
@@ -420,13 +428,18 @@ def gen_ca90_im_set(
 # Generating a square CiM
 # The number of levels is the ortho distance
 # depending on the dimension size
-def gen_square_cim(hv_dim, seed_size, im_type="random"):
-    # Set a pre-determined seed
-    lowdim_seed_list = ca90_extract_seeds(seed_size, 1, hv_dim, ca90_mode=im_type)
+def gen_square_cim(
+    hv_dim, seed_size, base_seed=0, gen_seed=True, im_type="random", debug_info=False
+):
+    if gen_seed:
+        # Set a pre-determined seed
+        lowdim_seed_list = ca90_extract_seeds(seed_size, 1, hv_dim, ca90_mode=im_type)
+        base_seed = lowdim_seed_list[0]
 
-    print(f"CiM seed: {lowdim_seed_list[0]}")
+    if debug_info:
+        print(f"CiM seed: {base_seed}")
 
-    lowdim_hv_seed = numbin2list(lowdim_seed_list[0], seed_size)
+    lowdim_hv_seed = numbin2list(base_seed, seed_size)
 
     # Half of the distance
     # which marks the number of levels
