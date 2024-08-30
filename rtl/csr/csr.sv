@@ -21,8 +21,8 @@ module csr import csr_addr_pkg::*; #(
   parameter int unsigned InstMemDepth     = 32,
   // Don't touch!
   parameter int unsigned NumImSets        = NumTotIm/NumPerImBank,
-  // Total number of registers + N number if IM seeds
-  parameter int unsigned NumRegs          = (14+NumImSets),
+  // Total number of registers
+  parameter int unsigned NumRegs          = 13,
   parameter int unsigned InstMemAddrWidth = $clog2(InstMemDepth),
   parameter int unsigned RegBitAddrWidth  = $clog2(CsrAddrWidth)
 )(
@@ -80,10 +80,7 @@ module csr import csr_addr_pkg::*; #(
   output logic [InstMemAddrWidth-1:0]               csr_loop_end_addr3_o,
   output logic [InstMemAddrWidth-1:0]               csr_loop_count_addr1_o,
   output logic [InstMemAddrWidth-1:0]               csr_loop_count_addr2_o,
-  output logic [InstMemAddrWidth-1:0]               csr_loop_count_addr3_o,
-  // IM Seeds
-  output logic [CsrDataWidth-1:0]                   csr_cim_seed_o,
-  output logic [   NumImSets-1:0][CsrDataWidth-1:0] csr_im_seed_o
+  output logic [InstMemAddrWidth-1:0]               csr_loop_count_addr3_o
 );
 
   //---------------------------
@@ -200,17 +197,8 @@ module csr import csr_addr_pkg::*; #(
           csr_set[csr_req_addr_i][  InstMemAddrWidth-1:                 0]  //   [7:0] RW Loop addr1
         };
       end
-      CIM_SEED_REG_ADDR: begin
-        csr_rd_data = csr_set[CIM_SEED_REG_ADDR];
-      end
       default: begin
-        // Check the variable length seed IM here
-        if((csr_req_addr_i >= IM_BASE_SEED_REG_ADDR) &&
-           (csr_req_addr_i < (IM_BASE_SEED_REG_ADDR + NumImSets))) begin
-          csr_rd_data = csr_set[csr_req_addr_i];
-        end else begin
-          csr_rd_data = {CsrDataWidth{1'b0}};
-        end
+        csr_rd_data = {CsrDataWidth{1'b0}};
       end
 
     endcase
@@ -314,13 +302,6 @@ module csr import csr_addr_pkg::*; #(
     csr_loop_count_addr2_o     = csr_set[INST_LOOP_COUNT_REG_ADDR][2*InstMemAddrWidth-1:  InstMemAddrWidth];
     csr_loop_count_addr3_o     = csr_set[INST_LOOP_COUNT_REG_ADDR][3*InstMemAddrWidth-1:2*InstMemAddrWidth];
     // verilog_lint: waive-stop line-length
-    //---------------------------
-    // IM Seeds
-    //---------------------------
-    csr_cim_seed_o             = csr_set[CIM_SEED_REG_ADDR];
-    for (int i = 0; i < NumImSets; i++) begin
-      csr_im_seed_o[i]         = csr_set[IM_BASE_SEED_REG_ADDR+i];
-    end
 
   end
 

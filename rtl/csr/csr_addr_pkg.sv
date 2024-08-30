@@ -59,9 +59,5 @@ package csr_addr_pkg;
   localparam logic [ 4:0] INST_LOOP_COUNT_ADDR2_BIT_ADDR  = 5'd8;
   localparam logic [ 4:0] INST_LOOP_COUNT_ADDR3_BIT_ADDR  = 5'd16;
 
-  // IM seeds
-  localparam logic [31:0] CIM_SEED_REG_ADDR               = 32'd13;
-  localparam logic [31:0] IM_BASE_SEED_REG_ADDR           = 32'd14;
-
 endpackage
 // verilog_lint: waive-stop parameter-name-style
