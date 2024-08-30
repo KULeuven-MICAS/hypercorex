@@ -403,8 +403,8 @@ def exp_distort_test():
 if __name__ == "__main__":
     # Some working parameters
     seed_size = 32
-    hv_dim = 256
-    num_total_im = 256
+    hv_dim = 512
+    num_total_im = 1024
     num_per_im_bank = int(hv_dim // 4)
     threshold = THRESHOLD
 
@@ -418,14 +418,28 @@ if __name__ == "__main__":
     # Prepare data indices for the accelerator
     data_indices = convert_to_data_indices(dataset)
 
+    base_seeds = [
+        1103779247,
+        2391206478,
+        3074675908,
+        2850820469,
+        811160829,
+        4032445525,
+        2525737372,
+        2535149661,
+    ]
+
     # Get a CA90 seed that's working
     seed_list, ortho_im, conf_mat = gen_ca90_im_set(
         seed_size,
         hv_dim,
         num_total_im,
         num_per_im_bank,
+        base_seeds=base_seeds,
+        gen_seed=True,
         ca90_mode="hier",
-        display_heatmap=False,
+        debug_info=True,
+        display_heatmap=True,
     )
 
     # Training of AM and extracting

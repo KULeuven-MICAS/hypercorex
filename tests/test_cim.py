@@ -32,6 +32,8 @@ async def cim_dut(dut):
 
     # Generated golden CiM
     seed_input, golden_cim = gen_square_cim(
+        base_seed=set_parameters.BASE_SEED_CIM,
+        gen_seed=False,
         hv_dim=set_parameters.HV_DIM,
         seed_size=set_parameters.REG_FILE_WIDTH,
         im_type="ca90_hier",
