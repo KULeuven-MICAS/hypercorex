@@ -459,52 +459,6 @@ async def csr_dut(dut):
         ),
     )
 
-    cocotb.log.info(" ------------------------------------------ ")
-    cocotb.log.info("            CiM Seed Register               ")
-    cocotb.log.info(" ------------------------------------------ ")
-
-    # Generate random bits to write
-    golden_val = gen_rand_bits(set_parameters.REG_FILE_WIDTH)
-
-    await write_csr(dut, golden_val, set_parameters.CIM_SEED_REG_ADDR)
-
-    # Check if value is correct
-    test_val = dut.csr_cim_seed_o.value.integer
-    check_result(test_val, golden_val)
-
-    csr_read_val = await read_csr(dut, set_parameters.CIM_SEED_REG_ADDR)
-    check_result(csr_read_val, golden_val)
-
-    cocotb.log.info(" ------------------------------------------ ")
-    cocotb.log.info("          CA90 iM Seed Registers            ")
-    cocotb.log.info(" ------------------------------------------ ")
-
-    # Generate golden answers
-    golden_im_seed_list = []
-    num_im_seeds = int(set_parameters.NUM_TOT_IM // set_parameters.NUM_PER_IM_BANK)
-
-    for i in range(num_im_seeds):
-        # Save randomized seeds
-        im_seed = gen_rand_bits(set_parameters.REG_FILE_WIDTH)
-        golden_im_seed_list.append(im_seed)
-
-        # Write to CSR
-        await write_csr(dut, im_seed, (set_parameters.IM_BASE_SEED_REG_ADDR + i))
-
-    # Check for CSRs through reads
-    for i in range(num_im_seeds):
-        csr_read_val = await read_csr(dut, (set_parameters.IM_BASE_SEED_REG_ADDR + i))
-        check_result(csr_read_val, golden_im_seed_list[i])
-
-    # Check for the actual outputs
-    # Use masking technique here
-    for i in range(num_im_seeds):
-        test_val = dut.csr_im_seed_o.value.integer
-        check_result(
-            ((test_val >> (i * set_parameters.REG_FILE_WIDTH)) & MAX_REG_VAL),
-            golden_im_seed_list[i],
-        )
-
     # This is for waveform checking later
     for i in range(set_parameters.TEST_RUNS):
         # Propagate time for logic

@@ -63,37 +63,6 @@ async def tb_hypercorex_dut(dut):
     dut.csr_rsp_ready_i.value = 1
 
     cocotb.log.info(" ------------------------------------------ ")
-    cocotb.log.info("         Write to CiM and IM Seeds          ")
-    cocotb.log.info(" ------------------------------------------ ")
-
-    # Generate random CIM seed
-    cim_seed = gen_rand_bits(set_parameters.REG_FILE_WIDTH)
-
-    # Generate random IM seeds
-    im_seed_list = []
-    for i in range(set_parameters.NUM_IM_SETS):
-        im_seed_list.append(gen_rand_bits(set_parameters.REG_FILE_WIDTH))
-
-    # Write seeds to the CiM and IM
-
-    # This writes to CiM seed
-    await write_csr(dut, set_parameters.CIM_SEED_REG_ADDR, cim_seed)
-
-    # This writes to IM seeds
-    for i in range(set_parameters.NUM_IM_SETS):
-        await write_csr(dut, set_parameters.IM_BASE_SEED_REG_ADDR + i, im_seed_list[i])
-
-    # Verify if the seeds are written correctly
-    # First check the CIM seed
-    read_cim_seed = await read_csr(dut, set_parameters.CIM_SEED_REG_ADDR)
-    check_result(cim_seed, read_cim_seed)
-
-    # Next check the IM seeds
-    for i in range(set_parameters.NUM_IM_SETS):
-        read_im_seed = await read_csr(dut, set_parameters.IM_BASE_SEED_REG_ADDR + i)
-        check_result(im_seed_list[i], read_im_seed)
-
-    cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("       Writing to Instruction Memory        ")
     cocotb.log.info(" ------------------------------------------ ")
 

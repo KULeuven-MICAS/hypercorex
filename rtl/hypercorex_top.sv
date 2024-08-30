@@ -108,6 +108,22 @@ module hypercorex_top # (
 );
 
   //---------------------------
+  // Locally Configured Seeds
+  //---------------------------
+  logic      [SeedWidth-1:0] CiMBaseSeed;
+  logic [7:0][SeedWidth-1:0] OrthoIMSeeds;
+
+  assign CiMBaseSeed     = 32'd621635317;
+  assign OrthoIMSeeds[0] = 32'd1103779247;
+  assign OrthoIMSeeds[1] = 32'd2391206478;
+  assign OrthoIMSeeds[2] = 32'd3074675908;
+  assign OrthoIMSeeds[3] = 32'd2850820469;
+  assign OrthoIMSeeds[4] = 32'd811160829;
+  assign OrthoIMSeeds[5] = 32'd4032445525;
+  assign OrthoIMSeeds[6] = 32'd2525737372;
+  assign OrthoIMSeeds[7] = 32'd2535149661;
+
+  //---------------------------
   // CSR Control Signals
   //---------------------------
   // Core settings
@@ -142,9 +158,6 @@ module hypercorex_top # (
   logic [InstMemAddrWidth-1:0]                   loop_count_addr1;
   logic [InstMemAddrWidth-1:0]                   loop_count_addr2;
   logic [InstMemAddrWidth-1:0]                   loop_count_addr3;
-  // IM Seeds
-  logic [    CsrDataWidth-1:0]                   cim_seed;
-  logic [       NumImSets-1:0][CsrDataWidth-1:0] im_seed;
 
   //---------------------------
   // Item Memory <-> Encoder Signals
@@ -298,10 +311,7 @@ module hypercorex_top # (
     .csr_loop_end_addr3_o       ( loop_end_addr3        ),
     .csr_loop_count_addr1_o     ( loop_count_addr1      ),
     .csr_loop_count_addr2_o     ( loop_count_addr2      ),
-    .csr_loop_count_addr3_o     ( loop_count_addr3      ),
-    // IM Seeds
-    .csr_cim_seed_o             ( cim_seed              ),
-    .csr_im_seed_o              ( im_seed               )
+    .csr_loop_count_addr3_o     ( loop_count_addr3      )
   );
 
 
@@ -420,8 +430,8 @@ module hypercorex_top # (
     //---------------------------
     .port_a_cim_i               ( port_a_cim           ),
     .port_b_cim_i               ( port_b_cim           ),
-    .cim_seed_hv_i              ( cim_seed             ),
-    .im_seed_hv_i               ( im_seed              ),
+    .cim_seed_hv_i              ( CiMBaseSeed          ),
+    .im_seed_hv_i               ( OrthoIMSeeds[NumImSets-1:0] ),
     .clr_i                      ( clr                  ),
     .enable_i                   ( enable               ),
     .stall_o                    ( im_stall             ),

@@ -157,19 +157,6 @@ async def tb_hypercorex_dut(dut):
     dut.enable_mem_i.value = 1
 
     cocotb.log.info(" ------------------------------------------ ")
-    cocotb.log.info("              Write IM Seeds                ")
-    cocotb.log.info(" ------------------------------------------ ")
-
-    # This writes to IM seeds
-    for i in range(set_parameters.NUM_IM_SETS):
-        await write_csr(dut, set_parameters.IM_BASE_SEED_REG_ADDR + i, im_seed_list[i])
-
-    # Next check the IM seeds
-    for i in range(set_parameters.NUM_IM_SETS):
-        read_im_seed = await read_csr(dut, set_parameters.IM_BASE_SEED_REG_ADDR + i)
-        check_result(im_seed_list[i], read_im_seed)
-
-    cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("       Write to Number of Predictions       ")
     cocotb.log.info(" ------------------------------------------ ")
 
