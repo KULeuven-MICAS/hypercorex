@@ -82,10 +82,6 @@ INST_LOOP_JUMP_ADDR_REG_ADDR = 10
 INST_LOOP_END_ADDR_REG_ADDR = 11
 INST_LOOP_COUNT_REG_ADDR = 12
 
-# IM seeds
-CIM_SEED_REG_ADDR = 13
-IM_BASE_SEED_REG_ADDR = 14
-
 
 # ---------------------------
 # Complete filelist
