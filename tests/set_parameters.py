@@ -44,6 +44,19 @@ REG_NUM = 4
 # here, we restrict shift amount to be half of the total dimension
 MAX_SHIFT_AMT = 4
 
+# Pre-determined seeds
+BASE_SEED_CIM = 621635317
+ORTHO_IM_SEEDS = [
+    1103779247,
+    2391206478,
+    3074675908,
+    2850820469,
+    811160829,
+    4032445525,
+    2525737372,
+    2535149661,
+]
+
 # ---------------------------
 # Register addressing
 # ---------------------------
