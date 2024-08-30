@@ -36,6 +36,8 @@ async def ca90_item_memory_dut(dut):
         hv_dim=set_parameters.HV_DIM,
         num_total_im=set_parameters.NUM_TOT_IM,
         num_per_im_bank=set_parameters.NUM_PER_IM_BANK,
+        base_seeds=set_parameters.ORTHO_IM_SEEDS,
+        gen_seed=True,
         ca90_mode=set_parameters.CA90_MODE,
     )
 
