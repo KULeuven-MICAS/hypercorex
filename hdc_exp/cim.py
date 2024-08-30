@@ -31,8 +31,18 @@ if __name__ == "__main__":
     # Set a pre-determined seed
     seed_size = 32
 
+    # Pre-calcualted custom seed
+    base_seed = 621635317
+
     # Generate the CiM
-    hv_seed, cim = gen_square_cim(HV_DIM, seed_size, im_type="ca90_hier")
+    hv_seed, cim = gen_square_cim(
+        HV_DIM,
+        seed_size,
+        base_seed=base_seed,
+        gen_seed=False,
+        im_type="ca90_hier",
+        debug_info=True,
+    )
 
     # Number of CiM levels
     cim_levels = len(cim)
