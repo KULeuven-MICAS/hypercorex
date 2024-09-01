@@ -93,7 +93,7 @@ async def ca90_item_memory_dut(dut):
 )
 def test_ca90_item_memory(simulator, parameters, waves):
     verilog_sources = [
-        "/rtl/item_memory/ca90_unit.sv",
+        "/rtl/item_memory/fixed_ca90_unit.sv",
         "/rtl/item_memory/ca90_hier_base.sv",
         "/rtl/item_memory/ca90_item_memory.sv",
     ]

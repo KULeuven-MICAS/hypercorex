@@ -85,7 +85,7 @@ async def cim_dut(dut):
 )
 def test_cim(simulator, parameters, waves):
     verilog_sources = [
-        "/rtl/item_memory/ca90_unit.sv",
+        "/rtl/item_memory/fixed_ca90_unit.sv",
         "/rtl/item_memory/ca90_hier_base.sv",
         "/rtl/item_memory/cim_bit_flip.sv",
         "/rtl/item_memory/cim.sv",
