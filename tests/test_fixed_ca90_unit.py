@@ -17,7 +17,6 @@ from util import (
     get_root,
     setup_and_run,
     gen_rand_bits,
-    gen_randint,
     check_result,
     numbin2list,
     hvlist2num,
