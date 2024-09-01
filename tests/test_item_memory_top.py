@@ -337,7 +337,7 @@ def test_item_memory_top(simulator, parameters, waves):
         # Level 0
         "/rtl/common/fifo_buffer.sv",
         "/rtl/common/mux.sv",
-        "/rtl/item_memory/ca90_unit.sv",
+        "/rtl/item_memory/fixed_ca90_unit.sv",
         "/rtl/item_memory/cim_bit_flip.sv",
         # Level 1
         "/rtl/item_memory/ca90_hier_base.sv",
