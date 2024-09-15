@@ -16,6 +16,7 @@ module item_memory #(
   parameter int unsigned NumTotIm    = 1024,
   parameter int unsigned NumPerImBank= 128,
   parameter int unsigned SeedWidth   = 32,
+  parameter bit          EnableRomIM = 1'b0,
   // Don't touch!
   parameter int unsigned ImAddrWidth = $clog2(NumTotIm),
   parameter int unsigned NumImSets   = NumTotIm/NumPerImBank
@@ -96,7 +97,19 @@ module item_memory #(
   //---------------------------
   // CA90 iM Module
   //---------------------------
-  ca90_item_memory #(
+  if (EnableRomIM) begin: gen_use_rom_im
+    rom_item_memory #(
+    .HVDimension  ( HVDimension     ),
+    .NumTotIm     ( NumTotIm        ),
+    .SeedWidth    ( SeedWidth       )
+  ) i_rom_item_memory (
+    .im_sel_a_i   ( mux_im_addr_out ),
+    .im_sel_b_i   ( im_b_addr_i     ),
+    .im_a_o       ( im_a            ),
+    .im_b_o       ( im_b_o          )
+  );
+  end else begin: gen_use_ca90_im
+    ca90_item_memory #(
     .HVDimension  ( HVDimension     ),
     .NumTotIm     ( NumTotIm        ),
     .NumPerImBank ( NumPerImBank    ),
@@ -108,6 +121,7 @@ module item_memory #(
     .im_a_o       ( im_a            ),
     .im_b_o       ( im_b_o          )
   );
+  end
 
   //---------------------------
   // Output MUX
