@@ -15,6 +15,7 @@ module item_memory_top #(
   parameter int unsigned NumPerImBank  = 128,
   parameter int unsigned SeedWidth     = 32,
   parameter int unsigned HoldFifoDepth = 2,
+  parameter bit          EnableRomIM   = 1'b0,
   // Don't touch!
   parameter int unsigned ImAddrWidth   = $clog2(NumTotIm),
   parameter int unsigned NumImSets     = NumTotIm/NumPerImBank
@@ -90,7 +91,8 @@ module item_memory_top #(
     .HVDimension   ( HVDimension     ),
     .NumTotIm      ( NumTotIm        ),
     .NumPerImBank  ( NumPerImBank    ),
-    .SeedWidth     ( SeedWidth       )
+    .SeedWidth     ( SeedWidth       ),
+    .EnableRomIM   ( EnableRomIM     )
   ) i_item_memory (
     .port_a_cim_i  ( port_a_cim_i[0] ),
     .cim_seed_hv_i ( cim_seed_hv_i   ),
