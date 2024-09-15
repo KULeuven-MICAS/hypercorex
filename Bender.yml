@@ -54,6 +54,7 @@ sources:
       # Level 0
       - rtl/item_memory/fixed_ca90_unit.sv
       - rtl/item_memory/cim_bit_flip.sv
+      - rtl/item_memory/rom_item_memory.sv
       # Level 1
       - rtl/item_memory/ca90_hier_base.sv
       - rtl/item_memory/cim.sv
