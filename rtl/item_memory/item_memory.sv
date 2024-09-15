@@ -97,7 +97,7 @@ module item_memory #(
   //---------------------------
   // CA90 iM Module
   //---------------------------
-  if (EnableRomIM) begin
+  if (EnableRomIM) begin: use_rom_im
     rom_item_memory #(
     .HVDimension  ( HVDimension     ),
     .NumTotIm     ( NumTotIm        ),
@@ -108,7 +108,7 @@ module item_memory #(
     .im_a_o       ( im_a            ),
     .im_b_o       ( im_b_o          )
   );
-  end else begin
+  end else begin: use_ca90_im
     ca90_item_memory #(
     .HVDimension  ( HVDimension     ),
     .NumTotIm     ( NumTotIm        ),
