@@ -26,9 +26,11 @@ module rom_item_memory #(
 
   logic [HVDimension-1:0] item_memory [NumTotIm];
 
+  // verilog_lint: waive-start line-length
 % for idx, item in enumerate(cfg):
   assign item_memory[${idx}] = ${len(item)}'b${item};
 % endfor
+  // verilog_lint: waive-stop line-length
 
   //---------------------------
   // Read output ports
