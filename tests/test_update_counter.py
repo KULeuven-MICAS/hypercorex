@@ -80,7 +80,7 @@ async def update_counter_dut(dut):
     "parameters", [{"CounterWidth": str(set_parameters.BUNDLER_COUNT_WIDTH)}]
 )
 def test_update_counter(simulator, parameters, waves):
-    verilog_sources = ["/rtl/item_memory/update_counter.sv"]
+    verilog_sources = ["/rtl/data_formatter/update_counter.sv"]
 
     toplevel = "update_counter"
 
