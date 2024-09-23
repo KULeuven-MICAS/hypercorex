@@ -7,7 +7,7 @@
 """
 
 import set_parameters
-from util import setup_and_run
+from util import setup_and_run, check_result
 
 import cocotb
 from cocotb.clock import Clock
@@ -28,7 +28,8 @@ COUNTER_WIDTH = int(math.log2(set_parameters.NUM_TOT_IM))
 def clear_inputs_no_clock(dut):
     dut.en_i.value = 0
     dut.clr_i.value = 0
-    dut.update_i.value = 0
+    dut.max_count_i.value = 0
+    dut.addr_ready_i.value = 0
 
 
 # Test routine
@@ -61,13 +62,66 @@ async def update_counter_dut(dut):
         dut.en_i.value = 1
 
         # Randomly increment the counter
-        random_count = random.randint(1, set_parameters.NUM_TOT_IM)
-        for j in range(random_count):
-            dut.update_i.value = 1
+        random_max_count = random.randint(10, set_parameters.NUM_TOT_IM)
+
+        # Set the maximum count
+        dut.max_count_i.value = random_max_count
+
+        # Wait for setting to settle
+        await clock_and_time(dut.clk_i)
+
+        # Wait for the counter to increment
+        # Minus 1 is necessary because address
+        # is indexed 0
+        for j in range(random_max_count - 1):
+            dut.addr_ready_i.value = 1
             await clock_and_time(dut.clk_i)
 
+        # Make sure to disable the ready signal
+        # stalls or stops the processing
+        dut.addr_ready_i.value = 0
+
         # Check the counter
-        assert dut.addr_o.value == random_count
+        addr_o_value = dut.addr_o.value.integer
+        check_result(addr_o_value, random_max_count - 1)
+
+        # Clear the counter
+        dut.clr_i.value = 1
+        await clock_and_time(dut.clk_i)
+        dut.clr_i.value = 0
+
+    cocotb.log.info(" ------------------------------------------ ")
+    cocotb.log.info("             Testing Overflow               ")
+    cocotb.log.info(" ------------------------------------------ ")
+
+    for i in range(set_parameters.TEST_RUNS):
+        # Randomly increment the counter
+        random_max_count = random.randint(10, set_parameters.NUM_TOT_IM)
+        random_overflow_count = random.randint(5, random_max_count)
+        # Run continuously with total number of overflows
+        random_total_count = random_max_count + random_overflow_count
+
+        # Set the maximum count
+        dut.max_count_i.value = random_max_count
+
+        # Wait for setting to settle
+        await clock_and_time(dut.clk_i)
+
+        # Wait for the counter to increment
+        # Minus 1 is necessary because address
+        # is indexed 0
+        for j in range(random_total_count - 1):
+            dut.addr_ready_i.value = 1
+            await clock_and_time(dut.clk_i)
+
+        # Make sure to disable the ready signal
+        # stalls or stops the processing
+        dut.addr_ready_i.value = 0
+
+        # Check the counter
+        # Check if the overflow count is correct
+        addr_o_value = dut.addr_o.value.integer
+        check_result(addr_o_value, random_overflow_count - 1)
 
         # Clear the counter
         dut.clr_i.value = 1
@@ -77,7 +131,7 @@ async def update_counter_dut(dut):
 
 # Config and run
 @pytest.mark.parametrize(
-    "parameters", [{"CounterWidth": str(set_parameters.BUNDLER_COUNT_WIDTH)}]
+    "parameters", [{"CounterWidth": str(set_parameters.REG_FILE_WIDTH)}]
 )
 def test_update_counter(simulator, parameters, waves):
     verilog_sources = ["/rtl/data_formatter/update_counter.sv"]
