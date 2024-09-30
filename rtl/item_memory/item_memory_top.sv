@@ -10,15 +10,16 @@
 //---------------------------
 
 module item_memory_top #(
-  parameter int unsigned HVDimension   = 512,
-  parameter int unsigned NumTotIm      = 1024,
-  parameter int unsigned NumPerImBank  = 128,
-  parameter int unsigned SeedWidth     = 32,
-  parameter int unsigned HoldFifoDepth = 2,
-  parameter bit          EnableRomIM   = 1'b0,
+  parameter int unsigned HVDimension     = 512,
+  parameter int unsigned NumTotIm        = 1024,
+  parameter int unsigned NumPerImBank    = 128,
+  parameter int unsigned SeedWidth       = 32,
+  parameter int unsigned HoldFifoDepth   = 2,
+  parameter bit          EnableRomIM     = 1'b0,
+  parameter bit          FifoFallthrough = 1'b0,
   // Don't touch!
-  parameter int unsigned ImAddrWidth   = $clog2(NumTotIm),
-  parameter int unsigned NumImSets     = NumTotIm/NumPerImBank
+  parameter int unsigned ImAddrWidth     = $clog2(NumTotIm),
+  parameter int unsigned NumImSets       = NumTotIm/NumPerImBank
 )(
   // Clock and resets
   input  logic                                  clk_i,
@@ -138,49 +139,49 @@ module item_memory_top #(
   // FIFO for outputs
   //---------------------------
   fifo_buffer #(
-    .FallThrough     ( 1'b1          ),
-    .DataWidth       ( HVDimension   ),
-    .FifoDepth       ( HoldFifoDepth )
+    .FallThrough     ( FifoFallthrough ),
+    .DataWidth       ( HVDimension     ),
+    .FifoDepth       ( HoldFifoDepth   )
   ) i_fifo_im_a (
     // Clocks and reset
-    .clk_i           ( clk_i         ),
-    .rst_ni          ( rst_ni        ),
+    .clk_i           ( clk_i           ),
+    .rst_ni          ( rst_ni          ),
     // Software synchronous clear
-    .clr_i           ( clr_i         ),
+    .clr_i           ( clr_i           ),
     // Status flags
-    .full_o          ( fifo_full_a   ),
-    .empty_o         ( fifo_empty_a  ),
+    .full_o          ( fifo_full_a     ),
+    .empty_o         ( fifo_empty_a    ),
     // Note that this counter state is index 1
-    .counter_state_o ( /*Unused*/    ),
+    .counter_state_o ( /*Unused*/      ),
     // Input push
-    .data_i          ( im_a          ),
-    .push_i          ( fifo_push_a   ),
+    .data_i          ( im_a            ),
+    .push_i          ( fifo_push_a     ),
     // Output pop
-    .data_o          ( im_a_o        ),
-    .pop_i           ( fifo_pop_a    )
+    .data_o          ( im_a_o          ),
+    .pop_i           ( fifo_pop_a      )
   );
 
   fifo_buffer #(
-    .FallThrough     ( 1'b1          ),
-    .DataWidth       ( HVDimension   ),
-    .FifoDepth       ( HoldFifoDepth )
+    .FallThrough     ( FifoFallthrough ),
+    .DataWidth       ( HVDimension     ),
+    .FifoDepth       ( HoldFifoDepth   )
   ) i_fifo_im_b (
     // Clocks and reset
-    .clk_i           ( clk_i         ),
-    .rst_ni          ( rst_ni        ),
+    .clk_i           ( clk_i           ),
+    .rst_ni          ( rst_ni          ),
     // Software synchronous clear
-    .clr_i           ( clr_i         ),
+    .clr_i           ( clr_i           ),
     // Status flags
-    .full_o          ( fifo_full_b   ),
-    .empty_o         ( fifo_empty_b  ),
+    .full_o          ( fifo_full_b     ),
+    .empty_o         ( fifo_empty_b    ),
     // Note that this counter state is index 1
-    .counter_state_o ( /*Unused*/    ),
+    .counter_state_o ( /*Unused*/      ),
     // Input push
-    .data_i          ( im_b          ),
-    .push_i          ( fifo_push_b   ),
+    .data_i          ( im_b            ),
+    .push_i          ( fifo_push_b     ),
     // Output pop
-    .data_o          ( im_b_o        ),
-    .pop_i           ( fifo_pop_b    )
+    .data_o          ( im_b_o          ),
+    .pop_i           ( fifo_pop_b      )
   );
 
 endmodule
