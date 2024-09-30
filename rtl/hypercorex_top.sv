@@ -31,6 +31,7 @@ module hypercorex_top # (
   parameter int unsigned SeedWidth        = CsrDataWidth,
   parameter int unsigned HoldFifoDepth    = 2,
   parameter bit          EnableRomIM      = 1'b0,
+  parameter bit          FifoFallthrough  = 1'b0,
   //---------------------------
   // Instruction Memory Parameters
   //---------------------------
@@ -420,7 +421,8 @@ module hypercorex_top # (
     .NumPerImBank               ( NumPerImBank         ),
     .SeedWidth                  ( SeedWidth            ),
     .HoldFifoDepth              ( HoldFifoDepth        ),
-    .EnableRomIM                ( EnableRomIM          )
+    .EnableRomIM                ( EnableRomIM          ),
+    .FifoFallthrough            ( FifoFallthrough      )
   ) i_item_memory_top (
     //---------------------------
     // Clock and resets
