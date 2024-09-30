@@ -138,7 +138,7 @@ module item_memory_top #(
   // FIFO for outputs
   //---------------------------
   fifo_buffer #(
-    .FallThrough     ( 1'b1          ),
+    .FallThrough     ( 1'b0          ),
     .DataWidth       ( HVDimension   ),
     .FifoDepth       ( HoldFifoDepth )
   ) i_fifo_im_a (
@@ -161,7 +161,7 @@ module item_memory_top #(
   );
 
   fifo_buffer #(
-    .FallThrough     ( 1'b1          ),
+    .FallThrough     ( 1'b0          ),
     .DataWidth       ( HVDimension   ),
     .FifoDepth       ( HoldFifoDepth )
   ) i_fifo_im_b (
