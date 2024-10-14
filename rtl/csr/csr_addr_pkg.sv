@@ -59,5 +59,8 @@ package csr_addr_pkg;
   localparam logic [ 4:0] INST_LOOP_COUNT_ADDR2_BIT_ADDR  = 5'd8;
   localparam logic [ 4:0] INST_LOOP_COUNT_ADDR3_BIT_ADDR  = 5'd16;
 
+  // Observable general purpose register
+  localparam logic [31:0] OBSERVABLE_REG_DATA             = 32'd13;
+
 endpackage
 // verilog_lint: waive-stop parameter-name-style
