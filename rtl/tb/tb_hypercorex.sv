@@ -43,6 +43,7 @@ module tb_hypercorex # (
   //---------------------------
   // Don't touch!
   //---------------------------
+  parameter int unsigned ObservableWidth  = 4,
   parameter int unsigned NumImSets        = NumTotIm/NumPerImBank,
   parameter int unsigned InstMemAddrWidth = $clog2(InstMemDepth),
   parameter int unsigned TbMemDepth       = 512,
@@ -145,6 +146,8 @@ module tb_hypercorex # (
   logic [ HVDimension-1:0] class_hv;
   logic                    class_hv_valid;
   logic                    class_hv_ready;
+
+  logic [ObservableWidth-1:0] obs_logic;
 
   //---------------------------
 
@@ -414,11 +417,15 @@ module tb_hypercorex # (
     .class_hv_valid_i   ( class_hv_valid  ),
     .class_hv_ready_o   ( class_hv_ready  ),
     //---------------------------
-      // Low-dim prediction
-      //---------------------------
+    // Low-dim prediction
+    //---------------------------
     .predict_o          ( predict         ),
     .predict_valid_o    ( predict_valid   ),
-    .predict_ready_i    ( predict_ready   )
+    .predict_ready_i    ( predict_ready   ),
+    //---------------------------
+    // Low-dim prediction
+    //---------------------------
+    .obs_logic_o        ( obs_logic       )
   );
 
 endmodule

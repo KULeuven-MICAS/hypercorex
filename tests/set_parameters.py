@@ -82,6 +82,9 @@ INST_LOOP_JUMP_ADDR_REG_ADDR = 10
 INST_LOOP_END_ADDR_REG_ADDR = 11
 INST_LOOP_COUNT_REG_ADDR = 12
 
+# Observable register
+OBSERVABLE_REG_DATA = 13
+
 
 # ---------------------------
 # Complete filelist

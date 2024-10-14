@@ -50,6 +50,7 @@ module hypercorex_top # (
   // Don't touch!
   //---------------------------
   parameter int unsigned NumALUOps        = 4,
+  parameter int unsigned ObservableWidth  = 4,
   parameter int unsigned ALUOpsWidth      = $clog2(NumALUOps     ),
   parameter int unsigned ShiftWidth       = $clog2(ALUMaxShiftAmt),
   parameter int unsigned RegAddrWidth     = $clog2(RegNum        ),
@@ -106,7 +107,11 @@ module hypercorex_top # (
   //---------------------------
   output logic [CsrDataWidth-1:0] predict_o,
   output logic                    predict_valid_o,
-  input  logic                    predict_ready_i
+  input  logic                    predict_ready_i,
+  //---------------------------
+  // Observable ports
+  //---------------------------
+  output logic [ObservableWidth-1:0] obs_logic_o
 );
 
   //---------------------------
@@ -257,7 +262,8 @@ module hypercorex_top # (
     .NumPerImBank               ( NumPerImBank          ),
     .CsrDataWidth               ( CsrDataWidth          ),
     .CsrAddrWidth               ( CsrAddrWidth          ),
-    .InstMemDepth               ( InstMemDepth          )
+    .InstMemDepth               ( InstMemDepth          ),
+    .ObservableWidth            ( ObservableWidth       )
   ) i_csr (
     //---------------------------
     // Clocks and reset
@@ -313,7 +319,9 @@ module hypercorex_top # (
     .csr_loop_end_addr3_o       ( loop_end_addr3        ),
     .csr_loop_count_addr1_o     ( loop_count_addr1      ),
     .csr_loop_count_addr2_o     ( loop_count_addr2      ),
-    .csr_loop_count_addr3_o     ( loop_count_addr3      )
+    .csr_loop_count_addr3_o     ( loop_count_addr3      ),
+    // Observable registers
+    .csr_obs_logic_o            ( obs_logic_o           )
   );
 
 

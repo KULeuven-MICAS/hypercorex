@@ -22,7 +22,8 @@ module csr import csr_addr_pkg::*; #(
   // Don't touch!
   parameter int unsigned NumImSets        = NumTotIm/NumPerImBank,
   // Total number of registers
-  parameter int unsigned NumRegs          = 13,
+  parameter int unsigned NumRegs          = 14,
+  parameter int unsigned ObservableWidth  = 4,
   parameter int unsigned InstMemAddrWidth = $clog2(InstMemDepth),
   parameter int unsigned RegBitAddrWidth  = $clog2(CsrAddrWidth)
 )(
@@ -80,7 +81,8 @@ module csr import csr_addr_pkg::*; #(
   output logic [InstMemAddrWidth-1:0]               csr_loop_end_addr3_o,
   output logic [InstMemAddrWidth-1:0]               csr_loop_count_addr1_o,
   output logic [InstMemAddrWidth-1:0]               csr_loop_count_addr2_o,
-  output logic [InstMemAddrWidth-1:0]               csr_loop_count_addr3_o
+  output logic [InstMemAddrWidth-1:0]               csr_loop_count_addr3_o,
+  output logic [ ObservableWidth-1:0]               csr_obs_logic_o
 );
 
   //---------------------------
@@ -99,6 +101,9 @@ module csr import csr_addr_pkg::*; #(
 
   // Wiring
   logic [CsrDataWidth-1:0] csr_rd_data;
+
+  // Observable logic state
+  logic [1:0] obs_logic_state;
 
   //---------------------------
   // Always ready to get
@@ -197,6 +202,9 @@ module csr import csr_addr_pkg::*; #(
           csr_set[csr_req_addr_i][  InstMemAddrWidth-1:                 0]  //   [7:0] RW Loop addr1
         };
       end
+      OBSERVABLE_REG_DATA: begin
+        csr_rd_data = csr_set[OBSERVABLE_REG_DATA];
+      end
       default: begin
         csr_rd_data = {CsrDataWidth{1'b0}};
       end
@@ -246,6 +254,27 @@ module csr import csr_addr_pkg::*; #(
   // In the event that it's still full, and a request happens
   // then it overwrites the current state
   assign csr_rsp_data_o  = (csr_rsp_valid) ? csr_rsp_data : csr_rd_data;
+
+  //---------------------------
+  // Observable logic state control
+  //---------------------------
+  always_ff @ (posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      obs_logic_state <= 2'b00;
+    end else begin
+      if(csr_start_o) begin
+        obs_logic_state <= 2'b01;
+      end else if (obs_logic_state == 2'b01 && !csr_busy_i) begin
+        obs_logic_state <= 2'b11;
+      end else if (obs_logic_state == 2'b00 && csr_inst_ctrl_dbg_o) begin
+        obs_logic_state <= 2'b10;
+      end else if (csr_clr_o) begin
+        obs_logic_state <= 2'b00;
+      end else begin
+        obs_logic_state <= obs_logic_state;
+      end
+    end
+  end
 
   //---------------------------
   // Control signals logic
@@ -301,6 +330,8 @@ module csr import csr_addr_pkg::*; #(
     csr_loop_count_addr1_o     = csr_set[INST_LOOP_COUNT_REG_ADDR][  InstMemAddrWidth-1:                 0];
     csr_loop_count_addr2_o     = csr_set[INST_LOOP_COUNT_REG_ADDR][2*InstMemAddrWidth-1:  InstMemAddrWidth];
     csr_loop_count_addr3_o     = csr_set[INST_LOOP_COUNT_REG_ADDR][3*InstMemAddrWidth-1:2*InstMemAddrWidth];
+
+    csr_obs_logic_o            = {obs_logic_state, csr_set[OBSERVABLE_REG_DATA][(ObservableWidth-2)-1:0]};
     // verilog_lint: waive-stop line-length
 
   end
