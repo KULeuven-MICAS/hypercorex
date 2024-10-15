@@ -12,15 +12,22 @@ import math
 TEST_RUNS = 10
 NUM_CLASSES = 10
 
+# Cluster parameters
+NARROW_DATA_WIDTH = 64
+
 # Working dimensions
 HV_DIM = 256
 REG_FILE_WIDTH = 32
 SEED_DIM = REG_FILE_WIDTH
 
+# Data slicer parameters
+SLICER_FIFO_DEPTH = 4
+
 # Item memory parameters
-NUM_TOT_IM = 256
+NUM_TOT_IM = 512
 NUM_PER_IM_BANK = int(HV_DIM // 4)
 NUM_IM_SETS = int(NUM_TOT_IM // NUM_PER_IM_BANK)
+IM_ADDR_WIDTH = int(math.log2(NUM_TOT_IM))
 CA90_MODE = "ca90_hier"
 IM_FIFO_DEPTH = 2
 
