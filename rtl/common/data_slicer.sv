@@ -74,6 +74,7 @@ module data_slicer #(
   logic [MaxCountWidth-1:0] max_chunk_count;
 
   logic chunk_count_finish;
+  logic elem_count_finish;
 
   logic [ImAddrWidth-1:0] data_slice;
   logic [7:0]             data_slice_8b [MaxCounter8b];
