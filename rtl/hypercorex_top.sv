@@ -570,6 +570,10 @@ module hypercorex_top # (
     .clk_i                      ( clk_i                ),
     .rst_ni                     ( rst_ni               ),
     //---------------------------
+    // Global stall
+    //---------------------------
+    .global_stall_i             ( stall                ),
+    //---------------------------
     // Item memory inputs
     //---------------------------
     .im_rd_a_i                  ( im_a                 ),
