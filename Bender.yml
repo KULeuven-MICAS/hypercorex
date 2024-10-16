@@ -18,6 +18,11 @@ sources:
       # Level 1
       - rtl/common/data_slicer.sv
       #---------------------------
+      # Common Modules
+      #---------------------------
+      # Level 0
+      - rtl/data_formatter/update_counter.sv
+      #---------------------------
       # Encoder
       #---------------------------
       # Level 0
