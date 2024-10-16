@@ -256,6 +256,9 @@ def clear_encode_inputs_no_clock(dut):
     dut.im_rd_a_i.value = 0
     dut.im_rd_b_i.value = 0
 
+    # Global stall signal
+    dut.global_stall_i.value = 0
+
     # Control ports for ALU
     dut.alu_mux_a_i.value = 0
     dut.alu_mux_b_i.value = 0
