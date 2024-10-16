@@ -55,6 +55,7 @@ module hypercorex_top # (
   // Don't touch!
   //---------------------------
   parameter int unsigned SlicerModeWidth  = 2,
+  parameter int unsigned SrcSelWidth      = 2,
   parameter int unsigned NumALUOps        = 4,
   parameter int unsigned ObservableWidth  = 4,
   parameter int unsigned ALUOpsWidth      = $clog2(NumALUOps     ),
@@ -173,7 +174,14 @@ module hypercorex_top # (
   logic [InstMemAddrWidth-1:0]                   loop_count_addr3;
   // Data slicer configurations
   logic [ SlicerModeWidth-1:0]                   data_slice_mode;
-  logic [    CsrDataWidth-1:0]                   data_slice_num_elem;
+  logic [    CsrDataWidth-1:0]                   data_slice_num_elem_a;
+  logic [    CsrDataWidth-1:0]                   data_slice_num_elem_b;
+  // Source select configurations
+  logic [     SrcSelWidth-1:0]                   data_src_sel;
+  logic [    CsrDataWidth-1:0]                   src_auto_start_num_a;
+  logic [    CsrDataWidth-1:0]                   src_auto_start_num_b;
+  logic [    CsrDataWidth-1:0]                   src_auto_num_a;
+  logic [    CsrDataWidth-1:0]                   src_auto_num_b;
 
   //---------------------------
   // Data-Slicer <-> Item Memory Signals
@@ -284,6 +292,7 @@ module hypercorex_top # (
     .CsrAddrWidth               ( CsrAddrWidth          ),
     .InstMemDepth               ( InstMemDepth          ),
     .SlicerModeWidth            ( SlicerModeWidth       ),
+    .SrcSelWidth                ( SrcSelWidth           ),
     .ObservableWidth            ( ObservableWidth       )
   ) i_csr (
     //---------------------------
@@ -344,10 +353,16 @@ module hypercorex_top # (
     // Observable registers
     .csr_obs_logic_o            ( obs_logic_o           ),
     // Data slicer configurations
-    .csr_data_slice_mode_o      ( data_slice_mode       ),
-    .csr_data_slice_num_elem_o  ( data_slice_num_elem   )
+    .csr_data_slice_mode_o        ( data_slice_mode       ),
+    .csr_data_slice_num_elem_a_o  ( data_slice_num_elem_a ),
+    .csr_data_slice_num_elem_b_o  ( data_slice_num_elem_b ),
+    // Data source control
+    .csr_data_src_sel_o           ( data_src_sel          ),
+    .csr_src_auto_start_num_a_o   ( src_auto_start_num_a  ),
+    .csr_src_auto_start_num_b_o   ( src_auto_start_num_b  ),
+    .csr_src_auto_num_a_o         ( src_auto_num_a        ),
+    .csr_src_auto_num_b_o         ( src_auto_num_b        )
   );
-
 
   //---------------------------
   // Instruction Control
