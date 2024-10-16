@@ -84,6 +84,7 @@ def setup_and_run(
     if simulator == "verilator":
         compile_args = [
             "-Wno-WIDTH",
+            "-Wno-PINMISSING",
             "--no-timing",
             "--trace-structs",
             "--unroll-count",

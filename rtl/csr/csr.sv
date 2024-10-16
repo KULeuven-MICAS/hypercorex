@@ -22,7 +22,8 @@ module csr import csr_addr_pkg::*; #(
   // Don't touch!
   parameter int unsigned NumImSets        = NumTotIm/NumPerImBank,
   // Total number of registers
-  parameter int unsigned NumRegs          = 14,
+  parameter int unsigned NumRegs          = 16,
+  parameter int unsigned SlicerModeWidth  = 2,
   parameter int unsigned ObservableWidth  = 4,
   parameter int unsigned InstMemAddrWidth = $clog2(InstMemDepth),
   parameter int unsigned RegBitAddrWidth  = $clog2(CsrAddrWidth)
@@ -82,7 +83,10 @@ module csr import csr_addr_pkg::*; #(
   output logic [InstMemAddrWidth-1:0]               csr_loop_count_addr1_o,
   output logic [InstMemAddrWidth-1:0]               csr_loop_count_addr2_o,
   output logic [InstMemAddrWidth-1:0]               csr_loop_count_addr3_o,
-  output logic [ ObservableWidth-1:0]               csr_obs_logic_o
+  output logic [ ObservableWidth-1:0]               csr_obs_logic_o,
+  // Data slicer configurations
+  output logic [ SlicerModeWidth-1:0]               csr_data_slice_mode_o,
+  output logic [    CsrDataWidth-1:0]               csr_data_slice_num_elem_o
 );
 
   //---------------------------
@@ -202,8 +206,17 @@ module csr import csr_addr_pkg::*; #(
           csr_set[csr_req_addr_i][  InstMemAddrWidth-1:                 0]  //   [7:0] RW Loop addr1
         };
       end
+      DATA_SLICE_MODE_REG_ADDR: begin
+        csr_rd_data = {
+          {(CsrDataWidth-2){1'b0}},              // [31:2] -- Unused
+          csr_set[DATA_SLICE_MODE_REG_ADDR][1:0] // [1:0] RW Data slice mode
+        };
+      end
+      DATA_SLICE_NUM_ELEM_REG_ADDR: begin
+        csr_rd_data = csr_set[DATA_SLICE_NUM_ELEM_REG_ADDR];
+      end
       OBSERVABLE_REG_DATA: begin
-        csr_rd_data = csr_set[OBSERVABLE_REG_DATA];
+        csr_rd_data = {obs_logic_state, csr_set[OBSERVABLE_REG_DATA][(ObservableWidth-2)-1:0]};
       end
       default: begin
         csr_rd_data = {CsrDataWidth{1'b0}};
@@ -314,6 +327,7 @@ module csr import csr_addr_pkg::*; #(
     csr_inst_wr_data_o         = csr_req_data_i;
     csr_inst_wr_data_en_o      = csr_write_req && (csr_req_addr_i == INST_WRITE_DATA_REG_ADDR);
     csr_inst_rddbg_addr_o      = csr_set[INST_RDDBG_ADDR_REG_ADDR];
+
     //---------------------------
     // Instruction loop control
     //---------------------------
@@ -331,6 +345,15 @@ module csr import csr_addr_pkg::*; #(
     csr_loop_count_addr2_o     = csr_set[INST_LOOP_COUNT_REG_ADDR][2*InstMemAddrWidth-1:  InstMemAddrWidth];
     csr_loop_count_addr3_o     = csr_set[INST_LOOP_COUNT_REG_ADDR][3*InstMemAddrWidth-1:2*InstMemAddrWidth];
 
+    //---------------------------
+    // Data slicer configurations
+    //---------------------------
+    csr_data_slice_mode_o      = csr_set[DATA_SLICE_MODE_REG_ADDR][1:0];
+    csr_data_slice_num_elem_o  = csr_set[DATA_SLICE_NUM_ELEM_REG_ADDR];
+
+    //---------------------------
+    // Observable logic
+    //---------------------------
     csr_obs_logic_o            = {obs_logic_state, csr_set[OBSERVABLE_REG_DATA][(ObservableWidth-2)-1:0]};
     // verilog_lint: waive-stop line-length
 
