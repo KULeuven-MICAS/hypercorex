@@ -205,7 +205,7 @@ async def data_slicer_dut(dut):
             "LowDimWidth": str(set_parameters.NARROW_DATA_WIDTH),
             "NumTotIm": str(set_parameters.NUM_TOT_IM),
             "SlicerFifoDepth": str(set_parameters.SLICER_FIFO_DEPTH),
-            "CsrRegWidth": str(set_parameters.REG_FILE_WIDTH),
+            "CsrDataWidth": str(set_parameters.REG_FILE_WIDTH),
         }
     ],
 )
