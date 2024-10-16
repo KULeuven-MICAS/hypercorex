@@ -18,7 +18,7 @@ module data_slicer #(
   parameter int unsigned LowDimWidth     = 64,
   parameter int unsigned NumTotIm        = 1024,
   parameter int unsigned SlicerFifoDepth = 4,
-  parameter int unsigned CsrRegWidth     = 32,
+  parameter int unsigned CsrDataWidth     = 32,
   // Don't touch!
   parameter int unsigned FifoFallthrough = 1'b0,
   parameter int unsigned ModeWidth       = 2,
@@ -32,7 +32,7 @@ module data_slicer #(
   input  logic                   clr_i,
   input  logic [  ModeWidth-1:0] sel_mode_i,
   // Settings
-  input  logic [CsrRegWidth-1:0] csr_elem_size_i,
+  input  logic [CsrDataWidth-1:0] csr_elem_size_i,
   // Data inputs
   input  logic [LowDimWidth-1:0] lowdim_data_i,
   input  logic                   lowdim_data_valid_i,
@@ -87,8 +87,8 @@ module data_slicer #(
   logic fifo_out_pop;
 
   // Address data + 1 bit valid
-  logic [ImAddrWidth+1-1:0] fifo_in_data;
-  logic [ImAddrWidth+1-1:0] fifo_out_data;
+  logic [ImAddrWidth-1:0] fifo_in_data;
+  logic [ImAddrWidth-1:0] fifo_out_data;
 
   //---------------------------
   // Combinational Logic
@@ -199,7 +199,7 @@ module data_slicer #(
     .FallThrough     ( FifoFallthrough ),
     .DataWidth       ( ImAddrWidth     ),
     .FifoDepth       ( SlicerFifoDepth )
-  ) i_fifo_im_a (
+  ) i_fifo_data_slicer (
     // Clocks and reset
     .clk_i           ( clk_i           ),
     .rst_ni          ( rst_ni          ),
