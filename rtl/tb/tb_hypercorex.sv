@@ -13,6 +13,7 @@ module tb_hypercorex # (
   // General Parameters
   //---------------------------
   parameter int unsigned HVDimension      = 512,
+  parameter int unsigned LowDimWidth      = 64,
   //---------------------------
   // CSR Parameters
   //---------------------------
@@ -119,7 +120,7 @@ module tb_hypercorex # (
   //---------------------------
   // Wires and Logic
   //---------------------------
-  logic [ ImAddrWidth-1:0] lowdim_a_data;
+  logic [ LowDimWidth-1:0] lowdim_a_data;
   logic                    lowdim_a_valid;
   logic                    lowdim_a_ready;
 
@@ -127,7 +128,7 @@ module tb_hypercorex # (
   logic                    highdim_a_valid;
   logic                    highdim_a_ready;
 
-  logic [ ImAddrWidth-1:0] lowdim_b_data;
+  logic [ LowDimWidth-1:0] lowdim_b_data;
   logic                    lowdim_b_valid;
   logic                    lowdim_b_ready;
 
