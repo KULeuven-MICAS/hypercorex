@@ -22,8 +22,9 @@ module csr import csr_addr_pkg::*; #(
   // Don't touch!
   parameter int unsigned NumImSets        = NumTotIm/NumPerImBank,
   // Total number of registers
-  parameter int unsigned NumRegs          = 16,
+  parameter int unsigned NumRegs          = 21,
   parameter int unsigned SlicerModeWidth  = 2,
+  parameter int unsigned SrcSelWidth      = 2,
   parameter int unsigned ObservableWidth  = 4,
   parameter int unsigned InstMemAddrWidth = $clog2(InstMemDepth),
   parameter int unsigned RegBitAddrWidth  = $clog2(CsrAddrWidth)
@@ -84,9 +85,23 @@ module csr import csr_addr_pkg::*; #(
   output logic [InstMemAddrWidth-1:0]               csr_loop_count_addr2_o,
   output logic [InstMemAddrWidth-1:0]               csr_loop_count_addr3_o,
   output logic [ ObservableWidth-1:0]               csr_obs_logic_o,
+  // Data source configurations
+  output logic                                      csr_src_mux_a_o,
+  output logic                                      csr_src_mux_b_o,
+  output logic [    CsrDataWidth-1:0]               csr_auto_count_start_a_o,
+  output logic [    CsrDataWidth-1:0]               csr_auto_count_start_b_o,
+  output logic [    CsrDataWidth-1:0]               csr_auto_count_num_a_o,
+  output logic [    CsrDataWidth-1:0]               csr_auto_count_num_b_o,
   // Data slicer configurations
   output logic [ SlicerModeWidth-1:0]               csr_data_slice_mode_o,
-  output logic [    CsrDataWidth-1:0]               csr_data_slice_num_elem_o
+  output logic [    CsrDataWidth-1:0]               csr_data_slice_num_elem_a_o,
+  output logic [    CsrDataWidth-1:0]               csr_data_slice_num_elem_b_o,
+  // Data source control
+  output logic [     SrcSelWidth-1:0]               csr_data_src_sel_o,
+  output logic [    CsrDataWidth-1:0]               csr_src_auto_start_num_a_o,
+  output logic [    CsrDataWidth-1:0]               csr_src_auto_start_num_b_o,
+  output logic [    CsrDataWidth-1:0]               csr_src_auto_num_a_o,
+  output logic [    CsrDataWidth-1:0]               csr_src_auto_num_b_o
 );
 
   //---------------------------
@@ -206,14 +221,20 @@ module csr import csr_addr_pkg::*; #(
           csr_set[csr_req_addr_i][  InstMemAddrWidth-1:                 0]  //   [7:0] RW Loop addr1
         };
       end
-      DATA_SLICE_MODE_REG_ADDR: begin
+      DATA_SRC_CTRL_REG_ADDR: begin
         csr_rd_data = {
-          {(CsrDataWidth-2){1'b0}},              // [31:2] -- Unused
-          csr_set[DATA_SLICE_MODE_REG_ADDR][1:0] // [1:0] RW Data slice mode
+          {(CsrDataWidth-2){1'b0}},             // [31:2] -- Unused
+          csr_set[DATA_SRC_CTRL_REG_ADDR][3:2], // [3:2] RW source select
+          csr_set[DATA_SRC_CTRL_REG_ADDR][1:0]  // [1:0] RW Data slice mode
         };
       end
-      DATA_SLICE_NUM_ELEM_REG_ADDR: begin
-        csr_rd_data = csr_set[DATA_SLICE_NUM_ELEM_REG_ADDR];
+      DATA_SLICE_NUM_ELEM_A_REG_ADDR,
+      DATA_SLICE_NUM_ELEM_B_REG_ADDR,
+      DATA_SRC_AUTO_START_A_REG_ADDR,
+      DATA_SRC_AUTO_START_B_REG_ADDR,
+      DATA_SRC_AUTO_NUM_A_REG_ADDR,
+      DATA_SRC_AUTO_NUM_B_REG_ADDR: begin
+        csr_rd_data = csr_set[csr_req_addr_i];
       end
       OBSERVABLE_REG_DATA: begin
         csr_rd_data = {obs_logic_state, csr_set[OBSERVABLE_REG_DATA][(ObservableWidth-2)-1:0]};
@@ -348,8 +369,18 @@ module csr import csr_addr_pkg::*; #(
     //---------------------------
     // Data slicer configurations
     //---------------------------
-    csr_data_slice_mode_o      = csr_set[DATA_SLICE_MODE_REG_ADDR][1:0];
-    csr_data_slice_num_elem_o  = csr_set[DATA_SLICE_NUM_ELEM_REG_ADDR];
+    csr_data_slice_mode_o       = csr_set[DATA_SRC_CTRL_REG_ADDR][1:0];
+    csr_data_slice_num_elem_a_o = csr_set[DATA_SLICE_NUM_ELEM_A_REG_ADDR];
+    csr_data_slice_num_elem_b_o = csr_set[DATA_SLICE_NUM_ELEM_B_REG_ADDR];
+
+    //---------------------------
+    // Data source control
+    //---------------------------
+    csr_data_src_sel_o          = csr_set[DATA_SRC_CTRL_REG_ADDR][3:2];
+    csr_src_auto_start_num_a_o  = csr_set[DATA_SRC_AUTO_START_A_REG_ADDR];
+    csr_src_auto_start_num_b_o  = csr_set[DATA_SRC_AUTO_START_B_REG_ADDR];
+    csr_src_auto_num_a_o        = csr_set[DATA_SRC_AUTO_NUM_A_REG_ADDR];
+    csr_src_auto_num_b_o        = csr_set[DATA_SRC_AUTO_NUM_B_REG_ADDR];
 
     //---------------------------
     // Observable logic
@@ -358,6 +389,5 @@ module csr import csr_addr_pkg::*; #(
     // verilog_lint: waive-stop line-length
 
   end
-
 
 endmodule
