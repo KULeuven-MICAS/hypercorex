@@ -479,7 +479,7 @@ module hypercorex_top # (
     .clr_i                ( clr                 ),
     .sel_mode_i           ( data_slice_mode     ),
     // Settings
-    .csr_elem_size_i      ( data_slice_num_elem ),
+    .csr_elem_size_i      ( data_slice_num_elem_a ),
     // Data inputs
     .lowdim_data_i        ( lowdim_a_data_i     ),
     .lowdim_data_valid_i  ( lowdim_a_valid_i    ),
@@ -507,7 +507,7 @@ module hypercorex_top # (
     .clr_i                ( clr                 ),
     .sel_mode_i           ( data_slice_mode     ),
     // Settings
-    .csr_elem_size_i      ( data_slice_num_elem ),
+    .csr_elem_size_i      ( data_slice_num_elem_b ),
     // Data inputs
     .lowdim_data_i        ( lowdim_b_data_i     ),
     .lowdim_data_valid_i  ( lowdim_b_valid_i    ),
