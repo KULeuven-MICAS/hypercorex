@@ -459,6 +459,38 @@ async def csr_dut(dut):
         ),
     )
 
+    cocotb.log.info(" ------------------------------------------ ")
+    cocotb.log.info("         Data Slicer Configurations         ")
+    cocotb.log.info(" ------------------------------------------ ")
+
+    # Check the data slicer mode first
+    # Generate random bits to write
+    golden_val = gen_rand_bits(set_parameters.REG_FILE_WIDTH)
+    await write_csr(dut, golden_val, set_parameters.DATA_SLICE_MODE_REG_ADDR)
+    # Mask appropriately since it's 2 bits long only
+    golden_val = golden_val & 0x0000_0003
+
+    # Check value of data slice mode
+    test_val = dut.csr_data_slice_mode_o.value.integer
+    check_result(test_val, golden_val)
+
+    # Read value manually
+    csr_read_val = await read_csr(dut, set_parameters.DATA_SLICE_MODE_REG_ADDR)
+    check_result(csr_read_val, golden_val)
+
+    # Check the data slicer number of elements
+    # Generate random bits to write
+    golden_val = gen_rand_bits(set_parameters.REG_FILE_WIDTH)
+    await write_csr(dut, golden_val, set_parameters.DATA_SLICE_NUM_ELEM_REG_ADDR)
+
+    # Check value of data slice mode
+    test_val = dut.csr_data_slice_num_elem_o.value.integer
+    check_result(test_val, golden_val)
+
+    # Read value manually
+    csr_read_val = await read_csr(dut, set_parameters.DATA_SLICE_NUM_ELEM_REG_ADDR)
+    check_result(csr_read_val, golden_val)
+
     # This is for waveform checking later
     for i in range(set_parameters.TEST_RUNS):
         # Propagate time for logic
