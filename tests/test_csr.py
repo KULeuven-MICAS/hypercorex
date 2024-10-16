@@ -466,29 +466,96 @@ async def csr_dut(dut):
     # Check the data slicer mode first
     # Generate random bits to write
     golden_val = gen_rand_bits(set_parameters.REG_FILE_WIDTH)
-    await write_csr(dut, golden_val, set_parameters.DATA_SLICE_MODE_REG_ADDR)
-    # Mask appropriately since it's 2 bits long only
-    golden_val = golden_val & 0x0000_0003
+    await write_csr(dut, golden_val, set_parameters.DATA_SRC_CTRL_REG_ADDR)
 
-    # Check value of data slice mode
+    # Check value of data slice mode that is 2 LSB
+    golden_val_slide_mode = golden_val & 0x0000_0003
     test_val = dut.csr_data_slice_mode_o.value.integer
-    check_result(test_val, golden_val)
+    check_result(test_val, golden_val_slide_mode)
+
+    # Check the value of source select also 2 bits long
+    golden_val_src_sel = (golden_val >> 2) & 0x0000_0003
+    test_val = dut.csr_data_src_sel_o.value.integer
+    check_result(test_val, golden_val_src_sel)
 
     # Read value manually
-    csr_read_val = await read_csr(dut, set_parameters.DATA_SLICE_MODE_REG_ADDR)
+    golden_val = golden_val & 0x0000_000F
+    csr_read_val = await read_csr(dut, set_parameters.DATA_SRC_CTRL_REG_ADDR)
     check_result(csr_read_val, golden_val)
 
-    # Check the data slicer number of elements
+    # Check the data slicer number of elements ----------------------------------
     # Generate random bits to write
     golden_val = gen_rand_bits(set_parameters.REG_FILE_WIDTH)
-    await write_csr(dut, golden_val, set_parameters.DATA_SLICE_NUM_ELEM_REG_ADDR)
+    await write_csr(dut, golden_val, set_parameters.DATA_SLICE_NUM_ELEM_A_REG_ADDR)
 
     # Check value of data slice mode
-    test_val = dut.csr_data_slice_num_elem_o.value.integer
+    test_val = dut.csr_data_slice_num_elem_a_o.value.integer
     check_result(test_val, golden_val)
 
     # Read value manually
-    csr_read_val = await read_csr(dut, set_parameters.DATA_SLICE_NUM_ELEM_REG_ADDR)
+    csr_read_val = await read_csr(dut, set_parameters.DATA_SLICE_NUM_ELEM_A_REG_ADDR)
+    check_result(csr_read_val, golden_val)
+
+    # Generate random bits to write
+    golden_val = gen_rand_bits(set_parameters.REG_FILE_WIDTH)
+    await write_csr(dut, golden_val, set_parameters.DATA_SLICE_NUM_ELEM_B_REG_ADDR)
+
+    # Check value of data slice mode
+    test_val = dut.csr_data_slice_num_elem_b_o.value.integer
+    check_result(test_val, golden_val)
+
+    # Read value manually
+    csr_read_val = await read_csr(dut, set_parameters.DATA_SLICE_NUM_ELEM_B_REG_ADDR)
+    check_result(csr_read_val, golden_val)
+
+    # Check the data auto start value ----------------------------------
+    # Generate random bits to write
+    golden_val = gen_rand_bits(set_parameters.REG_FILE_WIDTH)
+    await write_csr(dut, golden_val, set_parameters.DATA_SRC_AUTO_START_A_REG_ADDR)
+
+    # Check value of data slice mode
+    test_val = dut.csr_src_auto_start_num_a_o.value.integer
+    check_result(test_val, golden_val)
+
+    # Read value manually
+    csr_read_val = await read_csr(dut, set_parameters.DATA_SRC_AUTO_START_A_REG_ADDR)
+    check_result(csr_read_val, golden_val)
+
+    # Generate random bits to write
+    golden_val = gen_rand_bits(set_parameters.REG_FILE_WIDTH)
+    await write_csr(dut, golden_val, set_parameters.DATA_SRC_AUTO_START_B_REG_ADDR)
+
+    # Check value of data slice mode
+    test_val = dut.csr_src_auto_start_num_b_o.value.integer
+    check_result(test_val, golden_val)
+
+    # Read value manually
+    csr_read_val = await read_csr(dut, set_parameters.DATA_SRC_AUTO_START_B_REG_ADDR)
+    check_result(csr_read_val, golden_val)
+
+    # Check the data auto num value ----------------------------------
+    # Generate random bits to write
+    golden_val = gen_rand_bits(set_parameters.REG_FILE_WIDTH)
+    await write_csr(dut, golden_val, set_parameters.DATA_SRC_AUTO_NUM_A_REG_ADDR)
+
+    # Check value of data slice mode
+    test_val = dut.csr_src_auto_num_a_o.value.integer
+    check_result(test_val, golden_val)
+
+    # Read value manually
+    csr_read_val = await read_csr(dut, set_parameters.DATA_SRC_AUTO_NUM_A_REG_ADDR)
+    check_result(csr_read_val, golden_val)
+
+    # Generate random bits to write
+    golden_val = gen_rand_bits(set_parameters.REG_FILE_WIDTH)
+    await write_csr(dut, golden_val, set_parameters.DATA_SRC_AUTO_NUM_B_REG_ADDR)
+
+    # Check value of data slice mode
+    test_val = dut.csr_src_auto_num_b_o.value.integer
+    check_result(test_val, golden_val)
+
+    # Read value manually
+    csr_read_val = await read_csr(dut, set_parameters.DATA_SRC_AUTO_NUM_B_REG_ADDR)
     check_result(csr_read_val, golden_val)
 
     # This is for waveform checking later
