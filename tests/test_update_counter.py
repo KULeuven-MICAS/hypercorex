@@ -28,6 +28,8 @@ COUNTER_WIDTH = int(math.log2(set_parameters.NUM_TOT_IM))
 def clear_inputs_no_clock(dut):
     dut.en_i.value = 0
     dut.clr_i.value = 0
+    dut.start_i.value = 0
+    dut.start_count_i.value = 0
     dut.max_count_i.value = 0
     dut.addr_ready_i.value = 0
 
@@ -62,13 +64,21 @@ async def update_counter_dut(dut):
         dut.en_i.value = 1
 
         # Randomly increment the counter
-        random_max_count = random.randint(10, set_parameters.NUM_TOT_IM)
+        random_max_count = random.randint(10, (set_parameters.NUM_TOT_IM // 2))
+        random_start_count = random.randint(10, (set_parameters.NUM_TOT_IM // 4))
 
-        # Set the maximum count
+        # Set the maximum and start counts
         dut.max_count_i.value = random_max_count
+        dut.start_count_i.value = random_start_count
+
+        # Set to 1 to load start counter
+        dut.start_i.value = 1
 
         # Wait for setting to settle
         await clock_and_time(dut.clk_i)
+
+        # Make sure to reset the signal
+        dut.start_i.value = 0
 
         # Wait for the counter to increment
         # Minus 1 is necessary because address
@@ -83,7 +93,7 @@ async def update_counter_dut(dut):
 
         # Check the counter
         addr_o_value = dut.addr_o.value.integer
-        check_result(addr_o_value, random_max_count - 1)
+        check_result(addr_o_value, random_start_count + random_max_count - 1)
 
         # Clear the counter
         dut.clr_i.value = 1
@@ -97,15 +107,23 @@ async def update_counter_dut(dut):
     for i in range(set_parameters.TEST_RUNS):
         # Randomly increment the counter
         random_max_count = random.randint(10, set_parameters.NUM_TOT_IM)
+        random_start_count = random.randint(10, (set_parameters.NUM_TOT_IM // 4))
         random_overflow_count = random.randint(5, random_max_count)
         # Run continuously with total number of overflows
         random_total_count = random_max_count + random_overflow_count
 
         # Set the maximum count
         dut.max_count_i.value = random_max_count
+        dut.start_count_i.value = random_start_count
+
+        # Set to 1 to load start counter
+        dut.start_i.value = 1
 
         # Wait for setting to settle
         await clock_and_time(dut.clk_i)
+
+        # Make sure to reset the signal
+        dut.start_i.value = 0
 
         # Wait for the counter to increment
         # Minus 1 is necessary because address
@@ -121,7 +139,7 @@ async def update_counter_dut(dut):
         # Check the counter
         # Check if the overflow count is correct
         addr_o_value = dut.addr_o.value.integer
-        check_result(addr_o_value, random_overflow_count - 1)
+        check_result(addr_o_value, random_overflow_count + random_start_count - 1)
 
         # Clear the counter
         dut.clr_i.value = 1
@@ -131,7 +149,7 @@ async def update_counter_dut(dut):
 
 # Config and run
 @pytest.mark.parametrize(
-    "parameters", [{"CounterWidth": str(set_parameters.REG_FILE_WIDTH)}]
+    "parameters", [{"CsrDataWidth": str(set_parameters.REG_FILE_WIDTH)}]
 )
 def test_update_counter(simulator, parameters, waves):
     verilog_sources = ["/rtl/data_formatter/update_counter.sv"]
