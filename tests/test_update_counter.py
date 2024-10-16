@@ -149,7 +149,13 @@ async def update_counter_dut(dut):
 
 # Config and run
 @pytest.mark.parametrize(
-    "parameters", [{"CsrDataWidth": str(set_parameters.REG_FILE_WIDTH)}]
+    "parameters",
+    [
+        {
+            "CsrDataWidth": str(set_parameters.REG_FILE_WIDTH),
+            "NumTotIm": str(set_parameters.NUM_TOT_IM),
+        }
+    ],
 )
 def test_update_counter(simulator, parameters, waves):
     verilog_sources = ["/rtl/data_formatter/update_counter.sv"]

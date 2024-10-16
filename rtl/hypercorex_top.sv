@@ -195,6 +195,12 @@ module hypercorex_top # (
   logic                   data_slice_b_ready;
 
   //---------------------------
+  // Source Select Signals
+  //---------------------------
+  logic                   src_sel_a_valid;
+  logic                   src_sel_b_valid;
+
+  //---------------------------
   // Item Memory <-> Encoder Signals
   //---------------------------
   logic [HVDimension-1:0] im_a;
@@ -457,6 +463,28 @@ module hypercorex_top # (
     // Control port for the AM
     .am_search_o                ( am_search            ),
     .am_load_o                  ( am_load              )
+  );
+
+  //---------------------------
+  // Auto Update Counter
+  //---------------------------
+
+  update_counter #(
+    .CsrDataWidth   ( CsrDataWidth         )
+  ) i_update_counter_a (
+    // Clocks and reset
+    .clk_i          ( clk_i                ),
+    .rst_ni         ( rst_ni               ),
+    // Inputs
+    .en_i           ( enable               ),
+    .clr_i          ( clr                  ),
+    .start_i        ( start                ),
+    .max_count_i    ( src_auto_num_a       ),
+    .start_count_i  ( src_auto_start_num_a ),
+    // Outputs
+    .addr_o         ( addr_o        ),
+    .addr_valid_o   ( addr_valid_o  ),
+    .addr_ready_i   ( addr_ready_i  )
   );
 
   //---------------------------
