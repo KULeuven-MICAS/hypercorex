@@ -13,7 +13,10 @@
 //---------------------------
 
 module update_counter #(
-  parameter int unsigned CsrDataWidth = 32
+  parameter int unsigned CsrDataWidth = 32,
+  parameter int unsigned NumTotIm     = 1024,
+  // Don't touch
+  parameter int unsigned ImAddrWidth  = $clog2(NumTotIm)
 )(
   // Clocks and reset
   input  logic                    clk_i,
@@ -25,7 +28,7 @@ module update_counter #(
   input  logic [CsrDataWidth-1:0] max_count_i,
   input  logic [CsrDataWidth-1:0] start_count_i,
   // Outputs
-  output logic [CsrDataWidth-1:0] addr_o,
+  output logic [ ImAddrWidth-1:0] addr_o,
   output logic                    addr_valid_o,
   input  logic                    addr_ready_i
 );
@@ -71,7 +74,7 @@ module update_counter #(
   //---------------------------
   // Output
   //---------------------------
-  assign addr_o       = addr_reg;
+  assign addr_o       = addr_reg[ImAddrWidth-1:0];
   assign addr_valid_o = en_i;
 
 endmodule
