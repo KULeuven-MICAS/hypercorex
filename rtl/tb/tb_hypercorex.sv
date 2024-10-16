@@ -27,6 +27,7 @@ module tb_hypercorex # (
   parameter int unsigned ImAddrWidth      = CsrDataWidth,
   parameter int unsigned SeedWidth        = CsrDataWidth,
   parameter int unsigned HoldFifoDepth    = 2,
+  parameter bit          EnableRomIM      = 1'b0,
   //---------------------------
   // Instruction Memory Parameters
   //---------------------------
@@ -359,6 +360,7 @@ module tb_hypercorex # (
     .NumPerImBank       ( NumPerImBank     ),
     .ImAddrWidth        ( ImAddrWidth      ),
     .SeedWidth          ( SeedWidth        ),
+    .EnableRomIM        ( EnableRomIM      ),
     .HoldFifoDepth      ( HoldFifoDepth    ),
     .InstMemDepth       ( InstMemDepth     ),
     .BundCountWidth     ( BundCountWidth   ),
