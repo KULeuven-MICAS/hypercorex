@@ -294,6 +294,8 @@ async def tb_hypercorex_dut(dut):
     "parameters",
     [
         {
+            # Enable ROM IM
+            "EnableRomIM": str(set_parameters.ENABLE_ROM_IM),
             # General parameters
             "HVDimension": str(set_parameters.HV_DIM),
             "LowDimWidth": str(set_parameters.NARROW_DATA_WIDTH),
@@ -322,7 +324,6 @@ async def tb_hypercorex_dut(dut):
 def test_hypercorex_char_recog(simulator, parameters, waves):
     bender_path = bender_path = get_dir() + "/../."
     bender_filelist = get_bender_filelist(bender_path)
-    print(bender_filelist)
     verilog_sources = bender_filelist
     toplevel = "tb_hypercorex"
 

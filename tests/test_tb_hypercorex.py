@@ -120,6 +120,8 @@ async def tb_hypercorex_dut(dut):
     "parameters",
     [
         {
+            # Enable ROM IM
+            "EnableRomIM": str(set_parameters.ENABLE_ROM_IM),
             # General parameters
             "HVDimension": str(set_parameters.HV_DIM),
             "LowDimWidth": str(set_parameters.NARROW_DATA_WIDTH),
