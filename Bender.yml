@@ -10,10 +10,13 @@ sources:
       #---------------------------
       # Common Modules
       #---------------------------
+      # Level 0
       - rtl/common/mux.sv
       - rtl/common/fifo_buffer.sv
       - rtl/common/reg_file_1w1r.sv
       - rtl/common/reg_file_1w2r.sv
+      # Level 1
+      - rtl/common/data_slicer.sv
       #---------------------------
       # Encoder
       #---------------------------
