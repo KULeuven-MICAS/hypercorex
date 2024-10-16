@@ -17,7 +17,12 @@ module hypercorex_top # (
   // General Parameters
   //---------------------------
   parameter int unsigned HVDimension      = 512,
-    //---------------------------
+  parameter int unsigned LowDimWidth      = 64,
+  //---------------------------
+  // Data Slicer Parameters
+  //---------------------------
+  parameter int unsigned SlicerFifoDepth  = 4,
+  //---------------------------
   // CSR Parameters
   //---------------------------
   parameter int unsigned CsrDataWidth     = 32,
@@ -49,6 +54,7 @@ module hypercorex_top # (
   //---------------------------
   // Don't touch!
   //---------------------------
+  parameter int unsigned SlicerModeWidth  = 2,
   parameter int unsigned NumALUOps        = 4,
   parameter int unsigned ObservableWidth  = 4,
   parameter int unsigned ALUOpsWidth      = $clog2(NumALUOps     ),
@@ -78,13 +84,13 @@ module hypercorex_top # (
   //---------------------------
   // IM ports
   //---------------------------
-  input  logic [ ImAddrWidth-1:0] lowdim_a_data_i,
+  input  logic [ LowDimWidth-1:0] lowdim_a_data_i,
   input  logic                    lowdim_a_valid_i,
   output logic                    lowdim_a_ready_o,
   input  logic [ HVDimension-1:0] highdim_a_data_i,
   input  logic                    highdim_a_valid_i,
   output logic                    highdim_a_ready_o,
-  input  logic [ ImAddrWidth-1:0] lowdim_b_data_i,
+  input  logic [ LowDimWidth-1:0] lowdim_b_data_i,
   input  logic                    lowdim_b_valid_i,
   output logic                    lowdim_b_ready_o,
   input  logic [ HVDimension-1:0] highdim_b_data_i,
@@ -165,6 +171,20 @@ module hypercorex_top # (
   logic [InstMemAddrWidth-1:0]                   loop_count_addr1;
   logic [InstMemAddrWidth-1:0]                   loop_count_addr2;
   logic [InstMemAddrWidth-1:0]                   loop_count_addr3;
+  // Data slicer configurations
+  logic [ SlicerModeWidth-1:0]                   data_slice_mode;
+  logic [    CsrDataWidth-1:0]                   data_slice_num_elem;
+
+  //---------------------------
+  // Data-Slicer <-> Item Memory Signals
+  //---------------------------
+  logic [ImAddrWidth-1:0] data_slice_addr_a;
+  logic                   data_slice_a_valid;
+  logic                   data_slice_a_ready;
+
+  logic [ImAddrWidth-1:0] data_slice_addr_b;
+  logic                   data_slice_b_valid;
+  logic                   data_slice_b_ready;
 
   //---------------------------
   // Item Memory <-> Encoder Signals
@@ -245,14 +265,14 @@ module hypercorex_top # (
   logic im_a_data_ready;
   logic im_b_data_ready;
 
-  assign im_a_data_valid   = port_a_cim[1] ? highdim_a_valid_i : lowdim_a_valid_i;
-  assign im_b_data_valid   = port_b_cim    ? highdim_b_valid_i : lowdim_b_valid_i;
+  assign im_a_data_valid   = port_a_cim[1] ? highdim_a_valid_i : data_slice_a_valid;
+  assign im_b_data_valid   = port_b_cim    ? highdim_b_valid_i : data_slice_b_valid;
 
-  assign lowdim_a_ready_o  = port_a_cim[1] ?  1'b0 : im_a_data_ready;
-  assign highdim_a_ready_o = port_a_cim[1] ? im_a_data_ready : 1'b0;
+  assign data_slice_a_ready  = port_a_cim[1] ?  1'b0 : im_a_data_ready;
+  assign highdim_a_ready_o   = port_a_cim[1] ? im_a_data_ready : 1'b0;
 
-  assign lowdim_b_ready_o  = port_b_cim    ?  1'b0 : im_b_data_ready;
-  assign highdim_b_ready_o = port_b_cim    ? im_b_data_ready : 1'b0;
+  assign data_slice_b_ready  = port_b_cim    ?  1'b0 : im_b_data_ready;
+  assign highdim_b_ready_o   = port_b_cim    ? im_b_data_ready : 1'b0;
 
   //---------------------------
   // CSR registers and control
@@ -263,6 +283,7 @@ module hypercorex_top # (
     .CsrDataWidth               ( CsrDataWidth          ),
     .CsrAddrWidth               ( CsrAddrWidth          ),
     .InstMemDepth               ( InstMemDepth          ),
+    .SlicerModeWidth            ( SlicerModeWidth       ),
     .ObservableWidth            ( ObservableWidth       )
   ) i_csr (
     //---------------------------
@@ -321,7 +342,10 @@ module hypercorex_top # (
     .csr_loop_count_addr2_o     ( loop_count_addr2      ),
     .csr_loop_count_addr3_o     ( loop_count_addr3      ),
     // Observable registers
-    .csr_obs_logic_o            ( obs_logic_o           )
+    .csr_obs_logic_o            ( obs_logic_o           ),
+    // Data slicer configurations
+    .csr_data_slice_mode_o      ( data_slice_mode       ),
+    .csr_data_slice_num_elem_o  ( data_slice_num_elem   )
   );
 
 
@@ -421,6 +445,66 @@ module hypercorex_top # (
   );
 
   //---------------------------
+  // Data slicer module
+  //---------------------------
+  data_slicer #(
+    .LowDimWidth          ( LowDimWidth         ),
+    .NumTotIm             ( NumTotIm            ),
+    .SlicerFifoDepth      ( SlicerFifoDepth     ),
+    .CsrDataWidth         ( CsrDataWidth        ),
+    // Don't touch!
+    .FifoFallthrough      ( FifoFallthrough     ),
+    .ModeWidth            ( SlicerModeWidth     )
+  ) i_data_slicer_a (
+    // Clocks and reset
+    .clk_i                ( clk_i               ),
+    .rst_ni               ( rst_ni              ),
+    // Control inputs
+    .enable_i             ( enable              ),
+    .clr_i                ( clr                 ),
+    .sel_mode_i           ( data_slice_mode     ),
+    // Settings
+    .csr_elem_size_i      ( data_slice_num_elem ),
+    // Data inputs
+    .lowdim_data_i        ( lowdim_a_data_i     ),
+    .lowdim_data_valid_i  ( lowdim_a_valid_i    ),
+    .lowdim_data_ready_o  ( lowdim_a_ready_o    ),
+    // Address outputs
+    .addr_o               ( data_slice_addr_a   ),
+    .addr_valid_o         ( data_slice_a_valid  ),
+    .addr_ready_i         ( data_slice_a_ready  )
+  );
+
+  data_slicer #(
+    .LowDimWidth          ( LowDimWidth         ),
+    .NumTotIm             ( NumTotIm            ),
+    .SlicerFifoDepth      ( SlicerFifoDepth     ),
+    .CsrDataWidth         ( CsrDataWidth        ),
+    // Don't touch!
+    .FifoFallthrough      ( FifoFallthrough     ),
+    .ModeWidth            ( SlicerModeWidth     )
+  ) i_data_slicer_b (
+    // Clocks and reset
+    .clk_i                ( clk_i               ),
+    .rst_ni               ( rst_ni              ),
+    // Control inputs
+    .enable_i             ( enable              ),
+    .clr_i                ( clr                 ),
+    .sel_mode_i           ( data_slice_mode     ),
+    // Settings
+    .csr_elem_size_i      ( data_slice_num_elem ),
+    // Data inputs
+    .lowdim_data_i        ( lowdim_b_data_i     ),
+    .lowdim_data_valid_i  ( lowdim_b_valid_i    ),
+    .lowdim_data_ready_o  ( lowdim_b_ready_o    ),
+    // Address outputs
+    .addr_o               ( data_slice_addr_b   ),
+    .addr_valid_o         ( data_slice_b_valid  ),
+    .addr_ready_i         ( data_slice_b_ready  )
+  );
+
+
+  //---------------------------
   // Item Memory Top
   //---------------------------
   item_memory_top #(
@@ -450,11 +534,11 @@ module hypercorex_top # (
     //---------------------------
     // Inputs from the fetcher side
     //---------------------------
-    .lowdim_a_data_i            ( lowdim_a_data_i      ),
+    .lowdim_a_data_i            ( data_slice_addr_a[ImAddrWidth-1:0] ),
     .highdim_a_data_i           ( highdim_a_data_i     ),
     .im_a_data_valid_i          ( im_a_data_valid      ),
     .im_a_data_ready_o          ( im_a_data_ready      ),
-    .lowdim_b_data_i            ( lowdim_b_data_i      ),
+    .lowdim_b_data_i            ( data_slice_addr_b[ImAddrWidth-1:0] ),
     .highdim_b_data_i           ( highdim_b_data_i     ),
     .im_b_data_valid_i          ( im_b_data_valid      ),
     .im_b_data_ready_o          ( im_b_data_ready      ),
