@@ -148,6 +148,10 @@ async def tb_hypercorex_dut(dut):
     # Mask only the lower 3*INST_MEM_ADDR_WIDTH bits
     check_result((golden_val & mask), read_val)
 
+    cocotb.log.info(" ------------------------------------------ ")
+    cocotb.log.info("     Writing to Loop Control Registers      ")
+    cocotb.log.info(" ------------------------------------------ ")
+
     # Some trailing cycles only
     for i in range(10):
         await clock_and_time(dut.clk_i)
@@ -158,8 +162,11 @@ async def tb_hypercorex_dut(dut):
     "parameters",
     [
         {
+            # Enable ROM IM
+            "EnableRomIM": str(set_parameters.ENABLE_ROM_IM),
             # General parameters
             "HVDimension": str(set_parameters.HV_DIM),
+            "LowDimWidth": str(set_parameters.NARROW_DATA_WIDTH),
             # CSR parameters
             "CsrDataWidth": str(set_parameters.REG_FILE_WIDTH),
             "CsrAddrWidth": str(set_parameters.REG_FILE_WIDTH),

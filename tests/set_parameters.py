@@ -8,6 +8,9 @@
 
 import math
 
+# Enable ROM IM
+ENABLE_ROM_IM = 0
+
 # Test Parameters
 TEST_RUNS = 10
 NUM_CLASSES = 10
@@ -16,7 +19,10 @@ NUM_CLASSES = 10
 NARROW_DATA_WIDTH = 64
 
 # Working dimensions
-HV_DIM = 256
+if ENABLE_ROM_IM:
+    HV_DIM = 512
+else:
+    HV_DIM = 256
 REG_FILE_WIDTH = 32
 SEED_DIM = REG_FILE_WIDTH
 
@@ -24,7 +30,10 @@ SEED_DIM = REG_FILE_WIDTH
 SLICER_FIFO_DEPTH = 4
 
 # Item memory parameters
-NUM_TOT_IM = 512
+if ENABLE_ROM_IM:
+    NUM_TOT_IM = 1024
+else:
+    NUM_TOT_IM = 512
 NUM_PER_IM_BANK = int(HV_DIM // 4)
 NUM_IM_SETS = int(NUM_TOT_IM // NUM_PER_IM_BANK)
 IM_ADDR_WIDTH = int(math.log2(NUM_TOT_IM))

@@ -27,6 +27,8 @@ module hv_encoder #(
   // Clocks and reset
   input  logic                    clk_i,
   input  logic                    rst_ni,
+  // Global stall
+  input  logic                    global_stall_i,
   // Item memory inputs
   input  logic [ HVDimension-1:0] im_rd_a_i,
   input  logic [ HVDimension-1:0] im_rd_b_i,
@@ -77,6 +79,9 @@ module hv_encoder #(
 
   logic [HVDimension-1:0] qhv_input;
   logic [HVDimension-1:0] qhv_output;
+
+  logic                   bundle_update_a;
+  logic                   bundle_update_b;
 
   //---------------------------
   // HV register file MUX
@@ -208,6 +213,9 @@ module hv_encoder #(
     .signal_o   ( bund_input_b  )
   );
 
+  assign bundle_update_a = bund_valid_a_i && !global_stall_i;
+  assign bundle_update_b = bund_valid_b_i && !global_stall_i;
+
   //---------------------------
   // Bundler unit A
   // One can use this as spatial unit
@@ -219,7 +227,7 @@ module hv_encoder #(
     .clk_i          ( clk_i            ),
     .rst_ni         ( rst_ni           ),
     .hv_i           ( bund_input_a     ),
-    .valid_i        ( bund_valid_a_i   ),
+    .valid_i        ( bundle_update_a  ),
     .clr_i          ( bund_clr_a_i     ),
     .counter_o      (), //Unused for now
     .binarized_hv_o ( bund_output_a    )
@@ -236,7 +244,7 @@ module hv_encoder #(
     .clk_i          ( clk_i            ),
     .rst_ni         ( rst_ni           ),
     .hv_i           ( bund_input_b     ),
-    .valid_i        ( bund_valid_b_i   ),
+    .valid_i        ( bundle_update_b  ),
     .clr_i          ( bund_clr_b_i     ),
     .counter_o      (), //Unused for now
     .binarized_hv_o ( bund_output_b    )
