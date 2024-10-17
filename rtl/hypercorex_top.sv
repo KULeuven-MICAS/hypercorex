@@ -194,6 +194,25 @@ module hypercorex_top # (
   logic                   data_slice_b_valid;
   logic                   data_slice_b_ready;
 
+  logic [ImAddrWidth-1:0] update_counter_addr_a;
+  logic                   update_counter_a_valid;
+  logic                   update_counter_a_ready;
+
+  logic [ImAddrWidth-1:0] update_counter_addr_b;
+  logic                   update_counter_b_valid;
+  logic                   update_counter_b_ready;
+
+  //---------------------------
+  // Source Select Signals
+  //---------------------------
+  logic [ImAddrWidth-1:0] src_sel_addr_a;
+  logic                   src_sel_a_valid;
+  logic                   src_sel_a_ready;
+
+  logic [ImAddrWidth-1:0] src_sel_addr_b;
+  logic                   src_sel_b_valid;
+  logic                   src_sel_b_ready;
+
   //---------------------------
   // Item Memory <-> Encoder Signals
   //---------------------------
@@ -267,20 +286,25 @@ module hypercorex_top # (
   //---------------------------
   // Valid-ready Control
   //---------------------------
-  logic im_a_data_valid;
-  logic im_b_data_valid;
+  assign src_sel_addr_a = ( data_src_sel[0] ) ? update_counter_addr_a :
+                                                data_slice_addr_a;
+  assign src_sel_addr_b = ( data_src_sel[1] ) ? update_counter_addr_b :
+                                                data_slice_addr_b;
 
-  logic im_a_data_ready;
-  logic im_b_data_ready;
+  assign src_sel_a_valid = (   port_a_cim[1] ) ? highdim_a_valid_i :
+                           ( data_src_sel[0] ) ? update_counter_a_valid :
+                                                 data_slice_a_valid;
+  assign src_sel_b_valid = (      port_b_cim ) ? highdim_b_valid_i :
+                           ( data_src_sel[1] ) ? update_counter_b_valid :
+                                                 data_slice_b_valid;
 
-  assign im_a_data_valid   = port_a_cim[1] ? highdim_a_valid_i : data_slice_a_valid;
-  assign im_b_data_valid   = port_b_cim    ? highdim_b_valid_i : data_slice_b_valid;
+  assign update_counter_a_ready = data_src_sel[0] ? src_sel_a_ready : 1'b0;
+  assign data_slice_a_ready = port_a_cim[1] ?  1'b0 : src_sel_a_ready;
+  assign highdim_a_ready_o  = port_a_cim[1] ? src_sel_a_ready : 1'b0;
 
-  assign data_slice_a_ready  = port_a_cim[1] ?  1'b0 : im_a_data_ready;
-  assign highdim_a_ready_o   = port_a_cim[1] ? im_a_data_ready : 1'b0;
-
-  assign data_slice_b_ready  = port_b_cim    ?  1'b0 : im_b_data_ready;
-  assign highdim_b_ready_o   = port_b_cim    ? im_b_data_ready : 1'b0;
+  assign update_counter_b_ready = data_src_sel[1] ? src_sel_b_ready : 1'b0;
+  assign data_slice_b_ready = port_b_cim    ?  1'b0 : src_sel_b_ready;
+  assign highdim_b_ready_o  = port_b_cim    ? src_sel_b_ready : 1'b0;
 
   //---------------------------
   // CSR registers and control
@@ -460,6 +484,48 @@ module hypercorex_top # (
   );
 
   //---------------------------
+  // Auto Update Counter
+  //---------------------------
+
+  update_counter #(
+    .CsrDataWidth   ( CsrDataWidth            ),
+    .NumTotIm       ( NumTotIm                )
+  ) i_update_counter_a (
+    // Clocks and reset
+    .clk_i          ( clk_i                   ),
+    .rst_ni         ( rst_ni                  ),
+    // Inputs
+    .en_i           ( enable                  ),
+    .clr_i          ( clr                     ),
+    .start_i        ( start                   ),
+    .max_count_i    ( src_auto_num_a          ),
+    .start_count_i  ( src_auto_start_num_a    ),
+    // Outputs
+    .addr_o         ( update_counter_addr_a   ),
+    .addr_valid_o   ( update_counter_a_valid  ),
+    .addr_ready_i   ( update_counter_a_ready  )
+  );
+
+  update_counter #(
+    .CsrDataWidth   ( CsrDataWidth            ),
+    .NumTotIm       ( NumTotIm                )
+  ) i_update_counter_b (
+    // Clocks and reset
+    .clk_i          ( clk_i                   ),
+    .rst_ni         ( rst_ni                  ),
+    // Inputs
+    .en_i           ( enable                  ),
+    .clr_i          ( clr                     ),
+    .start_i        ( start                   ),
+    .max_count_i    ( src_auto_num_b          ),
+    .start_count_i  ( src_auto_start_num_b    ),
+    // Outputs
+    .addr_o         ( update_counter_addr_b   ),
+    .addr_valid_o   ( update_counter_b_valid  ),
+    .addr_ready_i   ( update_counter_b_ready  )
+  );
+
+  //---------------------------
   // Data slicer module
   //---------------------------
   data_slicer #(
@@ -549,14 +615,14 @@ module hypercorex_top # (
     //---------------------------
     // Inputs from the fetcher side
     //---------------------------
-    .lowdim_a_data_i            ( data_slice_addr_a[ImAddrWidth-1:0] ),
+    .lowdim_a_data_i            ( src_sel_addr_a       ),
     .highdim_a_data_i           ( highdim_a_data_i     ),
-    .im_a_data_valid_i          ( im_a_data_valid      ),
-    .im_a_data_ready_o          ( im_a_data_ready      ),
-    .lowdim_b_data_i            ( data_slice_addr_b[ImAddrWidth-1:0] ),
+    .im_a_data_valid_i          ( src_sel_a_valid      ),
+    .im_a_data_ready_o          ( src_sel_a_ready      ),
+    .lowdim_b_data_i            ( src_sel_addr_b       ),
     .highdim_b_data_i           ( highdim_b_data_i     ),
-    .im_b_data_valid_i          ( im_b_data_valid      ),
-    .im_b_data_ready_o          ( im_b_data_ready      ),
+    .im_b_data_valid_i          ( src_sel_b_valid      ),
+    .im_b_data_ready_o          ( src_sel_b_ready      ),
     //---------------------------
     // Outputs towards the encoder
     //---------------------------
