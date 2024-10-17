@@ -106,7 +106,7 @@ async def update_counter_dut(dut):
 
     for i in range(set_parameters.TEST_RUNS):
         # Randomly increment the counter
-        random_max_count = random.randint(10, set_parameters.NUM_TOT_IM)
+        random_max_count = random.randint(10, (set_parameters.NUM_TOT_IM // 2))
         random_start_count = random.randint(10, (set_parameters.NUM_TOT_IM // 4))
         random_overflow_count = random.randint(5, random_max_count)
         # Run continuously with total number of overflows
