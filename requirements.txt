@@ -1,6 +1,7 @@
 cocotb
 cocotb-test
 pytest
+pytest-xdist
 mako
 jsonref
 hjson
