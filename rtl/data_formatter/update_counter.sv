@@ -36,7 +36,7 @@ module update_counter #(
   //---------------------------
   // Wires
   //---------------------------
-  logic [CsrDataWidth-1:0] addr_reg;
+  logic [ImAddrWidth-1:0] addr_reg;
 
   logic max_count_hit;
   logic max_count_success;
@@ -47,7 +47,9 @@ module update_counter #(
   // Combinational Logic
   //---------------------------
   assign addr_success = addr_valid_o & addr_ready_i;
-  assign max_count_hit = addr_reg == (max_count_i + start_count_i)-1;
+  assign max_count_hit = addr_reg ==
+                         (max_count_i[ImAddrWidth-1:0] +
+                         start_count_i[ImAddrWidth-1:0])-1;
   assign max_count_success = max_count_hit & addr_success;
 
   //---------------------------
@@ -55,18 +57,18 @@ module update_counter #(
   //---------------------------
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      addr_reg <= {CsrDataWidth{1'b0}};
+      addr_reg <= {ImAddrWidth{1'b0}};
     end else begin
       if (en_i) begin
         if(clr_i || max_count_success || start_i) begin
-          addr_reg <= start_count_i;
+          addr_reg <= start_count_i[ImAddrWidth-1:0];
         end else if(addr_success) begin
           addr_reg <= addr_reg + 1;
         end else begin
           addr_reg <= addr_reg;
         end
       end else begin
-        addr_reg <= {CsrDataWidth{1'b0}};
+        addr_reg <= {ImAddrWidth{1'b0}};
       end
     end
   end
