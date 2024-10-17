@@ -6,16 +6,36 @@ on:
     branches: [main]
 
 jobs:
-  rtl-test-vlt:
-    name: RTL test using verilator
+  rtl-unit-tests-vlt:
+    name: Unit Tests using Verilator
     runs-on: ubuntu-22.04
     container:
       image: ghcr.io/kuleuven-micas/hypercorex:main
     steps:
       - uses: actions/checkout@v3
       - name: Running Pytest
+        # We ignore slow system tests
         run: |
-          pytest
+          pytest -n $(nproc) --dist=loadfile \
+          --ignore=tests/test_tb_hypercorex.py \
+          --ignore=tests/test_hypercorex_csr.py \
+          --ignore=tests/test_hypercorex_char_recog.py
+
+  rtl-system-tests-vlt:
+    name: System Tests using Verilator
+    runs-on: ubuntu-22.04
+    container:
+      image: ghcr.io/kuleuven-micas/hypercorex:main
+    steps:
+      - uses: actions/checkout@v3
+      - name: Running Pytest
+        # We initialize testbench directory test first
+        # Then run all other tests in parallel
+        run: |
+          pytest tests/test_tb_hypercorex.py && \
+          pytest -n $(nproc) --dist=loadfile \
+          tests/test_hypercorex_csr.py \
+          tests/test_hypercorex_char_recog.py
 
   sw-test:
     name: Test Compiler for ASM
