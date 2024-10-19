@@ -210,7 +210,10 @@ async def data_slicer_dut(dut):
     ],
 )
 def test_data_slicer(simulator, parameters, waves):
-    verilog_sources = ["/rtl/common/fifo_buffer.sv", "/rtl/common/data_slicer.sv"]
+    verilog_sources = [
+        "/rtl/common/fifo_buffer.sv",
+        "/rtl/data_formatter/data_slicer.sv",
+    ]
 
     toplevel = "data_slicer"
 
