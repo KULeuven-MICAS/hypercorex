@@ -15,13 +15,13 @@ sources:
       - rtl/common/fifo_buffer.sv
       - rtl/common/reg_file_1w1r.sv
       - rtl/common/reg_file_1w2r.sv
-      # Level 1
-      - rtl/common/data_slicer.sv
       #---------------------------
       # Common Modules
       #---------------------------
       # Level 0
       - rtl/data_formatter/update_counter.sv
+      # Level 1
+      - rtl/data_formatter/data_slicer.sv
       #---------------------------
       # Encoder
       #---------------------------
