@@ -27,7 +27,7 @@ module inst_decode import hypercorex_inst_pkg::*; #(
   parameter int unsigned QvMuxWidth     = 2,
   parameter int unsigned RegNum         = 4,
   // Don't touch!
-  parameter int unsigned NumALUOps      = 4,
+  parameter int unsigned NumALUOps      = 8,
   parameter int unsigned ALUOpsWidth    = $clog2(NumALUOps     ),
   parameter int unsigned ShiftWidth     = $clog2(ALUMaxShiftAmt),
   parameter int unsigned RegAddrWidth   = $clog2(RegNum        )
@@ -160,14 +160,14 @@ module inst_decode import hypercorex_inst_pkg::*; #(
         alu_mux_a_o = 2'b00;
         reg_mux_o   = 2'b00;
         reg_wr_en_o = 1'b1;
-        alu_ops_o   = 2'b01;
+        alu_ops_o   = 3'b001;
       end
       IMB_REG: begin
         im_b_pop_o  = 1'b1;
         alu_mux_b_o = 2'b00;
         reg_mux_o   = 2'b00;
         reg_wr_en_o = 1'b1;
-        alu_ops_o   = 2'b10;
+        alu_ops_o   = 3'b010;
       end
       IMAB_BIND_REG: begin
         im_a_pop_o  = 1'b1;
@@ -176,14 +176,14 @@ module inst_decode import hypercorex_inst_pkg::*; #(
         alu_mux_b_o = 2'b00;
         reg_mux_o   = 2'b00;
         reg_wr_en_o = 1'b1;
-        alu_ops_o   = 2'b00;
+        alu_ops_o   = 3'b000;
       end
       IMA_PERM_REG: begin
         im_a_pop_o  = 1'b1;
         alu_mux_a_o = 2'b00;
         reg_mux_o   = 2'b00;
         reg_wr_en_o = 1'b1;
-        alu_ops_o   = 2'b11;
+        alu_ops_o   = 3'b011;
       end
       //---------------------------
       // IM-REG
@@ -194,7 +194,7 @@ module inst_decode import hypercorex_inst_pkg::*; #(
         alu_mux_b_o = 2'b01;
         reg_mux_o   = 2'b00;
         reg_wr_en_o = 1'b1;
-        alu_ops_o   = 2'b00;
+        alu_ops_o   = 3'b000;
       end
       IMB_REGA_BIND_REG: begin
         im_b_pop_o  = 1'b1;
@@ -202,7 +202,7 @@ module inst_decode import hypercorex_inst_pkg::*; #(
         alu_mux_b_o = 2'b00;
         reg_mux_o   = 2'b00;
         reg_wr_en_o = 1'b1;
-        alu_ops_o   = 2'b00;
+        alu_ops_o   = 3'b000;
       end
       //---------------------------
       // IM-BUND
@@ -224,7 +224,7 @@ module inst_decode import hypercorex_inst_pkg::*; #(
         alu_mux_b_o    = 2'b00;
         bund_mux_a_o   = 2'b00;
         bund_valid_a_o = 1'b1;
-        alu_ops_o      = 2'b00;
+        alu_ops_o   = 3'b000;
       end
       IMAB_BIND_BUNDB: begin
         im_a_pop_o     = 1'b1;
@@ -233,21 +233,21 @@ module inst_decode import hypercorex_inst_pkg::*; #(
         alu_mux_b_o    = 2'b00;
         bund_mux_b_o   = 2'b00;
         bund_valid_b_o = 1'b1;
-        alu_ops_o      = 2'b00;
+        alu_ops_o      = 3'b000;
       end
       IMA_PERM_BUNDA: begin
         im_a_pop_o     = 1'b1;
         alu_mux_a_o    = 2'b00;
         bund_mux_a_o   = 2'b00;
         bund_valid_a_o = 1'b1;
-        alu_ops_o      = 2'b11;
+        alu_ops_o      = 3'b000;
       end
       IMA_PERM_BUNDB: begin
         im_a_pop_o     = 1'b1;
         alu_mux_a_o    = 2'b00;
         bund_mux_b_o   = 2'b00;
         bund_valid_b_o = 1'b1;
-        alu_ops_o      = 2'b11;
+        alu_ops_o      = 3'b000;
       end
       //---------------------------
       // REG
@@ -257,19 +257,19 @@ module inst_decode import hypercorex_inst_pkg::*; #(
         alu_mux_b_o = 2'b01;
         reg_mux_o   = 2'b00;
         reg_wr_en_o = 1'b1;
-        alu_ops_o   = 2'b00;
+        alu_ops_o   = 3'b000;
       end
       REGA_PERM_REG: begin
         alu_mux_a_o = 2'b01;
         reg_mux_o   = 2'b00;
         reg_wr_en_o = 1'b1;
-        alu_ops_o   = 2'b11;
+        alu_ops_o   = 3'b011;
       end
       MV_REG: begin
         alu_mux_a_o = 2'b01;
         reg_mux_o   = 2'b00;
         reg_wr_en_o = 1'b1;
-        alu_ops_o   = 2'b01;
+        alu_ops_o   = 3'b001;
       end
       //---------------------------
       // REG-BUND
@@ -279,52 +279,52 @@ module inst_decode import hypercorex_inst_pkg::*; #(
         alu_mux_b_o    = 2'b01;
         bund_mux_a_o   = 2'b00;
         bund_valid_a_o = 1'b1;
-        alu_ops_o      = 2'b00;
+        alu_ops_o      = 3'b000;
       end
       REGAB_BIND_BUNDB: begin
         alu_mux_a_o    = 2'b01;
         alu_mux_b_o    = 2'b01;
         bund_mux_b_o   = 2'b00;
         bund_valid_b_o = 1'b1;
-        alu_ops_o      = 2'b00;
+        alu_ops_o      = 3'b000;
       end
       REGA_PERM_BUNDA: begin
         alu_mux_a_o    = 2'b01;
         bund_mux_a_o   = 2'b00;
         bund_valid_a_o = 1'b1;
-        alu_ops_o      = 2'b11;
+        alu_ops_o      = 3'b000;
       end
       REGA_PERM_BUNDB: begin
         alu_mux_a_o    = 2'b01;
         bund_mux_b_o   = 2'b00;
         bund_valid_b_o = 1'b1;
-        alu_ops_o      = 2'b11;
+        alu_ops_o      = 3'b000;
       end
       REGA_BUNDA_BIND_REG: begin
         alu_mux_a_o = 2'b01;
         alu_mux_b_o = 2'b10;
         reg_mux_o   = 2'b00;
         reg_wr_en_o = 1'b1;
-        alu_ops_o   = 2'b00;
+        alu_ops_o   = 3'b000;
       end
       REGA_BUNDB_BIND_REG: begin
         alu_mux_a_o = 2'b01;
         alu_mux_b_o = 2'b11;
         reg_mux_o   = 2'b00;
         reg_wr_en_o = 1'b1;
-        alu_ops_o   = 2'b00;
+        alu_ops_o   = 3'b000;
       end
       BUNDA_PERM_REG: begin
         alu_mux_a_o = 2'b10;
         reg_mux_o   = 2'b00;
         reg_wr_en_o = 1'b1;
-        alu_ops_o   = 2'b11;
+        alu_ops_o   = 3'b011;
       end
       BUNDB_PERM_REG: begin
         alu_mux_a_o = 2'b11;
         reg_mux_o   = 2'b00;
         reg_wr_en_o = 1'b1;
-        alu_ops_o   = 2'b11;
+        alu_ops_o   = 3'b011;
       end
       MV_BUNDA_REG: begin
         reg_mux_o   = 2'b10;
