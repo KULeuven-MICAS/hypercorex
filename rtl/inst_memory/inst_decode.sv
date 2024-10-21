@@ -178,12 +178,19 @@ module inst_decode import hypercorex_inst_pkg::*; #(
         reg_wr_en_o = 1'b1;
         alu_ops_o   = 3'b000;
       end
-      IMA_PERM_REG: begin
+      IMA_PERM_R_REG: begin
         im_a_pop_o  = 1'b1;
         alu_mux_a_o = 2'b00;
         reg_mux_o   = 2'b00;
         reg_wr_en_o = 1'b1;
         alu_ops_o   = 3'b011;
+      end
+      IMA_PERM_L_REG: begin
+        im_a_pop_o  = 1'b1;
+        alu_mux_a_o = 2'b00;
+        reg_mux_o   = 2'b00;
+        reg_wr_en_o = 1'b1;
+        alu_ops_o   = 3'b100;
       end
       //---------------------------
       // IM-REG
@@ -235,19 +242,33 @@ module inst_decode import hypercorex_inst_pkg::*; #(
         bund_valid_b_o = 1'b1;
         alu_ops_o      = 3'b000;
       end
-      IMA_PERM_BUNDA: begin
+      IMA_PERM_R_BUNDA: begin
         im_a_pop_o     = 1'b1;
         alu_mux_a_o    = 2'b00;
         bund_mux_a_o   = 2'b00;
         bund_valid_a_o = 1'b1;
         alu_ops_o      = 3'b011;
       end
-      IMA_PERM_BUNDB: begin
+      IMA_PERM_R_BUNDB: begin
         im_a_pop_o     = 1'b1;
         alu_mux_a_o    = 2'b00;
         bund_mux_b_o   = 2'b00;
         bund_valid_b_o = 1'b1;
         alu_ops_o      = 3'b011;
+      end
+      IMA_PERM_L_BUNDA: begin
+        im_a_pop_o     = 1'b1;
+        alu_mux_a_o    = 2'b00;
+        bund_mux_a_o   = 2'b00;
+        bund_valid_a_o = 1'b1;
+        alu_ops_o      = 3'b100;
+      end
+      IMA_PERM_L_BUNDB: begin
+        im_a_pop_o     = 1'b1;
+        alu_mux_a_o    = 2'b00;
+        bund_mux_b_o   = 2'b00;
+        bund_valid_b_o = 1'b1;
+        alu_ops_o      = 3'b100;
       end
       //---------------------------
       // REG
@@ -259,11 +280,17 @@ module inst_decode import hypercorex_inst_pkg::*; #(
         reg_wr_en_o = 1'b1;
         alu_ops_o   = 3'b000;
       end
-      REGA_PERM_REG: begin
+      REGA_PERM_R_REG: begin
         alu_mux_a_o = 2'b01;
         reg_mux_o   = 2'b00;
         reg_wr_en_o = 1'b1;
         alu_ops_o   = 3'b011;
+      end
+      REGA_PERM_L_REG: begin
+        alu_mux_a_o = 2'b01;
+        reg_mux_o   = 2'b00;
+        reg_wr_en_o = 1'b1;
+        alu_ops_o   = 3'b100;
       end
       MV_REG: begin
         alu_mux_a_o = 2'b01;
@@ -288,17 +315,29 @@ module inst_decode import hypercorex_inst_pkg::*; #(
         bund_valid_b_o = 1'b1;
         alu_ops_o      = 3'b000;
       end
-      REGA_PERM_BUNDA: begin
+      REGA_PERM_R_BUNDA: begin
         alu_mux_a_o    = 2'b01;
         bund_mux_a_o   = 2'b00;
         bund_valid_a_o = 1'b1;
         alu_ops_o      = 3'b011;
       end
-      REGA_PERM_BUNDB: begin
+      REGA_PERM_R_BUNDB: begin
         alu_mux_a_o    = 2'b01;
         bund_mux_b_o   = 2'b00;
         bund_valid_b_o = 1'b1;
         alu_ops_o      = 3'b011;
+      end
+      REGA_PERM_L_BUNDA: begin
+        alu_mux_a_o    = 2'b01;
+        bund_mux_a_o   = 2'b00;
+        bund_valid_a_o = 1'b1;
+        alu_ops_o      = 3'b100;
+      end
+      REGA_PERM_L_BUNDB: begin
+        alu_mux_a_o    = 2'b01;
+        bund_mux_b_o   = 2'b00;
+        bund_valid_b_o = 1'b1;
+        alu_ops_o      = 3'b100;
       end
       REGA_BUNDA_BIND_REG: begin
         alu_mux_a_o = 2'b01;
@@ -314,17 +353,29 @@ module inst_decode import hypercorex_inst_pkg::*; #(
         reg_wr_en_o = 1'b1;
         alu_ops_o   = 3'b000;
       end
-      BUNDA_PERM_REG: begin
+      BUNDA_PERM_R_REG: begin
         alu_mux_a_o = 2'b10;
         reg_mux_o   = 2'b00;
         reg_wr_en_o = 1'b1;
         alu_ops_o   = 3'b011;
       end
-      BUNDB_PERM_REG: begin
+      BUNDB_PERM_R_REG: begin
         alu_mux_a_o = 2'b11;
         reg_mux_o   = 2'b00;
         reg_wr_en_o = 1'b1;
         alu_ops_o   = 3'b011;
+      end
+      BUNDA_PERM_L_REG: begin
+        alu_mux_a_o = 2'b10;
+        reg_mux_o   = 2'b00;
+        reg_wr_en_o = 1'b1;
+        alu_ops_o   = 3'b100;
+      end
+      BUNDB_PERM_L_REG: begin
+        alu_mux_a_o = 2'b11;
+        reg_mux_o   = 2'b00;
+        reg_wr_en_o = 1'b1;
+        alu_ops_o   = 3'b100;
       end
       MV_BUNDA_REG: begin
         reg_mux_o   = 2'b10;
