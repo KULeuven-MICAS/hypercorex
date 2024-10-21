@@ -240,14 +240,14 @@ module inst_decode import hypercorex_inst_pkg::*; #(
         alu_mux_a_o    = 2'b00;
         bund_mux_a_o   = 2'b00;
         bund_valid_a_o = 1'b1;
-        alu_ops_o      = 3'b000;
+        alu_ops_o      = 3'b011;
       end
       IMA_PERM_BUNDB: begin
         im_a_pop_o     = 1'b1;
         alu_mux_a_o    = 2'b00;
         bund_mux_b_o   = 2'b00;
         bund_valid_b_o = 1'b1;
-        alu_ops_o      = 3'b000;
+        alu_ops_o      = 3'b011;
       end
       //---------------------------
       // REG
@@ -292,13 +292,13 @@ module inst_decode import hypercorex_inst_pkg::*; #(
         alu_mux_a_o    = 2'b01;
         bund_mux_a_o   = 2'b00;
         bund_valid_a_o = 1'b1;
-        alu_ops_o      = 3'b000;
+        alu_ops_o      = 3'b011;
       end
       REGA_PERM_BUNDB: begin
         alu_mux_a_o    = 2'b01;
         bund_mux_b_o   = 2'b00;
         bund_valid_b_o = 1'b1;
-        alu_ops_o      = 3'b000;
+        alu_ops_o      = 3'b011;
       end
       REGA_BUNDA_BIND_REG: begin
         alu_mux_a_o = 2'b01;
