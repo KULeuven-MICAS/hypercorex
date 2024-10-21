@@ -39,10 +39,10 @@ module hv_alu_pe #(
   // rather than actual shifts to optimize synthesis
   always_comb begin
     case (shift_amt_i)
-      0: circular_shift_res = {A_i[   0], A_i[ HVDimension-1:1]};
-      1: circular_shift_res = {A_i[ 3:0], A_i[ HVDimension-1:4]};
-      2: circular_shift_res = {A_i[ 7:0], A_i[ HVDimension-1:8]};
-      3: circular_shift_res = {A_i[15:0], A_i[HVDimension-1:16]};
+      default: circular_shift_res = {A_i[   0], A_i[ HVDimension-1:1]};
+            1: circular_shift_res = {A_i[ 3:0], A_i[ HVDimension-1:4]};
+            2: circular_shift_res = {A_i[ 7:0], A_i[ HVDimension-1:8]};
+            3: circular_shift_res = {A_i[15:0], A_i[HVDimension-1:16]};
     endcase
   end
 
