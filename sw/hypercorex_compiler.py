@@ -142,7 +142,7 @@ def decode_inst(asm_line, sanity_check=False, convert_str=False, print_ctrl=Fals
         reg_wr_en = [1]
         alu_ops = [0, 0, 0]
         reg_wr_addr = num2list(asm_line[1], 2)
-    elif asm_inst == "ima_perm_reg":
+    elif asm_inst == "ima_perm_r_reg":
         inst_type = num2list(0, TYPE_LEN)
         func_type = num2list(4, FUNC_LEN)
         im_a_pop = [1]
@@ -150,6 +150,16 @@ def decode_inst(asm_line, sanity_check=False, convert_str=False, print_ctrl=Fals
         reg_mux = [0, 0]
         reg_wr_en = [1]
         alu_ops = [0, 1, 1]
+        reg_wr_addr = num2list(asm_line[1], 2)
+        alu_shift_amt = num2list(asm_line[2], 2)
+    elif asm_inst == "ima_perm_l_reg":
+        inst_type = num2list(0, TYPE_LEN)
+        func_type = num2list(5, FUNC_LEN)
+        im_a_pop = [1]
+        alu_mux_a = [0, 0]
+        reg_mux = [0, 0]
+        reg_wr_en = [1]
+        alu_ops = [1, 0, 0]
         reg_wr_addr = num2list(asm_line[1], 2)
         alu_shift_amt = num2list(asm_line[2], 2)
     # IM-REG
@@ -208,7 +218,7 @@ def decode_inst(asm_line, sanity_check=False, convert_str=False, print_ctrl=Fals
         bund_mux_b = [0, 0]
         bund_valid_b = [1]
         alu_ops = [0, 0, 0]
-    elif asm_inst == "ima_perm_bunda":
+    elif asm_inst == "ima_perm_r_bunda":
         inst_type = num2list(2, TYPE_LEN)
         func_type = num2list(5, FUNC_LEN)
         im_a_pop = [1]
@@ -217,7 +227,7 @@ def decode_inst(asm_line, sanity_check=False, convert_str=False, print_ctrl=Fals
         bund_valid_a = [1]
         alu_ops = [0, 1, 1]
         alu_shift_amt = num2list(asm_line[1], 2)
-    elif asm_inst == "ima_perm_bundb":
+    elif asm_inst == "ima_perm_r_bundb":
         inst_type = num2list(2, TYPE_LEN)
         func_type = num2list(6, FUNC_LEN)
         im_a_pop = [1]
@@ -225,6 +235,24 @@ def decode_inst(asm_line, sanity_check=False, convert_str=False, print_ctrl=Fals
         bund_mux_b = [0, 0]
         bund_valid_b = [1]
         alu_ops = [0, 1, 1]
+        alu_shift_amt = num2list(asm_line[1], 2)
+    elif asm_inst == "ima_perm_l_bunda":
+        inst_type = num2list(2, TYPE_LEN)
+        func_type = num2list(7, FUNC_LEN)
+        im_a_pop = [1]
+        alu_mux_a = [0, 0]
+        bund_mux_a = [0, 0]
+        bund_valid_a = [1]
+        alu_ops = [1, 0, 0]
+        alu_shift_amt = num2list(asm_line[1], 2)
+    elif asm_inst == "ima_perm_l_bundb":
+        inst_type = num2list(2, TYPE_LEN)
+        func_type = num2list(8, FUNC_LEN)
+        im_a_pop = [1]
+        alu_mux_a = [0, 0]
+        bund_mux_b = [0, 0]
+        bund_valid_b = [1]
+        alu_ops = [1, 0, 0]
         alu_shift_amt = num2list(asm_line[1], 2)
     # REG
     elif asm_inst == "regab_bind_reg":
@@ -238,7 +266,7 @@ def decode_inst(asm_line, sanity_check=False, convert_str=False, print_ctrl=Fals
         reg_wr_addr = num2list(asm_line[1], 2)
         reg_rd_addr_a = num2list(asm_line[2], 2)
         reg_rd_addr_b = num2list(asm_line[3], 2)
-    elif asm_inst == "rega_perm_reg":
+    elif asm_inst == "rega_perm_r_reg":
         inst_type = num2list(3, TYPE_LEN)
         func_type = num2list(2, FUNC_LEN)
         alu_mux_a = [0, 1]
@@ -248,9 +276,19 @@ def decode_inst(asm_line, sanity_check=False, convert_str=False, print_ctrl=Fals
         reg_wr_addr = num2list(asm_line[1], 2)
         reg_rd_addr_a = num2list(asm_line[2], 2)
         alu_shift_amt = num2list(asm_line[3], 2)
-    elif asm_inst == "mv_reg":
+    elif asm_inst == "rega_perm_l_reg":
         inst_type = num2list(3, TYPE_LEN)
         func_type = num2list(3, FUNC_LEN)
+        alu_mux_a = [0, 1]
+        reg_mux = [0, 0]
+        reg_wr_en = [1]
+        alu_ops = [1, 0, 0]
+        reg_wr_addr = num2list(asm_line[1], 2)
+        reg_rd_addr_a = num2list(asm_line[2], 2)
+        alu_shift_amt = num2list(asm_line[3], 2)
+    elif asm_inst == "mv_reg":
+        inst_type = num2list(3, TYPE_LEN)
+        func_type = num2list(4, FUNC_LEN)
         alu_mux_a = [0, 1]
         reg_mux = [0, 0]
         reg_wr_en = [1]
@@ -278,7 +316,7 @@ def decode_inst(asm_line, sanity_check=False, convert_str=False, print_ctrl=Fals
         alu_ops = [0, 0, 0]
         reg_rd_addr_a = num2list(asm_line[1], 2)
         reg_rd_addr_b = num2list(asm_line[2], 2)
-    elif asm_inst == "rega_perm_bunda":
+    elif asm_inst == "rega_perm_r_bunda":
         inst_type = num2list(4, TYPE_LEN)
         func_type = num2list(3, FUNC_LEN)
         alu_mux_a = [0, 1]
@@ -287,7 +325,7 @@ def decode_inst(asm_line, sanity_check=False, convert_str=False, print_ctrl=Fals
         alu_ops = [0, 1, 1]
         reg_rd_addr_a = num2list(asm_line[1], 2)
         alu_shift_amt = num2list(asm_line[2], 2)
-    elif asm_inst == "rega_perm_bundb":
+    elif asm_inst == "rega_perm_r_bundb":
         inst_type = num2list(4, TYPE_LEN)
         func_type = num2list(4, FUNC_LEN)
         alu_mux_a = [0, 1]
@@ -296,9 +334,27 @@ def decode_inst(asm_line, sanity_check=False, convert_str=False, print_ctrl=Fals
         alu_ops = [0, 1, 1]
         reg_rd_addr_a = num2list(asm_line[1], 2)
         alu_shift_amt = num2list(asm_line[2], 2)
-    elif asm_inst == "rega_bunda_bind_reg":
+    elif asm_inst == "rega_perm_l_bunda":
         inst_type = num2list(4, TYPE_LEN)
         func_type = num2list(5, FUNC_LEN)
+        alu_mux_a = [0, 1]
+        bund_mux_a = [0, 0]
+        bund_valid_a = [1]
+        alu_ops = [1, 0, 0]
+        reg_rd_addr_a = num2list(asm_line[1], 2)
+        alu_shift_amt = num2list(asm_line[2], 2)
+    elif asm_inst == "rega_perm_l_bundb":
+        inst_type = num2list(4, TYPE_LEN)
+        func_type = num2list(6, FUNC_LEN)
+        alu_mux_a = [0, 1]
+        bund_mux_b = [0, 0]
+        bund_valid_b = [1]
+        alu_ops = [1, 0, 0]
+        reg_rd_addr_a = num2list(asm_line[1], 2)
+        alu_shift_amt = num2list(asm_line[2], 2)
+    elif asm_inst == "rega_bunda_bind_reg":
+        inst_type = num2list(4, TYPE_LEN)
+        func_type = num2list(7, FUNC_LEN)
         alu_mux_a = [0, 1]
         alu_mux_b = [1, 0]
         reg_mux = [0, 0]
@@ -308,7 +364,7 @@ def decode_inst(asm_line, sanity_check=False, convert_str=False, print_ctrl=Fals
         reg_rd_addr_a = num2list(asm_line[2], 2)
     elif asm_inst == "rega_bundb_bind_reg":
         inst_type = num2list(4, TYPE_LEN)
-        func_type = num2list(6, FUNC_LEN)
+        func_type = num2list(8, FUNC_LEN)
         alu_mux_a = [0, 1]
         alu_mux_b = [1, 1]
         reg_mux = [0, 0]
@@ -316,49 +372,67 @@ def decode_inst(asm_line, sanity_check=False, convert_str=False, print_ctrl=Fals
         alu_ops = [0, 0, 0]
         reg_wr_addr = num2list(asm_line[1], 2)
         reg_rd_addr_a = num2list(asm_line[2], 2)
-    elif asm_inst == "bunda_perm_reg":
+    elif asm_inst == "bunda_perm_r_reg":
         inst_type = num2list(4, TYPE_LEN)
-        func_type = num2list(7, FUNC_LEN)
+        func_type = num2list(9, FUNC_LEN)
         alu_mux_a = [1, 0]
         reg_mux = [0, 0]
         reg_wr_en = [1]
         alu_ops = [0, 1, 1]
         reg_wr_addr = num2list(asm_line[1], 2)
         alu_shift_amt = num2list(asm_line[2], 2)
-    elif asm_inst == "bundb_perm_reg":
+    elif asm_inst == "bundb_perm_r_reg":
         inst_type = num2list(4, TYPE_LEN)
-        func_type = num2list(8, FUNC_LEN)
+        func_type = num2list(10, FUNC_LEN)
         alu_mux_a = [1, 1]
         reg_mux = [0, 0]
         reg_wr_en = [1]
         alu_ops = [0, 1, 1]
         reg_wr_addr = num2list(asm_line[1], 2)
         alu_shift_amt = num2list(asm_line[2], 2)
+    elif asm_inst == "bunda_perm_l_reg":
+        inst_type = num2list(4, TYPE_LEN)
+        func_type = num2list(11, FUNC_LEN)
+        alu_mux_a = [1, 0]
+        reg_mux = [0, 0]
+        reg_wr_en = [1]
+        alu_ops = [1, 0, 0]
+        reg_wr_addr = num2list(asm_line[1], 2)
+        alu_shift_amt = num2list(asm_line[2], 2)
+    elif asm_inst == "bundb_perm_l_reg":
+        inst_type = num2list(4, TYPE_LEN)
+        func_type = num2list(12, FUNC_LEN)
+        alu_mux_a = [1, 1]
+        reg_mux = [0, 0]
+        reg_wr_en = [1]
+        alu_ops = [1, 0, 0]
+        reg_wr_addr = num2list(asm_line[1], 2)
+        alu_shift_amt = num2list(asm_line[2], 2)
     elif asm_inst == "mv_bunda_reg":
         inst_type = num2list(4, TYPE_LEN)
-        func_type = num2list(9, FUNC_LEN)
+        func_type = num2list(13, FUNC_LEN)
         reg_mux = [1, 0]
         reg_wr_en = [1]
         reg_wr_addr = num2list(asm_line[1], 2)
     elif asm_inst == "mv_bundb_reg":
         inst_type = num2list(4, TYPE_LEN)
-        func_type = num2list(10, FUNC_LEN)
+        func_type = num2list(14, FUNC_LEN)
         reg_mux = [1, 1]
         reg_wr_en = [1]
         reg_wr_addr = num2list(asm_line[1], 2)
     elif asm_inst == "mv_reg_bunda":
         inst_type = num2list(4, TYPE_LEN)
-        func_type = num2list(11, FUNC_LEN)
+        func_type = num2list(15, FUNC_LEN)
         bund_mux_a = [1, 1]
         bund_valid_a = [1]
         reg_rd_addr_a = num2list(asm_line[1], 2)
     elif asm_inst == "mv_reg_bundb":
         inst_type = num2list(4, TYPE_LEN)
-        func_type = num2list(12, FUNC_LEN)
+        func_type = num2list(16, FUNC_LEN)
         bund_mux_b = [1, 1]
         bund_valid_b = [1]
         reg_rd_addr_a = num2list(asm_line[1], 2)
-    # REG-BUND
+    # BUND
     elif asm_inst == "mv_bunda_bundb":
         inst_type = num2list(5, TYPE_LEN)
         func_type = num2list(1, FUNC_LEN)
@@ -420,6 +494,7 @@ def decode_inst(asm_line, sanity_check=False, convert_str=False, print_ctrl=Fals
 
     # For debug purposes
     if print_ctrl:
+        print(" ------------------ Golden Values ------------------ ")
         print(f"im_a_pop: {im_a_pop}")
         print(f"im_b_pop: {im_b_pop}")
         print(f"alu_mux_a: {alu_mux_a}")

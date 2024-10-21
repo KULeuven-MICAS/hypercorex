@@ -76,6 +76,7 @@ async def input_and_extract(dut, inst_code, print_ctrl=DEBUG):
     dut.inst_code_i.value = 0
 
     if print_ctrl:
+        print(" ------------------ Actual Values ------------------ ")
         print(f"im_a_pop: {im_a_pop}")
         print(f"im_b_pop: {im_b_pop}")
         print(f"alu_mux_a: {alu_mux_a}")
@@ -149,7 +150,11 @@ async def inst_decode_dut(dut):
             "ima_reg x" + str(random.randint(0, 3)),
             "imb_reg x" + str(random.randint(0, 3)),
             "imab_bind_reg x" + str(random.randint(0, 3)),
-            "ima_perm_reg x"
+            "ima_perm_r_reg x"
+            + str(random.randint(0, 3))
+            + " "
+            + str(random.randint(0, 3)),
+            "ima_perm_l_reg x"
             + str(random.randint(0, 3))
             + " "
             + str(random.randint(0, 3)),
@@ -157,15 +162,23 @@ async def inst_decode_dut(dut):
             "ima_bundb",
             "imab_bind_bunda",
             "imab_bind_bundb",
-            "ima_perm_bunda " + str(random.randint(0, 3)),
-            "ima_perm_bundb " + str(random.randint(0, 3)),
+            "ima_perm_r_bunda " + str(random.randint(0, 3)),
+            "ima_perm_r_bundb " + str(random.randint(0, 3)),
+            "ima_perm_l_bunda " + str(random.randint(0, 3)),
+            "ima_perm_l_bundb " + str(random.randint(0, 3)),
             "regab_bind_reg x"
             + str(random.randint(0, 3))
             + " x"
             + str(random.randint(0, 3))
             + " x"
             + str(random.randint(0, 3)),
-            "rega_perm_reg x"
+            "rega_perm_r_reg x"
+            + str(random.randint(0, 3))
+            + " x"
+            + str(random.randint(0, 3))
+            + " "
+            + str(random.randint(0, 3)),
+            "rega_perm_l_reg x"
             + str(random.randint(0, 3))
             + " x"
             + str(random.randint(0, 3))
@@ -188,11 +201,19 @@ async def inst_decode_dut(dut):
             + str(random.randint(0, 3))
             + " x"
             + str(random.randint(0, 3)),
-            "bunda_perm_reg x"
+            "bunda_perm_r_reg x"
             + str(random.randint(0, 3))
             + " "
             + str(random.randint(0, 3)),
-            "bundb_perm_reg x"
+            "bundb_perm_r_reg x"
+            + str(random.randint(0, 3))
+            + " "
+            + str(random.randint(0, 3)),
+            "bunda_perm_l_reg x"
+            + str(random.randint(0, 3))
+            + " "
+            + str(random.randint(0, 3)),
+            "bundb_perm_l_reg x"
             + str(random.randint(0, 3))
             + " "
             + str(random.randint(0, 3)),
