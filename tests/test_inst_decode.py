@@ -260,7 +260,7 @@ async def inst_decode_dut(dut):
         }
     ],
 )
-def test_item_memory(simulator, parameters, waves):
+def test_inst_decode(simulator, parameters, waves):
     verilog_sources = [
         "/rtl/inst_memory/hypercorex_inst_pkg.sv",
         "/rtl/inst_memory/inst_decode.sv",
