@@ -56,7 +56,7 @@ module hypercorex_top # (
   //---------------------------
   parameter int unsigned SlicerModeWidth  = 2,
   parameter int unsigned SrcSelWidth      = 2,
-  parameter int unsigned NumALUOps        = 4,
+  parameter int unsigned NumALUOps        = 8,
   parameter int unsigned ObservableWidth  = 4,
   parameter int unsigned ALUOpsWidth      = $clog2(NumALUOps     ),
   parameter int unsigned ShiftWidth       = $clog2(ALUMaxShiftAmt),
@@ -643,7 +643,8 @@ module hypercorex_top # (
     .ALUMaxShiftAmt             ( ALUMaxShiftAmt       ),
     .RegMuxWidth                ( RegMuxWidth          ),
     .QvMuxWidth                 ( QvMuxWidth           ),
-    .RegNum                     ( RegNum               )
+    .RegNum                     ( RegNum               ),
+    .NumALUOps                  ( NumALUOps            )
   ) i_hv_encoder (
     //---------------------------
     // Clocks and reset

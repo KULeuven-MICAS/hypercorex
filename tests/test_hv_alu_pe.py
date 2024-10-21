@@ -18,7 +18,7 @@ import pytest
 # Routinary test
 async def gen_and_test(dut, hv_dim, shift_amt, mode):
     # Generate data
-    if mode == 3:
+    if mode == 3 or mode == 4:
         A = gen_rand_bits(set_parameters.HV_DIM)
         B = 0
         shift_amt = gen_randint(shift_amt)
@@ -83,14 +83,24 @@ async def hv_alu_pe_dut(dut):
     for i in range(set_parameters.TEST_RUNS):
         await gen_and_test(dut, set_parameters.HV_DIM, 0, 2)
 
-    cocotb.log.info(" ------------------------------------------ ")
-    cocotb.log.info("       Testing Circular Shift Cases         ")
-    cocotb.log.info(" ------------------------------------------ ")
+    cocotb.log.info(" ------------------------------------------------ ")
+    cocotb.log.info("       Testing Circular Right Shift Cases         ")
+    cocotb.log.info(" ------------------------------------------------ ")
 
     # Test circular shift cases
     for i in range(set_parameters.TEST_RUNS):
         await gen_and_test(
             dut, set_parameters.HV_DIM, set_parameters.MAX_SHIFT_AMT - 1, 3
+        )
+
+    cocotb.log.info(" ------------------------------------------------ ")
+    cocotb.log.info("        Testing Circular Left Shift Cases         ")
+    cocotb.log.info(" ------------------------------------------------ ")
+
+    # Test circular shift cases
+    for i in range(set_parameters.TEST_RUNS):
+        await gen_and_test(
+            dut, set_parameters.HV_DIM, set_parameters.MAX_SHIFT_AMT - 1, 4
         )
 
 

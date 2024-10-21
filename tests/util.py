@@ -202,14 +202,8 @@ def hv_alu_out(hv_a, hv_b, shift_amt, hv_dim, op):
         result = hv_a
     elif op == 2:
         result = hv_b
-    elif op == 3:
-        # Workaround because github CI fails
-        # At shifting more than 64 bits
-        # if isinstance(hv_a, np.ndarray):
-        #     result = np.roll(hv_a, shift_amt)
-        # else:
-        #     result = (hv_a >> shift_amt) | (hv_a << (hv_dim - shift_amt)) & mask_val
-        result = shift_hv(hv_a, shift_amt, hv_dim)
+    elif op == 3 or op == 4:
+        result = shift_hv(hv_a, shift_amt, hv_dim, op)
     else:
         result = hv_a ^ hv_b
     return result
@@ -247,17 +241,29 @@ def hvlist2num(hv_list):
 
 
 # Shift modes based on shift values
-def shift_hv(hv_a, shift_amt, hv_dim):
+def shift_hv(hv_a, shift_amt, hv_dim, op):
     mask_val = 2**hv_dim - 1
 
     if shift_amt == 0:
-        result = (hv_a >> 1) | (hv_a << (hv_dim - 1)) & mask_val
+        if op == 3:
+            result = (hv_a >> 1) | (hv_a << (hv_dim - 1)) & mask_val
+        else:
+            result = ((hv_a << 1) | (hv_a >> (hv_dim - 1))) & mask_val
     elif shift_amt == 1:
-        result = (hv_a >> 4) | (hv_a << (hv_dim - 4)) & mask_val
+        if op == 3:
+            result = (hv_a >> 4) | (hv_a << (hv_dim - 4)) & mask_val
+        else:
+            result = ((hv_a << 4) | (hv_a >> (hv_dim - 4))) & mask_val
     elif shift_amt == 2:
-        result = (hv_a >> 8) | (hv_a << (hv_dim - 8)) & mask_val
+        if op == 3:
+            result = (hv_a >> 8) | (hv_a << (hv_dim - 8)) & mask_val
+        else:
+            result = ((hv_a << 8) | (hv_a >> (hv_dim - 8))) & mask_val
     else:
-        result = (hv_a >> 16) | (hv_a << (hv_dim - 16)) & mask_val
+        if op == 3:
+            result = (hv_a >> 16) | (hv_a << (hv_dim - 16)) & mask_val
+        else:
+            result = ((hv_a << 16) | (hv_a >> (hv_dim - 16))) & mask_val
 
     return result
 
