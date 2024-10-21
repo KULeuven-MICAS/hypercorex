@@ -11,7 +11,7 @@ module hv_alu_pe #(
   parameter int unsigned HVDimension   = 512,
   parameter int unsigned NumOps        = 4,
   parameter int unsigned NumOpsWidth   = $clog2(NumOps),
-  parameter int unsigned MaxShiftAmt   = 128,
+  parameter int unsigned MaxShiftAmt   = 4,
   parameter int unsigned ShiftWidth    = $clog2(MaxShiftAmt)
 )(
   // Inputs
@@ -26,11 +26,24 @@ module hv_alu_pe #(
 
   //---------------------------
   // Logic for shifting
+  //
+  // Shifting modes:
+  // 0: 1 shift
+  // 1: 4 shift
+  // 2: 8 shift
+  // 3: 16 shift
   //---------------------------
   logic [HVDimension-1:0] circular_shift_res;
 
+  // Doing selections through wire slicing
+  // rather than actual shifts to optimize synthesis
   always_comb begin
-    circular_shift_res = (A_i >> shift_amt_i) | (A_i << (HVDimension - shift_amt_i));
+    case (shift_amt_i)
+      0: circular_shift_res = {A_i[   0], A_i[ HVDimension-1:1]};
+      1: circular_shift_res = {A_i[ 3:0], A_i[ HVDimension-1:4]};
+      2: circular_shift_res = {A_i[ 7:0], A_i[ HVDimension-1:8]};
+      3: circular_shift_res = {A_i[15:0], A_i[HVDimension-1:16]};
+    endcase
   end
 
   //---------------------------
