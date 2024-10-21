@@ -19,7 +19,7 @@ module hv_encoder #(
   parameter int unsigned QvMuxWidth     = 2,
   parameter int unsigned RegNum         = 4,
   // Don't touch!
-  parameter int unsigned NumALUOps      = 4,
+  parameter int unsigned NumALUOps      = 8,
   parameter int unsigned ALUOpsWidth    = $clog2(NumALUOps     ),
   parameter int unsigned ShiftWidth     = $clog2(ALUMaxShiftAmt),
   parameter int unsigned RegAddrWidth   = $clog2(RegNum        )
