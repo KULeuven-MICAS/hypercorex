@@ -93,7 +93,8 @@ module csr import csr_addr_pkg::*; #(
   output logic [    CsrDataWidth-1:0]               csr_auto_count_num_a_o,
   output logic [    CsrDataWidth-1:0]               csr_auto_count_num_b_o,
   // Data slicer configurations
-  output logic [ SlicerModeWidth-1:0]               csr_data_slice_mode_o,
+  output logic [ SlicerModeWidth-1:0]               csr_data_slice_mode_a_o,
+  output logic [ SlicerModeWidth-1:0]               csr_data_slice_mode_b_o,
   output logic [    CsrDataWidth-1:0]               csr_data_slice_num_elem_a_o,
   output logic [    CsrDataWidth-1:0]               csr_data_slice_num_elem_b_o,
   // Data source control
@@ -224,8 +225,9 @@ module csr import csr_addr_pkg::*; #(
       DATA_SRC_CTRL_REG_ADDR: begin
         csr_rd_data = {
           {(CsrDataWidth-2){1'b0}},             // [31:2] -- Unused
-          csr_set[DATA_SRC_CTRL_REG_ADDR][3:2], // [3:2] RW source select
-          csr_set[DATA_SRC_CTRL_REG_ADDR][1:0]  // [1:0] RW Data slice mode
+          csr_set[DATA_SRC_CTRL_REG_ADDR][5:4], // [5:4] RW source select for a and b
+          csr_set[DATA_SRC_CTRL_REG_ADDR][3:2], // [3:2] RW Data slice mode for b
+          csr_set[DATA_SRC_CTRL_REG_ADDR][1:0]  // [1:0] RW Data slice mode for a
         };
       end
       DATA_SLICE_NUM_ELEM_A_REG_ADDR,
@@ -369,14 +371,15 @@ module csr import csr_addr_pkg::*; #(
     //---------------------------
     // Data slicer configurations
     //---------------------------
-    csr_data_slice_mode_o       = csr_set[DATA_SRC_CTRL_REG_ADDR][1:0];
+    csr_data_slice_mode_a_o     = csr_set[DATA_SRC_CTRL_REG_ADDR][1:0];
+    csr_data_slice_mode_b_o     = csr_set[DATA_SRC_CTRL_REG_ADDR][3:2];
     csr_data_slice_num_elem_a_o = csr_set[DATA_SLICE_NUM_ELEM_A_REG_ADDR];
     csr_data_slice_num_elem_b_o = csr_set[DATA_SLICE_NUM_ELEM_B_REG_ADDR];
 
     //---------------------------
     // Data source control
     //---------------------------
-    csr_data_src_sel_o          = csr_set[DATA_SRC_CTRL_REG_ADDR][3:2];
+    csr_data_src_sel_o          = csr_set[DATA_SRC_CTRL_REG_ADDR][5:4];
     csr_src_auto_start_num_a_o  = csr_set[DATA_SRC_AUTO_START_A_REG_ADDR];
     csr_src_auto_start_num_b_o  = csr_set[DATA_SRC_AUTO_START_B_REG_ADDR];
     csr_src_auto_num_a_o        = csr_set[DATA_SRC_AUTO_NUM_A_REG_ADDR];

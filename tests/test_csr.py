@@ -468,18 +468,23 @@ async def csr_dut(dut):
     golden_val = gen_rand_bits(set_parameters.REG_FILE_WIDTH)
     await write_csr(dut, golden_val, set_parameters.DATA_SRC_CTRL_REG_ADDR)
 
-    # Check value of data slice mode that is 2 LSB
+    # Check value of data slice mode for port A
     golden_val_slide_mode = golden_val & 0x0000_0003
-    test_val = dut.csr_data_slice_mode_o.value.integer
+    test_val = dut.csr_data_slice_mode_a_o.value.integer
+    check_result(test_val, golden_val_slide_mode)
+
+    # Check value of data slice mode for port B
+    golden_val_slide_mode = (golden_val >> 2) & 0x0000_0003
+    test_val = dut.csr_data_slice_mode_b_o.value.integer
     check_result(test_val, golden_val_slide_mode)
 
     # Check the value of source select also 2 bits long
-    golden_val_src_sel = (golden_val >> 2) & 0x0000_0003
+    golden_val_src_sel = (golden_val >> 4) & 0x0000_0003
     test_val = dut.csr_data_src_sel_o.value.integer
     check_result(test_val, golden_val_src_sel)
 
     # Read value manually
-    golden_val = golden_val & 0x0000_000F
+    golden_val = golden_val & 0x0000_003F
     csr_read_val = await read_csr(dut, set_parameters.DATA_SRC_CTRL_REG_ADDR)
     check_result(csr_read_val, golden_val)
 
