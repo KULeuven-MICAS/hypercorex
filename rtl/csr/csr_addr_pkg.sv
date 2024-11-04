@@ -60,9 +60,10 @@ package csr_addr_pkg;
   localparam logic [ 4:0] INST_LOOP_COUNT_ADDR3_BIT_ADDR  = 5'd16;
 
   // Data slicer configurationsss
-  localparam logic [31:0] DATA_SRC_CTRL_REG_ADDR        = 32'd13;
-  localparam logic [ 4:0] DATA_SLICE_MODE_BIT_ADDR        = 5'd0;
-  localparam logic [ 4:0] DATA_SRC_SEL_BIT_ADDR           = 5'd0;
+  localparam logic [31:0] DATA_SRC_CTRL_REG_ADDR          = 32'd13;
+  localparam logic [ 4:0] DATA_SLICE_MODE_A_BIT_ADDR      = 5'd0;
+  localparam logic [ 4:0] DATA_SLICE_MODE_B_BIT_ADDR      = 5'd2;
+  localparam logic [ 4:0] DATA_SRC_SEL_BIT_ADDR           = 5'd4;
   localparam logic [31:0] DATA_SLICE_NUM_ELEM_A_REG_ADDR  = 32'd14;
   localparam logic [31:0] DATA_SLICE_NUM_ELEM_B_REG_ADDR  = 32'd15;
   localparam logic [31:0] DATA_SRC_AUTO_START_A_REG_ADDR  = 32'd16;
