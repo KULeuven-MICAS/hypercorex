@@ -173,7 +173,8 @@ module hypercorex_top # (
   logic [InstMemAddrWidth-1:0]                   loop_count_addr2;
   logic [InstMemAddrWidth-1:0]                   loop_count_addr3;
   // Data slicer configurations
-  logic [ SlicerModeWidth-1:0]                   data_slice_mode;
+  logic [ SlicerModeWidth-1:0]                   data_slice_mode_a;
+  logic [ SlicerModeWidth-1:0]                   data_slice_mode_b;
   logic [    CsrDataWidth-1:0]                   data_slice_num_elem_a;
   logic [    CsrDataWidth-1:0]                   data_slice_num_elem_b;
   // Source select configurations
@@ -377,7 +378,8 @@ module hypercorex_top # (
     // Observable registers
     .csr_obs_logic_o            ( obs_logic_o           ),
     // Data slicer configurations
-    .csr_data_slice_mode_o        ( data_slice_mode       ),
+    .csr_data_slice_mode_a_o      ( data_slice_mode_a     ),
+    .csr_data_slice_mode_b_o      ( data_slice_mode_b     ),
     .csr_data_slice_num_elem_a_o  ( data_slice_num_elem_a ),
     .csr_data_slice_num_elem_b_o  ( data_slice_num_elem_b ),
     // Data source control
@@ -543,7 +545,7 @@ module hypercorex_top # (
     // Control inputs
     .enable_i             ( enable              ),
     .clr_i                ( clr                 ),
-    .sel_mode_i           ( data_slice_mode     ),
+    .sel_mode_i           ( data_slice_mode_a   ),
     // Settings
     .csr_elem_size_i      ( data_slice_num_elem_a ),
     // Data inputs
@@ -571,7 +573,7 @@ module hypercorex_top # (
     // Control inputs
     .enable_i             ( enable              ),
     .clr_i                ( clr                 ),
-    .sel_mode_i           ( data_slice_mode     ),
+    .sel_mode_i           ( data_slice_mode_b   ),
     // Settings
     .csr_elem_size_i      ( data_slice_num_elem_b ),
     // Data inputs
