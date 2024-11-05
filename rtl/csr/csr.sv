@@ -85,13 +85,6 @@ module csr import csr_addr_pkg::*; #(
   output logic [InstMemAddrWidth-1:0]               csr_loop_count_addr2_o,
   output logic [InstMemAddrWidth-1:0]               csr_loop_count_addr3_o,
   output logic [ ObservableWidth-1:0]               csr_obs_logic_o,
-  // Data source configurations
-  output logic                                      csr_src_mux_a_o,
-  output logic                                      csr_src_mux_b_o,
-  output logic [    CsrDataWidth-1:0]               csr_auto_count_start_a_o,
-  output logic [    CsrDataWidth-1:0]               csr_auto_count_start_b_o,
-  output logic [    CsrDataWidth-1:0]               csr_auto_count_num_a_o,
-  output logic [    CsrDataWidth-1:0]               csr_auto_count_num_b_o,
   // Data slicer configurations
   output logic [ SlicerModeWidth-1:0]               csr_data_slice_mode_a_o,
   output logic [ SlicerModeWidth-1:0]               csr_data_slice_mode_b_o,
