@@ -43,7 +43,6 @@ sys.path.append(hdc_util_path)
 from hdc_util import gen_ca90_im_set  # noqa: E402
 from char_recog import (  # noqa: E402
     train_char_recog,
-    convert_to_data_indices,
     char_recog_dataset,
 )
 
@@ -146,9 +145,7 @@ async def tb_hypercorex_dut(dut):
     cocotb.log.info(" ------------------------------------------ ")
 
     # Load list to A
-    await load_im_list(
-        dut, dataset_compressed, 0, "A", "low"
-    )
+    await load_im_list(dut, dataset_compressed, 0, "A", "low")
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("               Load Data to AM              ")
@@ -263,10 +260,14 @@ async def tb_hypercorex_dut(dut):
 
     # Configure A number of elements to be auto-sliced
     data_slice_num_elem_a = TOTAL_PIXEL_FEATURES
-    await write_csr(dut, set_parameters.DATA_SLICE_NUM_ELEM_A_REG_ADDR, data_slice_num_elem_a)
+    await write_csr(
+        dut, set_parameters.DATA_SLICE_NUM_ELEM_A_REG_ADDR, data_slice_num_elem_a
+    )
 
     # Check if write is correct
-    read_data_slice_num_elem_a = await read_csr(dut, set_parameters.DATA_SLICE_NUM_ELEM_A_REG_ADDR)
+    read_data_slice_num_elem_a = await read_csr(
+        dut, set_parameters.DATA_SLICE_NUM_ELEM_A_REG_ADDR
+    )
     check_result(data_slice_num_elem_a, read_data_slice_num_elem_a)
 
     # Configure B for auto counting
@@ -276,17 +277,24 @@ async def tb_hypercorex_dut(dut):
     data_src_auto_start_b = 2
     data_src_auto_num_b = TOTAL_PIXEL_FEATURES
 
-    await write_csr(dut, set_parameters.DATA_SRC_AUTO_START_B_REG_ADDR, data_src_auto_start_b)
-    await write_csr(dut, set_parameters.DATA_SRC_AUTO_NUM_B_REG_ADDR, data_src_auto_num_b)
+    await write_csr(
+        dut, set_parameters.DATA_SRC_AUTO_START_B_REG_ADDR, data_src_auto_start_b
+    )
+    await write_csr(
+        dut, set_parameters.DATA_SRC_AUTO_NUM_B_REG_ADDR, data_src_auto_num_b
+    )
 
     # Check if write is correct
-    read_data_src_auto_start_b = await read_csr(dut, set_parameters.DATA_SRC_AUTO_START_B_REG_ADDR)
+    read_data_src_auto_start_b = await read_csr(
+        dut, set_parameters.DATA_SRC_AUTO_START_B_REG_ADDR
+    )
     check_result(data_src_auto_start_b, read_data_src_auto_start_b)
 
     # Check if write is correct
-    read_data_src_auto_num_b = await read_csr(dut, set_parameters.DATA_SRC_AUTO_NUM_B_REG_ADDR)
+    read_data_src_auto_num_b = await read_csr(
+        dut, set_parameters.DATA_SRC_AUTO_NUM_B_REG_ADDR
+    )
     check_result(data_src_auto_num_b, read_data_src_auto_num_b)
-
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("               Start the Core               ")
