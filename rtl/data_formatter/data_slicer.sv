@@ -25,22 +25,22 @@ module data_slicer #(
   parameter int unsigned ImAddrWidth     = $clog2(NumTotIm)
 )(
   // Clocks and reset
-  input  logic                   clk_i,
-  input  logic                   rst_ni,
+  input  logic                    clk_i,
+  input  logic                    rst_ni,
   // Control inputs
-  input  logic                   enable_i,
-  input  logic                   clr_i,
-  input  logic [  ModeWidth-1:0] sel_mode_i,
+  input  logic                    enable_i,
+  input  logic                    clr_i,
+  input  logic [  ModeWidth-1:0]  sel_mode_i,
   // Settings
   input  logic [CsrDataWidth-1:0] csr_elem_size_i,
   // Data inputs
-  input  logic [LowDimWidth-1:0] lowdim_data_i,
-  input  logic                   lowdim_data_valid_i,
-  output logic                   lowdim_data_ready_o,
+  input  logic [ LowDimWidth-1:0] lowdim_data_i,
+  input  logic                    lowdim_data_valid_i,
+  output logic                    lowdim_data_ready_o,
   // Address outputs
-  output logic [ImAddrWidth-1:0] addr_o,
-  output logic                   addr_valid_o,
-  input  logic                   addr_ready_i
+  output logic [ ImAddrWidth-1:0] addr_o,
+  output logic                    addr_valid_o,
+  input  logic                    addr_ready_i
 );
 
   //---------------------------
@@ -70,6 +70,9 @@ module data_slicer #(
 
   logic [MaxCountWidth-1:0] chunk_count_reg;
   logic [ MaxElemWidth-1:0] elem_count_reg;
+  logic                     count_control_reg;
+  logic                     enable_elem_chunk_counter;
+  logic                     count_control_ready;
 
   logic [MaxCountWidth-1:0] max_chunk_count;
 
@@ -96,6 +99,7 @@ module data_slicer #(
 
   // Element counter finish
   assign elem_count_finish = (elem_count_reg == csr_elem_size_i-1);
+  assign enable_elem_chunk_counter = enable_i && (sel_mode_i != Mode64b);
 
   // Selection for max count
   always_comb begin
@@ -152,7 +156,7 @@ module data_slicer #(
     if (!rst_ni) begin
       elem_count_reg  <= {MaxElemWidth{1'b0}};
     end else begin
-      if (enable_i && (sel_mode_i != Mode64b)) begin
+      if (enable_elem_chunk_counter) begin
         if (elem_count_finish) begin
           elem_count_reg <= {MaxElemWidth{1'b0}};
         end else if (fifo_out_push) begin
@@ -173,7 +177,7 @@ module data_slicer #(
     if (!rst_ni) begin
       chunk_count_reg <= {MaxCountWidth{1'b0}};
     end else begin
-      if (enable_i && (sel_mode_i !=Mode64b )) begin
+      if (enable_elem_chunk_counter) begin
         if (chunk_count_finish || elem_count_finish) begin
           chunk_count_reg <= {MaxCountWidth{1'b0}};
         end else if (fifo_out_push) begin
@@ -187,9 +191,37 @@ module data_slicer #(
     end
   end
 
+  //---------------------------
+  // Chunk and Element Counter Control Register
+  //---------------------------
+  // This is for controlling the ready
+  // signal towards the data streamers
+  //---------------------------
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      count_control_reg <= 1'b0;
+    end else begin
+      if (enable_elem_chunk_counter) begin
+        if (fifo_out_push) begin
+          count_control_reg <= 1'b1;
+        end else begin
+          count_control_reg <= count_control_reg;
+        end
+      end else begin
+        count_control_reg <= 1'b0;
+      end
+    end
+  end
+
+  assign count_control_ready = count_control_reg && (chunk_count_finish || elem_count_finish);
+
   // FIFO control logic
-  assign fifo_out_push = enable_i && lowdim_data_valid_i && !fifo_out_full;
-  assign fifo_out_pop  = addr_ready_i && !fifo_out_empty;
+  assign fifo_out_push = enable_i &&
+                         lowdim_data_valid_i &&
+                         !fifo_out_full;
+  assign fifo_out_pop  = enable_i &&
+                         addr_ready_i &&
+                         !fifo_out_empty;
 
   //---------------------------
   // Output FIFO
@@ -226,9 +258,10 @@ module data_slicer #(
   assign addr_o       = fifo_out_data[ImAddrWidth-1:0];
   assign addr_valid_o = !fifo_out_empty;
 
-  // When the FIFO is not full and enable is high
-  // We can accept any requests
-  assign lowdim_data_ready_o = enable_i && !fifo_out_full;
-
+  // We accept new data whenever FIFO is not full
+  // and depending if the mode is ready or not
+  assign lowdim_data_ready_o = (sel_mode_i == Mode64b) ?
+                               (enable_i && !fifo_out_full) :
+                               (enable_i && !fifo_out_full && count_control_ready);
 
 endmodule
