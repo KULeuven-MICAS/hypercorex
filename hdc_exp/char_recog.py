@@ -13,6 +13,7 @@ from hdc_util import (
     gen_empty_hv,
     gen_orthogonal_im,
     circ_perm_hv,
+    bind_hv,
     binarize_hv,
     extract_dataset,
     measure_acc,
@@ -120,33 +121,62 @@ def encode_character(
     ortho_im,
     character_input,
     threshold,
-    non_perm_encode=False,
+    encode_mode="indexed",
     hv_type="binary",
 ):
     # Initialize empty character hypervector
     char_hv = gen_empty_hv(hv_dim)
 
     # Cycle through every pixel
-    for i in range(len(character_input)):
-        # If pixel value is a 1
-        if character_input[i] == 1:
-            # For non permutative encoding
-            # We only select a different
-            # orthogonal HV from the ortho im set
-            if non_perm_encode:
-                char_hv += ortho_im[35 + i]
-            # Otherwise we do the normal orothogonal
-            # pemuting based on the original feature
+    if encode_mode == "bind":
+        for i in range(len(character_input)):
+            pixel_val_hv = ortho_im[character_input[i]]
+
+            pixel_pos_hv = ortho_im[2 + i]
+            char_hv += bind_hv(pixel_val_hv, pixel_pos_hv)
+
+    else:
+        for i in range(len(character_input)):
+            # If pixel value is a 1
+            if character_input[i] == 1:
+                # For non permutative encoding
+                # We only select a different
+                # orthogonal HV from the ortho im set
+                if encode_mode == "indexed":
+                    char_hv += ortho_im[35 + i]
+                # Otherwise we do the normal orothogonal
+                # pemuting based on the original feature
+                elif encode_mode == "circ_perm":
+                    char_hv += circ_perm_hv(ortho_im[i], 1)
+            # If pixel is black, we just select
+            # the base othorgonal HV
             else:
-                char_hv += circ_perm_hv(ortho_im[i], 1)
-        # If pixel is black, we just select
-        # the base othorgonal HV
-        else:
-            char_hv += ortho_im[i]
+                char_hv += ortho_im[i]
 
     # Binarize the bundled HV
     char_hv = binarize_hv(char_hv, threshold, hv_type)
 
+    return char_hv
+
+
+# Encoding with binding
+def encode_with_bind(
+    hv_dim,
+    ortho_im,
+    character_input,
+    threshold,
+    encode_mode="indexed",
+    hv_type="binary",
+):
+    # Initialize empty character hypervector
+    char_hv = encode_character(
+        hv_dim,
+        ortho_im,
+        character_input,
+        threshold,
+        encode_mode=encode_mode,
+        hv_type=hv_type,
+    )
     return char_hv
 
 
@@ -181,7 +211,7 @@ def convert_to_data_indices(dataset):
 
 # Training the character recognition set
 def train_char_recog(
-    dataset, hv_dim, ortho_im, threshold, non_perm_encode=False, hv_type="binary"
+    dataset, hv_dim, ortho_im, threshold, encode_mode="indexed", hv_type="binary"
 ):
     # Initialize empty assoc mem list
     assoc_mem = []
@@ -195,7 +225,7 @@ def train_char_recog(
                 ortho_im=ortho_im,
                 character_input=dataset[i],
                 threshold=threshold,
-                non_perm_encode=non_perm_encode,
+                encode_mode=encode_mode,
                 hv_type=hv_type,
             )
         )
@@ -205,7 +235,7 @@ def train_char_recog(
 
 # Entire character recognition run
 def run_char_recog_test(
-    dataset, max_distort, test_runs, hv_seed_dim, non_perm_encode=False, im_gen="random"
+    dataset, max_distort, test_runs, hv_seed_dim, encode_mode="indexed", im_gen="random"
 ):
     # Correct answer set (this is fixed for char recog)
     correct_set = list(range(NUM_CLASSSES))
@@ -218,7 +248,7 @@ def run_char_recog_test(
         # This case covers CA 90
         hv_seed = gen_ri_hv(hv_seed_dim, P_DENSE)
 
-    if non_perm_encode:
+    if encode_mode == "indexed":
         num_hv = 2 * IMG_PIXEL_NUM
     else:
         num_hv = IMG_PIXEL_NUM
@@ -239,7 +269,7 @@ def run_char_recog_test(
         hv_dim=HV_DIM,
         ortho_im=ortho_im,
         threshold=THRESHOLD,
-        non_perm_encode=non_perm_encode,
+        encode_mode=encode_mode,
         hv_type=HV_TYPE,
     )
 
@@ -270,7 +300,7 @@ def run_char_recog_test(
                         ortho_im,
                         distort_items[j],
                         THRESHOLD,
-                        non_perm_encode=non_perm_encode,
+                        encode_mode=encode_mode,
                         hv_type=HV_TYPE,
                     )
                 )
@@ -314,7 +344,7 @@ def exp_distort_test():
         max_distort,
         TEST_RUNS,
         hv_seed_dim=0,
-        non_perm_encode=True,
+        encode_mode="indexed",
         im_gen="random",
     )
 
@@ -407,6 +437,7 @@ if __name__ == "__main__":
     num_total_im = 1024
     num_per_im_bank = int(hv_dim // 4)
     threshold = THRESHOLD
+    encode_mode = "indexed"
 
     # Get original data set
     file_path = "./data_set/char_recog/characters.txt"
@@ -439,7 +470,7 @@ if __name__ == "__main__":
         gen_seed=True,
         ca90_mode="hier",
         debug_info=True,
-        display_heatmap=True,
+        display_heatmap=False,
     )
 
     # Training of AM and extracting
@@ -447,16 +478,26 @@ if __name__ == "__main__":
     assoc_mem = []
 
     assoc_mem = train_char_recog(
-        dataset, hv_dim, ortho_im, threshold, non_perm_encode=True, hv_type="binary"
+        dataset, hv_dim, ortho_im, threshold, encode_mode=encode_mode, hv_type="binary"
     )
 
     # Encode query_hv_list
     query_hv_set = []
 
     for i in range(NUM_CLASSSES):
-        query_hv = encode_with_idx(
-            hv_dim, ortho_im, data_indices[i], threshold, hv_type="binary"
-        )
+        if encode_mode == "bind":
+            query_hv = encode_with_bind(
+                hv_dim,
+                ortho_im,
+                dataset[i],
+                threshold,
+                encode_mode=encode_mode,
+                hv_type="binary",
+            )
+        else:
+            query_hv = encode_with_idx(
+                hv_dim, ortho_im, data_indices[i], threshold, hv_type="binary"
+            )
 
         query_hv_set.append(query_hv)
 

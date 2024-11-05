@@ -100,7 +100,7 @@ async def tb_hypercorex_dut(dut):
         hv_dim=set_parameters.HV_DIM,
         ortho_im=ortho_im,
         threshold=THRESHOLD,
-        non_perm_encode=True,
+        encode_mode="indexed",
         hv_type="binary",
     )
 
