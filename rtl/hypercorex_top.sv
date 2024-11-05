@@ -37,6 +37,7 @@ module hypercorex_top # (
   parameter int unsigned HoldFifoDepth    = 2,
   parameter bit          EnableRomIM      = 1'b0,
   parameter bit          FifoFallthrough  = 1'b0,
+  parameter bit          FifoFallthroughSlicer = 1'b1,
   //---------------------------
   // Instruction Memory Parameters
   //---------------------------
@@ -536,7 +537,7 @@ module hypercorex_top # (
     .SlicerFifoDepth      ( SlicerFifoDepth     ),
     .CsrDataWidth         ( CsrDataWidth        ),
     // Don't touch!
-    .FifoFallthrough      ( FifoFallthrough     ),
+    .FifoFallthrough      ( FifoFallthroughSlicer ),
     .ModeWidth            ( SlicerModeWidth     )
   ) i_data_slicer_a (
     // Clocks and reset
@@ -564,7 +565,7 @@ module hypercorex_top # (
     .SlicerFifoDepth      ( SlicerFifoDepth     ),
     .CsrDataWidth         ( CsrDataWidth        ),
     // Don't touch!
-    .FifoFallthrough      ( FifoFallthrough     ),
+    .FifoFallthrough      ( FifoFallthroughSlicer ),
     .ModeWidth            ( SlicerModeWidth     )
   ) i_data_slicer_b (
     // Clocks and reset

@@ -121,6 +121,7 @@ def encode_character(
     ortho_im,
     character_input,
     threshold,
+    debug=False,
     encode_mode="indexed",
     hv_type="binary",
 ):
@@ -129,11 +130,22 @@ def encode_character(
 
     # Cycle through every pixel
     if encode_mode == "bind":
+        # This is a nasty hard fix but the idea is to
+        # reverse the order because the tool python list reads
+        # the list in a reverse way...
+        character_input = character_input[::-1]
         for i in range(len(character_input)):
             pixel_val_hv = ortho_im[character_input[i]]
 
             pixel_pos_hv = ortho_im[2 + i]
             char_hv += bind_hv(pixel_val_hv, pixel_pos_hv)
+
+            if debug:
+                print(f"character_input: {character_input[i]}")
+                print(f"position: {i}")
+                print(f"pixel_val_hv: {pixel_val_hv}")
+                print(f"pixel_pos_hv: {pixel_pos_hv}")
+                print(f"char_hv: {pixel_val_hv}")
 
     else:
         for i in range(len(character_input)):
@@ -165,6 +177,7 @@ def encode_with_bind(
     ortho_im,
     character_input,
     threshold,
+    debug=False,
     encode_mode="indexed",
     hv_type="binary",
 ):
@@ -174,6 +187,7 @@ def encode_with_bind(
         ortho_im,
         character_input,
         threshold,
+        debug=debug,
         encode_mode=encode_mode,
         hv_type=hv_type,
     )
@@ -433,11 +447,11 @@ def exp_distort_test():
 if __name__ == "__main__":
     # Some working parameters
     seed_size = 32
-    hv_dim = 512
-    num_total_im = 1024
+    hv_dim = 256
+    num_total_im = 512
     num_per_im_bank = int(hv_dim // 4)
     threshold = THRESHOLD
-    encode_mode = "indexed"
+    encode_mode = "bind"
 
     # Get original data set
     file_path = "./data_set/char_recog/characters.txt"
@@ -480,6 +494,16 @@ if __name__ == "__main__":
     assoc_mem = train_char_recog(
         dataset, hv_dim, ortho_im, threshold, encode_mode=encode_mode, hv_type="binary"
     )
+
+    # query_hv = encode_with_bind(
+    #             hv_dim,
+    #             ortho_im,
+    #             dataset[0],
+    #             threshold,
+    #             debug=True,
+    #             encode_mode=encode_mode,
+    #             hv_type="binary",
+    #         )
 
     # Encode query_hv_list
     query_hv_set = []

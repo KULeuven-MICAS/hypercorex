@@ -78,16 +78,16 @@ module tb_hypercorex # (
   input  logic                      highdim_mode_i,
   // Low dim signals
   input  logic [TbMemAddrWidth-1:0] im_a_lowdim_wr_addr_i,
-  input  logic [  CsrDataWidth-1:0] im_a_lowdim_wr_data_i,
+  input  logic [  LowDimWidth-1:0]  im_a_lowdim_wr_data_i,
   input  logic                      im_a_lowdim_wr_en_i,
   input  logic [TbMemAddrWidth-1:0] im_a_lowdim_rd_addr_i,
-  output logic [  CsrDataWidth-1:0] im_a_lowdim_rd_data_o,
+  output logic [  LowDimWidth-1:0]  im_a_lowdim_rd_data_o,
 
   input  logic [TbMemAddrWidth-1:0] im_b_lowdim_wr_addr_i,
-  input  logic [  CsrDataWidth-1:0] im_b_lowdim_wr_data_i,
+  input  logic [  LowDimWidth-1:0]  im_b_lowdim_wr_data_i,
   input  logic                      im_b_lowdim_wr_en_i,
   input  logic [TbMemAddrWidth-1:0] im_b_lowdim_rd_addr_i,
-  output logic [  CsrDataWidth-1:0] im_b_lowdim_rd_data_o,
+  output logic [  LowDimWidth-1:0]  im_b_lowdim_rd_data_o,
   // High dim signals
   input  logic [TbMemAddrWidth-1:0] im_a_highdim_wr_addr_i,
   input  logic [   HVDimension-1:0] im_a_highdim_wr_data_i,
@@ -159,7 +159,7 @@ module tb_hypercorex # (
 
   // Memory module for low dimensional memory IM A
   tb_rd_memory # (
-    .DataWidth              ( CsrDataWidth          ),
+    .DataWidth              ( LowDimWidth           ),
     .AddrWidth              ( CsrAddrWidth          ),
     .MemDepth               ( TbMemDepth            )
   ) i_im_a_lowdim_memory (
@@ -215,7 +215,7 @@ module tb_hypercorex # (
 
   // Memory module for low dimensional memory IM B
   tb_rd_memory # (
-    .DataWidth              ( CsrDataWidth          ),
+    .DataWidth              ( LowDimWidth          ),
     .AddrWidth              ( CsrAddrWidth          ),
     .MemDepth               ( TbMemDepth            )
   ) i_im_b_lowdim_memory (
