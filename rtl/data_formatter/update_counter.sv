@@ -48,8 +48,7 @@ module update_counter #(
   //---------------------------
   assign addr_success = addr_valid_o & addr_ready_i;
   assign max_count_hit = addr_reg ==
-                         (max_count_i[ImAddrWidth-1:0] +
-                         start_count_i[ImAddrWidth-1:0])-1;
+                         (max_count_i[ImAddrWidth-1:0]-1);
   assign max_count_success = max_count_hit & addr_success;
 
   //---------------------------
@@ -60,8 +59,8 @@ module update_counter #(
       addr_reg <= {ImAddrWidth{1'b0}};
     end else begin
       if (en_i) begin
-        if(clr_i || max_count_success || start_i) begin
-          addr_reg <= start_count_i[ImAddrWidth-1:0];
+        if(clr_i || max_count_success) begin
+          addr_reg <= {ImAddrWidth{1'b0}};
         end else if(addr_success) begin
           addr_reg <= addr_reg + 1;
         end else begin
@@ -76,7 +75,7 @@ module update_counter #(
   //---------------------------
   // Output
   //---------------------------
-  assign addr_o       = addr_reg[ImAddrWidth-1:0];
+  assign addr_o       = addr_reg[ImAddrWidth-1:0] + start_count_i[ImAddrWidth-1:0];
   assign addr_valid_o = en_i;
 
 endmodule
