@@ -90,7 +90,7 @@ def data_autofetch_bind(
 
 
 if __name__ == "__main__":
-    ortho_im, golden_list = data_ortho_im_only(
+    ortho_im, golden_list = data_autofetch_bind(
         seed_size=snax_hypercorex_parameters["seed_size"],
         hv_dim=snax_hypercorex_parameters["hv_dim"],
         num_total_im=snax_hypercorex_parameters["num_total_im"],
