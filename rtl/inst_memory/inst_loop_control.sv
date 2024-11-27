@@ -11,6 +11,7 @@
 module inst_loop_control # (
   parameter int unsigned InstMemAddrWidth = 32,
   // Don't touch
+  parameter int unsigned InstLoopCountWidth = 10,
   parameter int unsigned LoopNumStates = 4,
   parameter int unsigned LoopNumWidth  = $clog2(LoopNumStates)
 )(
@@ -32,9 +33,9 @@ module inst_loop_control # (
   input  logic [InstMemAddrWidth-1:0]  inst_loop_end_addr1_i,
   input  logic [InstMemAddrWidth-1:0]  inst_loop_end_addr2_i,
   input  logic [InstMemAddrWidth-1:0]  inst_loop_end_addr3_i,
-  input  logic [InstMemAddrWidth-1:0]  inst_loop_count_addr1_i,
-  input  logic [InstMemAddrWidth-1:0]  inst_loop_count_addr2_i,
-  input  logic [InstMemAddrWidth-1:0]  inst_loop_count_addr3_i,
+  input  logic [InstLoopCountWidth-1:0]  inst_loop_count_addr1_i,
+  input  logic [InstLoopCountWidth-1:0]  inst_loop_count_addr2_i,
+  input  logic [InstLoopCountWidth-1:0]  inst_loop_count_addr3_i,
   // Loop control signals
   output logic                         inst_jump_o,
   output logic [InstMemAddrWidth-1:0]  inst_jump_addr_o,
@@ -45,7 +46,7 @@ module inst_loop_control # (
   //---------------------------
   // Logic and wires
   //---------------------------
-  logic [InstMemAddrWidth-1:0] loop1_count, loop2_count, loop3_count;
+  logic [InstLoopCountWidth-1:0] loop1_count, loop2_count, loop3_count;
 
   logic loop1_hit_end_addr, loop2_hit_end_addr, loop3_hit_end_addr;
   logic loop1_bound_end, loop2_bound_end, loop3_bound_end;

@@ -143,6 +143,14 @@ async def tb_hypercorex_dut(dut):
     golden_val = gen_rand_bits(set_parameters.REG_FILE_WIDTH)
     await write_csr(dut, set_parameters.INST_LOOP_COUNT_REG_ADDR, golden_val)
 
+    # Mask is of different size for loop counters
+    mask_val = (2**set_parameters.INST_LOOP_COUNT_WIDTH) - 1
+    mask = (
+        mask_val
+        | (mask_val << set_parameters.INST_LOOP_COUNT_WIDTH)
+        | (mask_val << 2 * set_parameters.INST_LOOP_COUNT_WIDTH)
+    )
+
     # Read back the value
     read_val = await read_csr(dut, set_parameters.INST_LOOP_COUNT_REG_ADDR)
     # Mask only the lower 3*INST_MEM_ADDR_WIDTH bits

@@ -224,7 +224,7 @@ async def tb_hypercorex_dut(dut):
         val1=TOTAL_PIXEL_FEATURES,
         val2=set_parameters.TEST_RUNS,
         val3=0,
-        data_width=set_parameters.INST_MEM_ADDR_WIDTH,
+        data_width=set_parameters.INST_LOOP_COUNT_WIDTH,
     )
 
     # Check if the loop control is written correctly
