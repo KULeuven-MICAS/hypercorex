@@ -207,13 +207,20 @@ module csr import csr_addr_pkg::*; #(
         };
       end
       INST_LOOP_JUMP_ADDR_REG_ADDR,
-      INST_LOOP_END_ADDR_REG_ADDR,
-      INST_LOOP_COUNT_REG_ADDR: begin
+      INST_LOOP_END_ADDR_REG_ADDR: begin
         csr_rd_data = {
-                                                  {(CsrDataWidth-2){1'b0}}, // [31:22] -- Unused
+                                                 {(CsrDataWidth-22){1'b0}}, // [31:22] -- Unused
           csr_set[csr_req_addr_i][3*InstMemAddrWidth-1:2*InstMemAddrWidth], //   [7:0] RW Loop addr3
           csr_set[csr_req_addr_i][2*InstMemAddrWidth-1:  InstMemAddrWidth], //   [7:0] RW Loop addr2
           csr_set[csr_req_addr_i][  InstMemAddrWidth-1:                 0]  //   [7:0] RW Loop addr1
+        };
+      end
+      INST_LOOP_COUNT_REG_ADDR: begin
+        csr_rd_data = {
+                                                     {(CsrDataWidth-30){1'b0}}, // [31:30] -- Unused
+          csr_set[csr_req_addr_i][3*InstLoopCountWidth-1:2*InstLoopCountWidth], // [29:20] RW count3
+          csr_set[csr_req_addr_i][2*InstLoopCountWidth-1:  InstLoopCountWidth], // [19:10] RW count2
+          csr_set[csr_req_addr_i][  InstLoopCountWidth-1:                   0]  // [  9:0] RW count1
         };
       end
       DATA_SRC_CTRL_REG_ADDR: begin
