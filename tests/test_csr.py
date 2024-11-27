@@ -414,30 +414,25 @@ async def csr_dut(dut):
 
     # Generate random bits to write
     golden_val = gen_rand_bits(set_parameters.REG_FILE_WIDTH)
+    mask_val = (2**set_parameters.INST_LOOP_COUNT_WIDTH) - 1
 
     await write_csr(dut, golden_val, set_parameters.INST_LOOP_COUNT_REG_ADDR)
 
     # Check if value is correct
     # Make sure to shift the values accordingly
     test_val = dut.csr_loop_count_addr1_o.value.integer
-    check_result(test_val, (golden_val & (set_parameters.INST_MEM_DEPTH - 1)))
+    check_result(test_val, (golden_val & (mask_val)))
 
     test_val = dut.csr_loop_count_addr2_o.value.integer
     check_result(
         test_val,
-        (
-            (golden_val >> set_parameters.INST_MEM_ADDR_WIDTH)
-            & (set_parameters.INST_MEM_DEPTH - 1)
-        ),
+        ((golden_val >> set_parameters.INST_LOOP_COUNT_WIDTH) & (mask_val)),
     )
 
     test_val = dut.csr_loop_count_addr3_o.value.integer
     check_result(
         test_val,
-        (
-            (golden_val >> (2 * set_parameters.INST_MEM_ADDR_WIDTH))
-            & (set_parameters.INST_MEM_DEPTH - 1)
-        ),
+        ((golden_val >> (2 * set_parameters.INST_LOOP_COUNT_WIDTH)) & (mask_val)),
     )
 
     csr_read_val = await read_csr(dut, set_parameters.INST_LOOP_COUNT_REG_ADDR)
@@ -446,15 +441,9 @@ async def csr_dut(dut):
         (
             golden_val
             & (
-                (set_parameters.INST_MEM_DEPTH - 1)
-                | (
-                    set_parameters.INST_MEM_DEPTH - 1
-                    << set_parameters.INST_MEM_ADDR_WIDTH
-                )
-                | (
-                    set_parameters.INST_MEM_DEPTH - 1
-                    << 2 * set_parameters.INST_MEM_ADDR_WIDTH
-                )
+                (mask_val)
+                | (mask_val << set_parameters.INST_LOOP_COUNT_WIDTH)
+                | (mask_val << 2 * set_parameters.INST_LOOP_COUNT_WIDTH)
             )
         ),
     )
