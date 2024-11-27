@@ -55,6 +55,7 @@ module hypercorex_top # (
   //---------------------------
   // Don't touch!
   //---------------------------
+  parameter int unsigned InstLoopCountWidth = 10,
   parameter int unsigned SlicerModeWidth  = 2,
   parameter int unsigned SrcSelWidth      = 2,
   parameter int unsigned NumALUOps        = 8,
@@ -170,9 +171,9 @@ module hypercorex_top # (
   logic [InstMemAddrWidth-1:0]                   loop_end_addr1;
   logic [InstMemAddrWidth-1:0]                   loop_end_addr2;
   logic [InstMemAddrWidth-1:0]                   loop_end_addr3;
-  logic [InstMemAddrWidth-1:0]                   loop_count_addr1;
-  logic [InstMemAddrWidth-1:0]                   loop_count_addr2;
-  logic [InstMemAddrWidth-1:0]                   loop_count_addr3;
+  logic [InstLoopCountWidth-1:0]                 loop_count_addr1;
+  logic [InstLoopCountWidth-1:0]                 loop_count_addr2;
+  logic [InstLoopCountWidth-1:0]                 loop_count_addr3;
   // Data slicer configurations
   logic [ SlicerModeWidth-1:0]                   data_slice_mode_a;
   logic [ SlicerModeWidth-1:0]                   data_slice_mode_b;
@@ -498,7 +499,7 @@ module hypercorex_top # (
     .clk_i          ( clk_i                   ),
     .rst_ni         ( rst_ni                  ),
     // Inputs
-    .en_i           ( enable                  ),
+    .en_i           ( enable && data_src_sel[0]),
     .clr_i          ( clr                     ),
     .start_i        ( start                   ),
     .max_count_i    ( src_auto_num_a          ),
@@ -517,7 +518,7 @@ module hypercorex_top # (
     .clk_i          ( clk_i                   ),
     .rst_ni         ( rst_ni                  ),
     // Inputs
-    .en_i           ( enable                  ),
+    .en_i           ( enable && data_src_sel[1] ),
     .clr_i          ( clr                     ),
     .start_i        ( start                   ),
     .max_count_i    ( src_auto_num_b          ),
@@ -544,7 +545,7 @@ module hypercorex_top # (
     .clk_i                ( clk_i               ),
     .rst_ni               ( rst_ni              ),
     // Control inputs
-    .enable_i             ( enable              ),
+    .enable_i             ( enable && !data_src_sel[0] ),
     .clr_i                ( clr                 ),
     .sel_mode_i           ( data_slice_mode_a   ),
     // Settings
@@ -572,7 +573,7 @@ module hypercorex_top # (
     .clk_i                ( clk_i               ),
     .rst_ni               ( rst_ni              ),
     // Control inputs
-    .enable_i             ( enable              ),
+    .enable_i             ( enable && !data_src_sel[1]),
     .clr_i                ( clr                 ),
     .sel_mode_i           ( data_slice_mode_b   ),
     // Settings
@@ -673,8 +674,8 @@ module hypercorex_top # (
     .bund_mux_b_i               ( bund_mux_b           ),
     .bund_valid_a_i             ( bund_valid_a         ),
     .bund_valid_b_i             ( bund_valid_b         ),
-    .bund_clr_a_i               ( bund_clr_a           ),
-    .bund_clr_b_i               ( bund_clr_b           ),
+    .bund_clr_a_i               ( bund_clr_a ||    clr ),
+    .bund_clr_b_i               ( bund_clr_b ||    clr ),
     // Control ports for register ops
     .reg_mux_i                  ( reg_mux              ),
     .reg_rd_addr_a_i            ( reg_rd_addr_a        ),
@@ -683,7 +684,7 @@ module hypercorex_top # (
     .reg_wr_en_i                ( reg_wr_en            ),
     // Control ports for query HV
     .qhv_wen_i                  ( qhv_wen              ),
-    .qhv_clr_i                  ( qhv_clr              ),
+    .qhv_clr_i                  ( qhv_clr || clr       ),
     .qhv_mux_i                  ( qhv_mux              ),
     .qhv_am_load_i              ( am_load              ),
     .qhv_ready_i                ( qhv_ready_i          ),
@@ -714,7 +715,7 @@ module hypercorex_top # (
     // CSR output side
     .am_num_class_i             ( am_num_pred          ),
     .am_predict_valid_o         ( am_pred_valid        ),
-    .am_predict_valid_clr_i     ( am_pred_valid_clr    ),
+    .am_predict_valid_clr_i     ( am_pred_valid_clr || clr),
     // Low-dim prediction
     .predict_o                  ( predict_o            ),
     .predict_valid_o            ( predict_valid_o      ),
