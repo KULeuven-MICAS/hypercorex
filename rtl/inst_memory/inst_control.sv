@@ -9,12 +9,13 @@
 //---------------------------
 
 module inst_control # (
-  parameter int unsigned RegAddrWidth     = 32,
-  parameter int unsigned InstMemDepth     = 128,
+  parameter int unsigned RegAddrWidth       = 32,
+  parameter int unsigned InstMemDepth       = 128,
   // Don't touch!
-  parameter int unsigned LoopNumStates    = 4,
-  parameter int unsigned LoopNumWidth     = $clog2(LoopNumStates),
-  parameter int unsigned InstMemAddrWidth = $clog2(InstMemDepth)
+  parameter int unsigned LoopNumStates      = 4,
+  parameter int unsigned InstLoopCountWidth = 10,
+  parameter int unsigned LoopNumWidth       = $clog2(LoopNumStates),
+  parameter int unsigned InstMemAddrWidth   = $clog2(InstMemDepth)
 )(
   // Clocks and reset
   input  logic                        clk_i,
@@ -41,9 +42,9 @@ module inst_control # (
   input  logic [InstMemAddrWidth-1:0] inst_loop_end_addr1_i,
   input  logic [InstMemAddrWidth-1:0] inst_loop_end_addr2_i,
   input  logic [InstMemAddrWidth-1:0] inst_loop_end_addr3_i,
-  input  logic [InstMemAddrWidth-1:0] inst_loop_count_addr1_i,
-  input  logic [InstMemAddrWidth-1:0] inst_loop_count_addr2_i,
-  input  logic [InstMemAddrWidth-1:0] inst_loop_count_addr3_i,
+  input  logic [InstLoopCountWidth-1:0] inst_loop_count_addr1_i,
+  input  logic [InstLoopCountWidth-1:0] inst_loop_count_addr2_i,
+  input  logic [InstLoopCountWidth-1:0] inst_loop_count_addr3_i,
   // Debug control signals
   input  logic                        dbg_en_i,
   input  logic [InstMemAddrWidth-1:0] dbg_addr_i
@@ -112,9 +113,9 @@ module inst_control # (
     .inst_loop_end_addr1_i    ( inst_loop_end_addr1_i[InstMemAddrWidth-1:0]   ),
     .inst_loop_end_addr2_i    ( inst_loop_end_addr2_i[InstMemAddrWidth-1:0]   ),
     .inst_loop_end_addr3_i    ( inst_loop_end_addr3_i[InstMemAddrWidth-1:0]   ),
-    .inst_loop_count_addr1_i  ( inst_loop_count_addr1_i[InstMemAddrWidth-1:0] ),
-    .inst_loop_count_addr2_i  ( inst_loop_count_addr2_i[InstMemAddrWidth-1:0] ),
-    .inst_loop_count_addr3_i  ( inst_loop_count_addr3_i[InstMemAddrWidth-1:0] ),
+    .inst_loop_count_addr1_i  ( inst_loop_count_addr1_i                       ),
+    .inst_loop_count_addr2_i  ( inst_loop_count_addr2_i                       ),
+    .inst_loop_count_addr3_i  ( inst_loop_count_addr3_i                       ),
     // Loop control signals
     .inst_jump_o              ( inst_jump                                     ),
     .inst_jump_addr_o         ( inst_jump_addr                                ),
