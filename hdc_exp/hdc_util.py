@@ -137,7 +137,7 @@ def gen_ri_hv(hv_dim, p_dense, hv_type="binary"):
 
 
 # Binding dense functions
-def bind_hv(hv_a, hv_b, hv_type="binary", density="dense"):
+def bind_hv(hv_a, hv_b, hv_type="binary"):
     # If bipolar we do multiplication
     # otherwise we do bit-wise XOR
     if hv_type == "bipolar":
