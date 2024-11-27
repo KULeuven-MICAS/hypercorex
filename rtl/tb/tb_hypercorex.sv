@@ -51,7 +51,7 @@ module tb_hypercorex # (
   parameter int unsigned TbMemDepth       = 512,
   parameter int unsigned TbMemAddrWidth   = CsrAddrWidth,
   parameter int unsigned TbAMMemDepth     = 32,
-  parameter int unsigned TbQHVMemDepth    = 32
+  parameter int unsigned TbQHVMemDepth    = 512
 )(
   //---------------------------
   // Clocks and reset
