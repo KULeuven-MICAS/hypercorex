@@ -65,6 +65,25 @@ def hvlist2num(hv_list):
     return hv_num
 
 
+def reshape_hv(hv, sub_elem_size):
+    div_check = len(hv) % sub_elem_size
+    num_sub_elem = len(hv) // sub_elem_size
+    if div_check == 0:
+        return hv.reshape(num_sub_elem, sub_elem_size)
+    else:
+        print(f"Error! Not divisible by sub_elem_size - > div check: {div_check}")
+
+
+def reshape_hv_list(hv_list, sub_elem_size):
+    for i in range(len(hv_list)):
+        if i == 0:
+            return_list = reshape_hv(hv_list[i], sub_elem_size)
+        else:
+            temp_reshape = reshape_hv(hv_list[i], sub_elem_size)
+            return_list = np.concatenate((return_list, temp_reshape), axis=0)
+    return return_list
+
+
 """
     Hypervector functions
     
