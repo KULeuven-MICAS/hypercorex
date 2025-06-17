@@ -199,14 +199,14 @@ def test_lang_recog_model(class_am, ortho_im, testing_dir, num_test, ngram=4):
 if __name__ == "__main__":
     # Download and extract the training dataset
     SEED_DIM = 32
-    HV_DIM = 4096
+    HV_DIM = 512
     NUM_TOT_IM = 1024
     NUM_PER_IM_BANK = 128
     NGRAM = 4
-    USE_CA90_IM = False
-    EXTRACT_DATA = False
+    USE_CA90_IM = True
+    EXTRACT_DATA = True
 
-    TAREGET_DIR = "extracted_datasets"
+    TAREGET_DIR = "data_set/lang_recog"
 
     BASE_SEEDS = [
         1103779247,
@@ -248,9 +248,10 @@ if __name__ == "__main__":
             im_type="random",
         )
 
+    # Training
     training_dir = TAREGET_DIR + "/" + TRAINING_DIR
     class_am = train_lang_recog_model(ortho_im, training_dir, num_train=1000, ngram=4)
 
-    # Training dataset
+    # Testing
     testing_dir = TAREGET_DIR + "/" + TESTING_DIR
     test_lang_recog_model(class_am, ortho_im, testing_dir, num_test=100, ngram=4)
