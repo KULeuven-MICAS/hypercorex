@@ -12,12 +12,32 @@
 import numpy as np
 from tqdm import tqdm
 import matplotlib.pyplot as plt
+import tarfile
 
 
 """
     General functions
 
 """
+
+
+# For extracting information from tar.gz files
+def extract_tar_gz(tar_gz_file, extract_file):
+    # Open tar.gz file for reading
+    with tarfile.open(tar_gz_file, "r:gz") as tar:
+        # Extract a specific file
+        file_obj = tar.extractfile(extract_file)
+        if file_obj:
+            content = file_obj.read().decode()  # decode() if it's text
+            return content
+        else:
+            raise FileNotFoundError(f"{extract_file} not found in {tar_gz_file}")
+
+
+# Convert info extracted and separate into list along the newlines
+def convert_to_string_lists(content):
+    # Split the content by newlines and filter out empty lines
+    return [line.strip() for line in content.split("\n") if line.strip()]
 
 
 # For simple file extraction
@@ -132,7 +152,7 @@ def reshape_hv_list(hv_list, sub_elem_size):
 
 # Generate empty HV
 def gen_empty_hv(hv_dim):
-    return np.zeros(hv_dim)
+    return np.zeros(hv_dim, dtype=int)
 
 
 # Generate using random indexing style
@@ -348,7 +368,13 @@ def ca90_extract_seeds(seed_size, seed_num, hv_dim, ca90_mode="iter", debug_info
 
 # Generating orthogonal item memory
 def gen_orthogonal_im(
-    num_hv, hv_dim, p_dense, hv_seed, permute_base=1, hv_type="binary", im_type="random"
+    num_hv,
+    hv_dim,
+    p_dense,
+    hv_seed=0,
+    permute_base=1,
+    hv_type="binary",
+    im_type="random",
 ):
     # Initialize empty matrix
     orthogonal_im = gen_empty_mem_hv(num_hv, hv_dim)
