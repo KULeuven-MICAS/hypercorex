@@ -128,7 +128,7 @@ async def tb_hypercorex_dut(dut):
     cocotb.log.info("       Write to Number of Predictions       ")
     cocotb.log.info(" ------------------------------------------ ")
 
-    num_predict = 100
+    num_predict = num_hv
     await write_csr(dut, set_parameters.AM_NUM_PREDICT_REG_ADDR, num_predict)
 
     cocotb.log.info(" ------------------------------------------ ")
@@ -190,8 +190,8 @@ async def tb_hypercorex_dut(dut):
     loop_count = await config_inst_ctrl(
         dut=dut,
         reg_addr=set_parameters.INST_LOOP_COUNT_REG_ADDR,
-        val1=100,
-        val2=100,
+        val1=num_hv,
+        val2=num_hv,
         val3=0,
         data_width=set_parameters.INST_LOOP_COUNT_WIDTH,
     )
@@ -245,7 +245,7 @@ async def tb_hypercorex_dut(dut):
     cocotb.log.info("        Reading from Predict Memory         ")
     cocotb.log.info(" ------------------------------------------ ")
 
-    for i in range(set_parameters.TEST_RUNS):
+    for i in range(num_hv):
         predict_val = await read_predict(dut, i)
         check_result(predict_val, i)
 
