@@ -19,6 +19,7 @@ jobs:
           pytest -n $(nproc) --dist=loadfile \
           --ignore=tests/test_tb_hypercorex.py \
           --ignore=tests/test_hypercorex_csr.py \
+          --ignore=tests/test_hypercorex_am_search.py \
           --ignore=tests/test_hypercorex_char_recog.py \
           --ignore=tests/test_hypercorex_ortho_im_only.py \
           --ignore=tests/test_hypercorex_char_recog_data_slice.py
@@ -37,6 +38,7 @@ jobs:
           pytest tests/test_tb_hypercorex.py && \
           pytest -n $(nproc) --dist=loadfile \
           tests/test_hypercorex_csr.py \
+          tests/test_hypercorex_am_search.py \
           tests/test_hypercorex_char_recog.py \
           tests/test_hypercorex_ortho_im_only.py \
           tests/test_hypercorex_char_recog_data_slice.py

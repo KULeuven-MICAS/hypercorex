@@ -23,6 +23,7 @@ from util import (
     load_im_list,
     load_am_list,
     config_inst_ctrl,
+    read_predict,
 )
 
 import cocotb
@@ -240,20 +241,16 @@ async def tb_hypercorex_dut(dut):
         if not busy_signal:
             break
 
-    # # Check from QHV memory if we have the correct number of orthogonal signals
-    # # one is from the QHV memory, while the other is from
-    # # the lowdim AM prediction memory
-    # cocotb.log.info(" ------------------------------------------ ")
-    # cocotb.log.info("          Reading from QHV Memory           ")
-    # cocotb.log.info(" ------------------------------------------ ")
+    cocotb.log.info(" ------------------------------------------ ")
+    cocotb.log.info("        Reading from Predict Memory         ")
+    cocotb.log.info(" ------------------------------------------ ")
 
-    # for i in range(len(ortho_im)):
-    #     qhv_val = await read_qhv(dut, i)
-    #     qhv_val = numbin2list(qhv_val, set_parameters.HV_DIM)
-    #     check_result_array(ortho_im[i], qhv_val)
+    for i in range(set_parameters.TEST_RUNS):
+        predict_val = await read_predict(dut, i)
+        check_result(predict_val, i)
 
     # Some trailing cycles only
-    for i in range(1000):
+    for i in range(100):
         await clock_and_time(dut.clk_i)
 
 

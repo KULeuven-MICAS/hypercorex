@@ -575,7 +575,6 @@ def clear_tb_inputs(dut):
     dut.am_wr_data_i.value = 0
     dut.am_wr_en_i.value = 0
     dut.am_rd_addr_i.value = 0
-    dut.am_auto_loop_addr_i.value = 0
 
     # ---------------------
     # QHV ports
