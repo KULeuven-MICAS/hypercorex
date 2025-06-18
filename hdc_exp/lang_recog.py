@@ -10,6 +10,7 @@
 """
 
 from hdc_util import (
+    extract_git_dataset,
     gen_empty_hv,
     gen_orthogonal_im,
     circ_perm_hv,
@@ -19,15 +20,13 @@ from hdc_util import (
     gen_ca90_im_set,
 )
 from tqdm import tqdm
-import requests
-import tarfile
-import io
 
 
 TRAINING_URL = "https://github.com/KULeuven-MICAS/hypercorex/releases/download/ds_hdc_lang_recog_v.0.0.1/lang_recog_training.tar.gz"
 TESTING_URL = "https://github.com/KULeuven-MICAS/hypercorex/releases/download/ds_hdc_lang_recog_v.0.0.1/lang_recog_testing.tar.gz"
 TRAINING_DIR = "training_texts/"
 TESTING_DIR = "testing_compressed_texts/"
+DATA_DIR = "data_set/lang_recog"
 
 LANG_LIST = {
     0: "bul",
@@ -82,18 +81,6 @@ CHAR_MAP = {
     "z": 25,
     " ": 26,  # Space character
 }
-
-
-def extract_lang_recog_dataset(url, target_dir):
-    # Extract the dataset
-    response = requests.get(url, stream=True)
-    response.raise_for_status()  # Raise an error on bad status
-
-    # Extract the data sets
-    with tarfile.open(fileobj=io.BytesIO(response.content), mode="r:gz") as tar:
-        # Extract all files to a directory
-        tar.extractall(path=target_dir)
-    return
 
 
 def encode_line(line, ortho_im, ngram=4):
@@ -152,7 +139,6 @@ def train_lang_recog_model(ortho_im, training_dir, num_train, ngram=4):
             # Bundle class HV
             class_hv += encoded_line
 
-        # threshold = len(text_lines) / 2
         threshold = num_train / 2  # Use a fixed threshold for demonstration
         class_hv = binarize_hv(class_hv, threshold, "binary")
         class_am[lang] = class_hv
@@ -206,8 +192,6 @@ if __name__ == "__main__":
     USE_CA90_IM = True
     EXTRACT_DATA = True
 
-    TAREGET_DIR = "data_set/lang_recog"
-
     BASE_SEEDS = [
         1103779247,
         2391206478,
@@ -220,8 +204,8 @@ if __name__ == "__main__":
     ]
 
     if EXTRACT_DATA:
-        extract_lang_recog_dataset(TRAINING_URL, TAREGET_DIR)
-        extract_lang_recog_dataset(TESTING_URL, TAREGET_DIR)
+        extract_git_dataset(TRAINING_URL, DATA_DIR)
+        extract_git_dataset(TESTING_URL, DATA_DIR)
 
     if USE_CA90_IM:
         # Get a CA90 seed that's working
@@ -249,9 +233,9 @@ if __name__ == "__main__":
         )
 
     # Training
-    training_dir = TAREGET_DIR + "/" + TRAINING_DIR
+    training_dir = f"{DATA_DIR}/{TRAINING_DIR}"
     class_am = train_lang_recog_model(ortho_im, training_dir, num_train=1000, ngram=4)
 
     # Testing
-    testing_dir = TAREGET_DIR + "/" + TESTING_DIR
+    testing_dir = f"{DATA_DIR}/{TESTING_DIR}"
     test_lang_recog_model(class_am, ortho_im, testing_dir, num_test=100, ngram=4)
