@@ -12,7 +12,9 @@
 import numpy as np
 from tqdm import tqdm
 import matplotlib.pyplot as plt
+import requests
 import tarfile
+import io
 
 
 """
@@ -22,22 +24,16 @@ import tarfile
 
 
 # For extracting information from tar.gz files
-def extract_tar_gz(tar_gz_file, extract_file):
-    # Open tar.gz file for reading
-    with tarfile.open(tar_gz_file, "r:gz") as tar:
-        # Extract a specific file
-        file_obj = tar.extractfile(extract_file)
-        if file_obj:
-            content = file_obj.read().decode()  # decode() if it's text
-            return content
-        else:
-            raise FileNotFoundError(f"{extract_file} not found in {tar_gz_file}")
+def extract_git_dataset(url, target_dir):
+    # Extract the dataset
+    response = requests.get(url, stream=True)
+    response.raise_for_status()  # Raise an error on bad status
 
-
-# Convert info extracted and separate into list along the newlines
-def convert_to_string_lists(content):
-    # Split the content by newlines and filter out empty lines
-    return [line.strip() for line in content.split("\n") if line.strip()]
+    # Extract the data sets
+    with tarfile.open(fileobj=io.BytesIO(response.content), mode="r:gz") as tar:
+        # Extract all files to a directory
+        tar.extractall(path=target_dir)
+    return
 
 
 # For simple file extraction
