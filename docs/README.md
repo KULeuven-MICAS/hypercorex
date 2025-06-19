@@ -7,6 +7,7 @@ In this directory, we describe the details of the Hypercorex architecture, the t
 :triangular_ruler: **Hypercorex Architecture**
 
 - Instruction Control Operation
+- CSR Details
 - Data Slicer Operation
 - Item Memory Details
 
