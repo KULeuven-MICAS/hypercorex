@@ -2,9 +2,13 @@
 
 The Hypercorex is a semi-data flow accelerator for binary [hyperdimensional computing](https://www.hd-computing.com/home) algorithms. The architecture is built using the same principles of building a generic CPU, but tailored for very large bit-widths. It also expects data to be streamed continuously for uninterrupted processing.
 
-Unlike typical data flow accelerators with fixed kernel operations, Hypercorex's semi-data flow architecture allows more configurability to support various encoding schemes to support state-of-the-art binary HDC operations. The key aspects are: (1) the CPU-like architecture to get as much configurability as possible, and (2) the process being able to handle data that are contuously fed into the accelerator.
+Unlike typical data flow accelerators with fixed kernel operations, Hypercorex's semi-data flow architecture allows more configurability to support various encoding schemes to support state-of-the-art binary HDC operations. The key aspects are: (1) the CPU-like architecture to get as much configurability as possible, and (2) the process being able to handle data that is continuously fed into the accelerator.
 
 More details can be found in (TODO: insert docs page here).
+
+![image](https://github.com/user-attachments/assets/e4cc1d97-5af7-418d-9cd7-44e2fc5ad718)
+
+
 
 # Getting Started
 
@@ -18,7 +22,7 @@ More details can be found in (TODO: insert docs page here).
 pip install -r requirements.txt
 ```
 
-- Pre-built container can be downloaded using [Docker](https://docs.docker.com/engine/install/). This already contains all the necessary intallations needed. Highly recommended to start right away.
+- Pre-built container can be downloaded using [Docker](https://docs.docker.com/engine/install/). This already contains all the necessary installations needed. Highly recommended to start right away.
 
 ```bash
 docker pull ghcr.io/kuleuven-micas/hypercorex:main
