@@ -22,7 +22,7 @@ from tqdm import tqdm
 
 
 DATA_URL = "https://github.com/KULeuven-MICAS/hypercorex/releases/download/ds_hdc_digit_recog_v.0.0.1/digit_recog.tar.gz"
-DATA_SET_DIR = "dataset"
+DATA_SET_DIR = "data_set"
 DATA_DIR = f"{DATA_SET_DIR}/digit_recog"
 
 
@@ -119,12 +119,12 @@ def retrain_digit_recog_model(
             # Update AM for every incorrect prediction
             if prediction != digit:
                 # Update the class AM
-                class_am_int[digit] -= encoded_line
-                class_am_int[prediction] += encoded_line
+                class_am_int[prediction] -= encoded_line
+                class_am_int[digit] += encoded_line
 
                 # Update the threshold
-                class_am_elem_count[digit] -= 1
-                class_am_elem_count[prediction] += 1
+                class_am_elem_count[prediction] -= 1
+                class_am_elem_count[digit] += 1
 
     # After updating rebinarize the AM
     for digit in range(10):
@@ -182,11 +182,11 @@ if __name__ == "__main__":
     NUM_TOT_IM = 1024
     NUM_PER_IM_BANK = 128
     NGRAM = 4
-    USE_CA90_IM = False
-    EXTRACT_DATA = False
+    USE_CA90_IM = True
+    EXTRACT_DATA = True
 
     NUM_TRAIN = 999
-    NUM_RETRAIN = 999
+    NUM_RETRAIN = NUM_TRAIN
     NUM_TEST = 1000
 
     NUM_FEATURES = 28 * 28 - 1
@@ -249,7 +249,7 @@ if __name__ == "__main__":
         DATA_DIR,
         NUM_RETRAIN,
         NUM_FEATURES,
-        NUM_TRAIN,
+        0,
     )
 
     # Testing
