@@ -5,7 +5,7 @@
   Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
   Description:
-  This program implements the ISOLET classification
+  This program implements the UCIHAR classification
   using Hyperdimensional Computing (HDC) techniques.
 """
 
@@ -21,9 +21,10 @@ from hdc_util import (
 )
 from tqdm import tqdm
 
-DATA_URL = "https://github.com/KULeuven-MICAS/hypercorex/releases/download/ds_hdc_isolet_recog_v.0.01/isolet_recog.tar.gz"
-DATA_SET_DIR = "data_set"
-DATA_DIR = f"{DATA_SET_DIR}/isolet_recog"
+DATA_URL = "https://github.com/KULeuven-MICAS/hypercorex/releases/download/ds_hdc_ucihar_recog_v0.0.1/ucihar_recog.tar.gz"
+DATA_SET_DIR = "data_set/"
+DATA_TRAIN_DIR = f"{DATA_SET_DIR}ucihar_recog/train"
+DATA_TEST_DIR = f"{DATA_SET_DIR}ucihar_recog/test"
 
 
 # Convert from one uint level to another
@@ -57,7 +58,7 @@ def encode_sample(sample, ortho_im, cim, num_features):
     return encoded_sample
 
 
-def train_isolet_recog_model(
+def train_ucihar_recog_model(
     ortho_im, cim, val_levels, training_dir, num_classes, num_train, num_features
 ):
     hv_dim = len(ortho_im[0])
@@ -70,9 +71,9 @@ def train_isolet_recog_model(
     for lang in range(num_classes):
         class_am[lang] = gen_empty_hv(hv_dim)
 
-    for isolet in range(num_classes):
+    for ucihar in range(num_classes):
         # Training dataset
-        read_file = f"{training_dir}/uint8_isolet_{isolet}.txt"
+        read_file = f"{training_dir}/uint8_ucihar_train_{ucihar}.txt"
 
         sample_lines = []
         with open(read_file, "r") as rf:
@@ -83,23 +84,23 @@ def train_isolet_recog_model(
 
         class_hv = gen_empty_hv(hv_dim)
 
-        for i in tqdm(range(NUM_TRAIN), desc=f"Training isolet: {isolet}"):
+        for i in tqdm(range(NUM_TRAIN), desc=f"Training ucihar: {ucihar}"):
             class_hv += encode_sample(sample_lines[i], ortho_im, cim, num_features)
 
         # Save non-binarized AM
-        class_am_int[isolet] = class_hv
+        class_am_int[ucihar] = class_hv
 
         # Save binarized AM
         class_hv = binarize_hv(class_hv, train_threshold, "binary")
-        class_am[isolet] = class_hv
+        class_am[ucihar] = class_hv
 
         # Save threshold list
-        class_am_elem_count[isolet] = num_train
+        class_am_elem_count[ucihar] = num_train
 
     return class_am, class_am_int, class_am_elem_count
 
 
-def retrain_isolet_recog_model(
+def retrain_ucihar_recog_model(
     class_am,
     class_am_int,
     class_am_elem_count,
@@ -112,9 +113,9 @@ def retrain_isolet_recog_model(
     num_features,
     staring_num_test,
 ):
-    for isolet in range(num_classes):
+    for ucihar in range(num_classes):
         # Retraining dataset
-        read_file = f"{training_dir}/uint8_isolet_{isolet}.txt"
+        read_file = f"{training_dir}/uint8_ucihar_train_{ucihar}.txt"
 
         sample_lines = []
         with open(read_file, "r") as rf:
@@ -123,7 +124,7 @@ def retrain_isolet_recog_model(
                 int_line = [uint_convert_level(int(x), val_levels) for x in line]
                 sample_lines.append(int_line)
 
-        for i in tqdm(range(num_retrain), desc=f"Retraining isolet: {isolet}"):
+        for i in tqdm(range(num_retrain), desc=f"Retraining ucihar: {ucihar}"):
             # Get encodede sample
             encoded_line = encode_sample(
                 sample_lines[staring_num_test + i], ortho_im, cim, num_features
@@ -133,31 +134,32 @@ def retrain_isolet_recog_model(
             prediction = prediction_idx(class_am, encoded_line, hv_type="binary")
 
             # Update AM for every incorrect prediction
-            if prediction != isolet:
+            if prediction != ucihar:
                 # Update the class AM
                 class_am_int[prediction] -= encoded_line
-                class_am_int[isolet] += encoded_line
+
+                class_am_int[ucihar] += encoded_line
 
                 # Update the threshold
                 class_am_elem_count[prediction] -= 1
-                class_am_elem_count[isolet] += 1
+                class_am_elem_count[ucihar] += 1
 
     # After updating rebinarize the AM
-    for isolet in range(num_classes):
+    for ucihar in range(num_classes):
         # Save binarized AM
-        threshold = class_am_elem_count[isolet] / 2
-        class_am[isolet] = binarize_hv(class_am_int[isolet], threshold, "binary")
+        threshold = class_am_elem_count[ucihar] / 2
+        class_am[ucihar] = binarize_hv(class_am_int[ucihar], threshold, "binary")
 
     return class_am, class_am_int, class_am_elem_count
 
 
-def test_isolet_recog_model(
+def test_ucihar_recog_model(
     class_am,
     ortho_im,
     cim,
     val_levels,
-    num_classes,
     testing_dir,
+    num_classes,
     num_features,
     staring_num_test,
     num_test,
@@ -165,33 +167,32 @@ def test_isolet_recog_model(
     overall_count = 0
     overall_score = 0
 
-    for isolet in range(num_classes):
+    for ucihar in range(num_classes):
         # Training dataset
-        read_file = f"{testing_dir}/uint8_isolet_{isolet}.txt"
+        read_file = f"{testing_dir}/uint8_ucihar_train_{ucihar}.txt"
 
         sample_lines = []
         with open(read_file, "r") as rf:
             for line in rf:
                 line = line.strip().split()
                 int_line = [uint_convert_level(int(x), val_levels) for x in line]
-                # int_line = [int(x) for x in line]
                 sample_lines.append(int_line)
 
         total_count = 0
         total_score = 0
 
         # Make a prediction
-        for i in tqdm(range(num_test), desc=f"Testing isolet: {isolet}"):
+        for i in tqdm(range(num_test), desc=f"Testing ucihar: {ucihar}"):
             encoded_line = encode_sample(
                 sample_lines[staring_num_test + i], ortho_im, cim, num_features
             )
             prediction = prediction_idx(class_am, encoded_line, hv_type="binary")
-            if prediction == isolet:
+            if prediction == ucihar:
                 total_score += 1
             total_count += 1
 
         accuracy = total_score / total_count if total_count > 0 else 0
-        print(f"isolet: {isolet}, Accuracy: {accuracy:.2f}")
+        print(f"ucihar: {ucihar}, Accuracy: {accuracy:.2f}")
 
         overall_score += total_score
         overall_count += total_count
@@ -204,20 +205,20 @@ def test_isolet_recog_model(
 
 if __name__ == "__main__":
     SEED_DIM = 32
-    HV_DIM = 10000
+    HV_DIM = 512
     NUM_TOT_IM = 1024
     NUM_PER_IM_BANK = 128
     NGRAM = 4
     USE_CA90_IM = False
-    EXTRACT_DATA = False
+    EXTRACT_DATA = True
 
     VAL_LEVELS = 21
-    NUM_CLASSES = 26
-    NUM_TRAIN = 297
+    NUM_CLASSES = 6
+    NUM_TRAIN = 951
     NUM_RETRAIN = NUM_TRAIN
-    NUM_TEST = 100
+    NUM_TEST = 300
 
-    NUM_FEATURES = 617
+    NUM_FEATURES = 561
 
     CIM_BASE_SEED = 621635317
     BASE_SEEDS = [
@@ -265,52 +266,52 @@ if __name__ == "__main__":
         num_hv=VAL_LEVELS,
         base_seed=CIM_BASE_SEED,
         gen_seed=False,
-        max_ortho=False,
+        max_ortho=True,
         im_type="random",
         hv_type="binary",
         debug_info=False,
     )
 
     # Training
-    class_am, class_am_int, class_am_elem_count = train_isolet_recog_model(
-        ortho_im, cim, VAL_LEVELS, DATA_DIR, NUM_CLASSES, NUM_TRAIN, NUM_FEATURES
+    class_am, class_am_int, class_am_elem_count = train_ucihar_recog_model(
+        ortho_im, cim, VAL_LEVELS, DATA_TRAIN_DIR, NUM_CLASSES, NUM_TRAIN, NUM_FEATURES
     )
     # Testing
-    test_isolet_recog_model(
+    test_ucihar_recog_model(
         class_am,
         ortho_im,
         cim,
         VAL_LEVELS,
+        DATA_TRAIN_DIR,
         NUM_CLASSES,
-        DATA_DIR,
         NUM_FEATURES,
         0,
         NUM_TEST,
     )
 
     # Retraining
-    class_am, class_am_int, class_am_elem_count = retrain_isolet_recog_model(
+    class_am, class_am_int, class_am_elem_count = retrain_ucihar_recog_model(
         class_am,
         class_am_int,
         class_am_elem_count,
         ortho_im,
         cim,
         VAL_LEVELS,
-        DATA_DIR,
-        26,
+        DATA_TRAIN_DIR,
+        NUM_CLASSES,
         NUM_RETRAIN,
         NUM_FEATURES,
         0,
     )
 
     # Testing
-    test_isolet_recog_model(
+    test_ucihar_recog_model(
         class_am,
         ortho_im,
         cim,
         VAL_LEVELS,
+        DATA_TRAIN_DIR,
         NUM_CLASSES,
-        DATA_DIR,
         NUM_FEATURES,
         0,
         NUM_TEST,
