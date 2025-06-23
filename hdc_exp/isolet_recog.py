@@ -209,7 +209,7 @@ if __name__ == "__main__":
     USE_CA90_IM = False
     EXTRACT_DATA = False
 
-    VAL_LEVELS = 16
+    VAL_LEVELS = 21
     NUM_CLASSES = 26
     NUM_TRAIN = 297
     NUM_RETRAIN = NUM_TRAIN
@@ -263,6 +263,7 @@ if __name__ == "__main__":
         num_hv=VAL_LEVELS,
         base_seed=CIM_BASE_SEED,
         gen_seed=False,
+        max_ortho=False,
         im_type="random",
         hv_type="binary",
         debug_info=False,
