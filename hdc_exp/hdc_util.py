@@ -540,6 +540,7 @@ def gen_cim(
     num_hv,
     base_seed=0,
     gen_seed=True,
+    max_ortho=True,
     im_type="random",
     hv_type="binary",
     debug_info=False,
@@ -562,10 +563,13 @@ def gen_cim(
     elif im_type == "ca90_hier":
         hv_seed = gen_hv_ca90_hierarchical_rows(lowdim_hv_seed, hv_dim)
     else:
-        hv_seed = gen_ri_hv(hv_dim=hv_dim, p_dense=0.5, hv_type="binary")
+        hv_seed = gen_ri_hv(hv_dim=hv_dim, p_dense=0.5, hv_type=hv_type)
 
     # Calculate % number of flips
-    num_flips = hv_dim // (num_hv - 1)
+    if max_ortho:
+        num_flips = (hv_dim // 2) // (num_hv - 1)
+    else:
+        num_flips = hv_dim // (num_hv - 1)
 
     # Initialize empty matrix
     cim = gen_empty_mem_hv(num_hv, hv_dim)
