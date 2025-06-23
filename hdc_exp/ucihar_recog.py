@@ -166,8 +166,6 @@ def test_ucihar_recog_model(
 ):
     overall_count = 0
     overall_score = 0
-    total_count = 0
-    total_score = 0
 
     for ucihar in range(num_classes):
         # Training dataset
@@ -178,8 +176,10 @@ def test_ucihar_recog_model(
             for line in rf:
                 line = line.strip().split()
                 int_line = [uint_convert_level(int(x), val_levels) for x in line]
-                # int_line = [int(x) for x in line]
                 sample_lines.append(int_line)
+
+        total_count = 0
+        total_score = 0
 
         # Make a prediction
         for i in tqdm(range(num_test), desc=f"Testing ucihar: {ucihar}"):
@@ -205,7 +205,7 @@ def test_ucihar_recog_model(
 
 if __name__ == "__main__":
     SEED_DIM = 32
-    HV_DIM = 10000
+    HV_DIM = 512
     NUM_TOT_IM = 1024
     NUM_PER_IM_BANK = 128
     NGRAM = 4
@@ -266,7 +266,7 @@ if __name__ == "__main__":
         num_hv=VAL_LEVELS,
         base_seed=CIM_BASE_SEED,
         gen_seed=False,
-        max_ortho=False,
+        max_ortho=True,
         im_type="random",
         hv_type="binary",
         debug_info=False,
