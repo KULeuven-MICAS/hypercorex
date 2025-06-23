@@ -50,6 +50,36 @@ def extract_dataset(file_path):
     return dataset
 
 
+# Load a dataset from a file
+def load_dataset(file_path):
+    # Initialize empty data set array
+    dataset = []
+    with open(file_path, "r") as rf:
+        for line in rf:
+            line = line.strip().split()
+            int_line = [int(x) for x in line]
+            dataset.append(int_line)
+    # Close the file
+    rf.close()
+    return dataset
+
+
+# Convert from one uint level to another
+def uint_convert_level(in_data, dst_levels):
+    # Scale the input value
+    return in_data // dst_levels
+
+
+# Convert levels of a dataset
+def convert_levels(dataset, val_levels):
+    for key in dataset:
+        for j in range(len(dataset[key])):
+            dataset[key][j] = [
+                uint_convert_level(x, val_levels) for x in dataset[key][j]
+            ]
+    return dataset
+
+
 # Convert a number in binary to a list
 # Used to feed each bundler unit
 def numbin2list(numbin, dim):
@@ -584,6 +614,205 @@ def gen_cim(
         )
 
     return cim
+
+
+"""
+    Functions for training and testing datasets
+"""
+
+
+def train_model(train_dataset, num_train, ortho_im, cim, encode_function, tqdm_mode=0):
+    # Set TQDM
+    disable_train_bar = True
+    disable_per_class_bar = False
+
+    if tqdm_mode == 1:
+        disable_train_bar = False
+        disable_per_class_bar = True
+    elif tqdm_mode == 2:
+        disable_train_bar = True
+        disable_per_class_bar = True
+
+    # Extract parameters
+    num_classes = len(train_dataset)
+    hv_dim = len(ortho_im[0])
+    train_threshold = num_train / 2
+
+    # Initialize associative memory
+    class_am = dict()
+    class_am_int = dict()
+    class_am_elem_count = dict()
+
+    # Initialize empty associative memory
+    for lang in range(num_classes):
+        class_am[lang] = gen_empty_hv(hv_dim)
+
+    # Iterate throuhgh each class
+    for num_class in tqdm(
+        range(num_classes), disable=disable_train_bar, desc="Training progress"
+    ):
+        class_hv = gen_empty_hv(hv_dim)
+
+        for i in tqdm(
+            range(num_train),
+            disable=disable_per_class_bar,
+            desc=f"Training class: {num_class}",
+        ):
+            class_hv += encode_function(train_dataset[num_class][i], ortho_im, cim)
+
+        # Save non-binarized AM
+        class_am_int[num_class] = class_hv
+
+        # Save binarized AM
+        class_hv = binarize_hv(class_hv, train_threshold, "binary")
+        class_am[num_class] = class_hv
+
+        # Save threshold list
+        class_am_elem_count[num_class] = num_train
+    # Just some newline after the progress bar
+    print()
+    return class_am, class_am_int, class_am_elem_count
+
+
+def test_model(
+    test_dataset,
+    ortho_im,
+    cim,
+    class_am,
+    encode_function,
+    staring_num_test,
+    num_test,
+    tqdm_mode=0,
+    print_mode=0,
+):
+    # Logging modes
+    disable_per_class_accuracy = False
+
+    # Set TQDM
+    disable_test_bar = True
+    disable_per_class_bar = False
+
+    if tqdm_mode == 1:
+        disable_test_bar = False
+        disable_per_class_bar = True
+    elif tqdm_mode == 2:
+        disable_test_bar = True
+        disable_per_class_bar = True
+
+    if print_mode == 1:
+        disable_per_class_accuracy = True
+
+    # Extract parameters
+    num_classes = len(test_dataset)
+
+    counts = []
+    scores = []
+    accuracies = []
+
+    # Iterate through each class
+    for num_class in tqdm(
+        range(num_classes), disable=disable_test_bar, desc="Testing progress"
+    ):
+        total_count = 0
+        total_score = 0
+
+        # Make predictions
+        for i in tqdm(
+            range(num_test), disable=disable_per_class_bar, desc=f"Testing: {num_class}"
+        ):
+            # Encode value
+            qhv = encode_function(
+                test_dataset[num_class][staring_num_test + i], ortho_im, cim
+            )
+            # Get prediction
+            prediction = prediction_idx(class_am, qhv, hv_type="binary")
+            # Update score
+            if prediction == num_class:
+                total_score += 1
+            total_count += 1
+
+        # Calculate accuracy
+        accuracy = total_score / total_count if total_count > 0 else 0
+
+        counts.append(total_count)
+        scores.append(total_score)
+        accuracies.append(accuracy)
+
+    # For new line of tqdm
+    print()
+
+    if not disable_per_class_accuracy:
+        for i in range(num_classes):
+            print(f"Class: {i}, Accuracy: {accuracies[i]:.2f}")
+
+    overall_score = sum(scores)
+    overall_count = sum(counts)
+
+    overall_accuracy = overall_score / overall_count if overall_count > 0 else 0
+    print(f"Overall Accuracy: {overall_accuracy:.2f}")
+
+    return counts, scores, accuracies
+
+
+def retrain_model(
+    retrain_dataset,
+    num_retrain,
+    ortho_im,
+    cim,
+    class_am,
+    class_am_int,
+    class_am_elem_count,
+    encode_function,
+    tqdm_mode=0,
+):
+    # Set TQDM
+    disable_train_bar = True
+    disable_per_class_bar = False
+
+    if tqdm_mode == 1:
+        disable_train_bar = False
+        disable_per_class_bar = True
+    elif tqdm_mode == 2:
+        disable_train_bar = True
+        disable_per_class_bar = True
+
+    # Extract parameters
+    num_classes = len(retrain_dataset)
+
+    for num_class in tqdm(
+        range(num_classes), disable=disable_train_bar, desc="Training progress"
+    ):
+        for i in tqdm(
+            range(num_retrain),
+            disable=disable_per_class_bar,
+            desc=f"Retraining: {num_class}",
+        ):
+            # Get encodede sample
+            encoded_line = encode_function(retrain_dataset[num_class][i], ortho_im, cim)
+
+            # Get prediction
+            prediction = prediction_idx(class_am, encoded_line, hv_type="binary")
+
+            # Update AM for every incorrect prediction
+            if prediction != num_class:
+                # Update the class AMs
+                class_am_int[prediction] -= encoded_line
+                class_am_int[num_class] += encoded_line
+
+                # Update the counts
+                class_am_elem_count[prediction] -= 1
+                class_am_elem_count[num_class] += 1
+
+    # After updating rebinarize the AM
+    for num_class in range(num_classes):
+        # Save binarized AM
+        threshold = class_am_elem_count[num_class] / 2
+        class_am[num_class] = binarize_hv(class_am_int[num_class], threshold, "binary")
+
+    # Print for newline
+    print()
+
+    return class_am, class_am_int, class_am_elem_count
 
 
 """
