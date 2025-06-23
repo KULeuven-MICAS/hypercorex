@@ -171,6 +171,25 @@ def gen_ri_hv(hv_dim, p_dense, hv_type="binary"):
     return random_list
 
 
+# Randomly flip elements
+def rand_flip_hv2(hv, num_flips, hv_type="binary"):
+    hv_dim = len(hv)
+    flip_indices = np.random.choice(hv_dim, size=num_flips, replace=False)
+    if hv_type == "bipolar":
+        hv[flip_indices] *= -1
+    else:
+        hv[flip_indices] ^= 1
+    return hv
+
+
+def rand_flip_hv(hv, start_flips, end_flips, hv_type="binary"):
+    if hv_type == "bipolar":
+        hv[start_flips:end_flips] *= -1
+    else:
+        hv[start_flips:end_flips] ^= 1
+    return hv
+
+
 # Binding dense functions
 def bind_hv(hv_a, hv_b, hv_type="binary"):
     # If bipolar we do multiplication
@@ -515,6 +534,54 @@ def gen_square_cim(
     return lowdim_hv_seed, cim
 
 
+def gen_cim(
+    hv_dim,
+    seed_size,
+    num_hv,
+    base_seed=0,
+    gen_seed=True,
+    im_type="random",
+    hv_type="binary",
+    debug_info=False,
+):
+    if gen_seed:
+        # Set a pre-determined seed
+        lowdim_seed_list = ca90_extract_seeds(seed_size, 1, hv_dim, ca90_mode="hier")
+        base_seed = lowdim_seed_list[0]
+
+    if debug_info:
+        print(f"CiM seed: {base_seed}")
+
+    lowdim_hv_seed = numbin2list(base_seed, seed_size)
+
+    # First initialize some seed HV
+    # Depending on which mode we choose
+    # Do this for initialize first seed first
+    if im_type == "ca90_iter":
+        hv_seed = gen_hv_ca90_iterate_rows(lowdim_hv_seed, hv_dim)
+    elif im_type == "ca90_hier":
+        hv_seed = gen_hv_ca90_hierarchical_rows(lowdim_hv_seed, hv_dim)
+    else:
+        hv_seed = gen_ri_hv(hv_dim=hv_dim, p_dense=0.5, hv_type="binary")
+
+    # Calculate % number of flips
+    num_flips = hv_dim // (num_hv - 1)
+
+    # Initialize empty matrix
+    cim = gen_empty_mem_hv(num_hv, hv_dim)
+
+    # First hv_seed is given
+    cim[0] = hv_seed
+
+    # Iteratively generate other HVs
+    for i in range(num_hv - 1):
+        cim[i + 1] = rand_flip_hv(
+            cim[i], i * num_flips, (i + 1) * num_flips, hv_type="binary"
+        )
+
+    return cim
+
+
 """
     Functions for testing purposes
     
@@ -686,3 +753,25 @@ def heatmap_plot(
     # Step 4: Display the plot
     plt.show()
     return
+
+
+if __name__ == "__main__":
+    hv_dim = 1024
+    num_hv = 20
+
+    init_hv = gen_ri_hv(hv_dim=hv_dim, p_dense=0.5, hv_type="binary")
+
+    # Calculate % number of flips
+    num_flips = hv_dim // (num_hv - 1)
+
+    # Initialize empty matrix
+    cim = gen_empty_mem_hv(num_hv, hv_dim)
+
+    # First hv_seed is given
+    cim[0] = init_hv
+
+    # Iteratively generate other HVs
+    for i in range(num_hv - 1):
+        cim[i + 1] = rand_flip_hv(
+            cim[i], i * num_flips, (i + 1) * num_flips, hv_type="binary"
+        )
