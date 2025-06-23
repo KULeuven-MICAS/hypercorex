@@ -11,15 +11,15 @@
 
 from hdc_util import (
     extract_git_dataset,
+    train_model,
+    test_model,
     gen_empty_hv,
     gen_orthogonal_im,
     circ_perm_hv,
     bind_hv,
     binarize_hv,
-    prediction_idx,
     gen_ca90_im_set,
 )
-from tqdm import tqdm
 
 
 TRAINING_URL = "https://github.com/KULeuven-MICAS/hypercorex/releases/download/ds_hdc_lang_recog_v.0.0.1/lang_recog_training.tar.gz"
@@ -83,24 +83,43 @@ CHAR_MAP = {
 }
 
 
-def encode_line(line, ortho_im, ngram=4):
-    # Encode line
+def extract_lang_dataset(read_file):
+    # Extract file to be tested
+    text_lines = []
+    with open(read_file, "r") as rf:
+        for line in rf:
+            line = line.strip()
+            text_lines.append(line)
+    rf.close()
+    return text_lines
+
+
+def encode_lang(line, ortho_im, cim):
+    # Parameters
+    ngram_count = 4
     hv_dim = len(ortho_im[0])
+
+    # Initializers
     encoded_line = gen_empty_hv(hv_dim)
     threshold_counter = 0
 
     # Cycle through the entire line
-    for char in range(len(line) - NGRAM):
+    for char in range(len(line) - ngram_count):
+        # Initialize encoded ngram
         encoded_ngram = gen_empty_hv(hv_dim)
+
         # Grab the ngram
-        for ngram in range(NGRAM):
+        for ngram in range(ngram_count):
             # Create n-gram by circularly permuting the character
             get_char = line[char + ngram]
             if get_char not in CHAR_MAP:
                 # If character is not in CHAR_MAP, skip it
                 continue
+            # Create character HV
             char_hv = ortho_im[CHAR_MAP[line[char + ngram]]]
+            # Permute it
             char_ngram = circ_perm_hv(char_hv, ngram)
+            # Bind it nicely
             encoded_ngram = bind_hv(encoded_ngram, char_ngram)
 
         # Bundle the ngram
@@ -114,83 +133,18 @@ def encode_line(line, ortho_im, ngram=4):
     return encoded_line
 
 
-def train_lang_recog_model(ortho_im, training_dir, num_train, ngram=4):
-    hv_dim = len(ortho_im[0])
-    class_am = dict()
-    for lang in LANG_LIST:
-        class_am[lang] = gen_empty_hv(hv_dim)
-
-    for lang in LANG_LIST:
-        # Training dataset
-        read_file = training_dir + LANG_LIST[lang] + ".txt"
-
-        text_lines = []
-        with open(read_file, "r") as rf:
-            for line in rf:
-                line = line.strip()
-                text_lines.append(line)
-
-        # Class HV
-        class_hv = gen_empty_hv(hv_dim)
-        # len(text_lines)
-        for i in tqdm(range(num_train), desc=f"Encoding training data: {read_file}"):
-            encoded_line = encode_line(text_lines[i], ortho_im, ngram=4)
-
-            # Bundle class HV
-            class_hv += encoded_line
-
-        threshold = num_train / 2  # Use a fixed threshold for demonstration
-        class_hv = binarize_hv(class_hv, threshold, "binary")
-        class_am[lang] = class_hv
-
-    return class_am
-
-
-def test_lang_recog_model(class_am, ortho_im, testing_dir, num_test, ngram=4):
-    overall_count = 0
-    overall_score = 0
-    total_count = 0
-    total_score = 0
-
-    for lang in LANG_LIST:
-        read_file = testing_dir + LANG_LIST[lang] + "_test.txt"
-
-        # Extract file to be tested
-        text_lines = []
-        with open(read_file, "r") as rf:
-            for line in rf:
-                line = line.strip()
-                text_lines.append(line)
-
-        # Make a prediction
-        for i in tqdm(range(num_test), desc=f"Testing data: {read_file}"):
-            encoded_line = encode_line(text_lines[i], ortho_im, ngram=4)
-            prediction = prediction_idx(class_am, encoded_line, hv_type="binary")
-            if prediction == lang:
-                total_score += 1
-            total_count += 1
-
-        accuracy = total_score / total_count if total_count > 0 else 0
-        print(f"Language: {lang}, Accuracy: {accuracy:.2f}")
-
-        overall_score += total_score
-        overall_count += total_count
-
-    overall_accuracy = overall_score / overall_count if overall_count > 0 else 0
-    print(f"Overall Accuracy: {overall_accuracy:.2f}")
-
-    return
-
-
 if __name__ == "__main__":
     # Download and extract the training dataset
     SEED_DIM = 32
-    HV_DIM = 512
+    HV_DIM = 4096
     NUM_TOT_IM = 1024
     NUM_PER_IM_BANK = 128
     NGRAM = 4
-    USE_CA90_IM = True
+    USE_CA90_IM = False
     EXTRACT_DATA = True
+
+    NUM_TRAIN = 1000
+    NUM_TEST = 1000
 
     BASE_SEEDS = [
         1103779247,
@@ -232,10 +186,40 @@ if __name__ == "__main__":
             im_type="random",
         )
 
-    # Training
+    print("Extracting data...")
     training_dir = f"{DATA_DIR}/{TRAINING_DIR}"
-    class_am = train_lang_recog_model(ortho_im, training_dir, num_train=1000, ngram=4)
+    train_data = dict()
 
-    # Testing
+    for lang in LANG_LIST:
+        read_file = training_dir + LANG_LIST[lang] + ".txt"
+        train_data[lang] = extract_lang_dataset(read_file)
+
     testing_dir = f"{DATA_DIR}/{TESTING_DIR}"
-    test_lang_recog_model(class_am, ortho_im, testing_dir, num_test=100, ngram=4)
+    test_data = dict()
+
+    for lang in LANG_LIST:
+        read_file = testing_dir + LANG_LIST[lang] + "_test.txt"
+        test_data[lang] = extract_lang_dataset(read_file)
+
+    print("Training model...")
+    class_am, class_am_int, class_am_elem_count = train_model(
+        train_dataset=train_data,
+        num_train=NUM_TRAIN,
+        ortho_im=ortho_im,
+        cim=None,
+        encode_function=encode_lang,
+        tqdm_mode=1,
+    )
+
+    print("Testing model...")
+    counts, scores, accuracies = test_model(
+        test_dataset=train_data,
+        ortho_im=ortho_im,
+        cim=None,
+        class_am=class_am,
+        encode_function=encode_lang,
+        staring_num_test=0,
+        num_test=NUM_TEST,
+        tqdm_mode=1,
+        print_mode=1,
+    )

@@ -11,15 +11,18 @@
 
 from hdc_util import (
     extract_git_dataset,
+    load_dataset,
+    convert_levels,
+    train_model,
+    test_model,
+    retrain_model,
     gen_empty_hv,
     gen_orthogonal_im,
     bind_hv,
     binarize_hv,
-    prediction_idx,
     gen_ca90_im_set,
     gen_cim,
 )
-from tqdm import tqdm
 
 DATA_URL = "https://github.com/KULeuven-MICAS/hypercorex/releases/download/ds_hdc_ucihar_recog_v0.0.1/ucihar_recog.tar.gz"
 DATA_SET_DIR = "data_set/"
@@ -27,16 +30,11 @@ DATA_TRAIN_DIR = f"{DATA_SET_DIR}ucihar_recog/train"
 DATA_TEST_DIR = f"{DATA_SET_DIR}ucihar_recog/test"
 
 
-# Convert from one uint level to another
-def uint_convert_level(in_data, dst_levels):
-    # Scale the input value
-    return in_data // dst_levels
-
-
-def encode_sample(sample, ortho_im, cim, num_features):
+def encode_ucihar(sample, ortho_im, cim):
     # Encode sample
     hv_dim = len(ortho_im[0])
     encoded_sample = gen_empty_hv(hv_dim)
+    num_features = len(sample)
     threshold = num_features / 2
 
     # Cycle through the entire line
@@ -58,165 +56,20 @@ def encode_sample(sample, ortho_im, cim, num_features):
     return encoded_sample
 
 
-def train_ucihar_recog_model(
-    ortho_im, cim, val_levels, training_dir, num_classes, num_train, num_features
-):
-    hv_dim = len(ortho_im[0])
-    train_threshold = num_train / 2
-
-    class_am = dict()
-    class_am_int = dict()
-    class_am_elem_count = dict()
-
-    for lang in range(num_classes):
-        class_am[lang] = gen_empty_hv(hv_dim)
-
-    for ucihar in range(num_classes):
-        # Training dataset
-        read_file = f"{training_dir}/uint8_ucihar_train_{ucihar}.txt"
-
-        sample_lines = []
-        with open(read_file, "r") as rf:
-            for line in rf:
-                line = line.strip().split()
-                int_line = [uint_convert_level(int(x), val_levels) for x in line]
-                sample_lines.append(int_line)
-
-        class_hv = gen_empty_hv(hv_dim)
-
-        for i in tqdm(range(NUM_TRAIN), desc=f"Training ucihar: {ucihar}"):
-            class_hv += encode_sample(sample_lines[i], ortho_im, cim, num_features)
-
-        # Save non-binarized AM
-        class_am_int[ucihar] = class_hv
-
-        # Save binarized AM
-        class_hv = binarize_hv(class_hv, train_threshold, "binary")
-        class_am[ucihar] = class_hv
-
-        # Save threshold list
-        class_am_elem_count[ucihar] = num_train
-
-    return class_am, class_am_int, class_am_elem_count
-
-
-def retrain_ucihar_recog_model(
-    class_am,
-    class_am_int,
-    class_am_elem_count,
-    ortho_im,
-    cim,
-    val_levels,
-    training_dir,
-    num_classes,
-    num_retrain,
-    num_features,
-    staring_num_test,
-):
-    for ucihar in range(num_classes):
-        # Retraining dataset
-        read_file = f"{training_dir}/uint8_ucihar_train_{ucihar}.txt"
-
-        sample_lines = []
-        with open(read_file, "r") as rf:
-            for line in rf:
-                line = line.strip().split()
-                int_line = [uint_convert_level(int(x), val_levels) for x in line]
-                sample_lines.append(int_line)
-
-        for i in tqdm(range(num_retrain), desc=f"Retraining ucihar: {ucihar}"):
-            # Get encodede sample
-            encoded_line = encode_sample(
-                sample_lines[staring_num_test + i], ortho_im, cim, num_features
-            )
-
-            # Get prediction
-            prediction = prediction_idx(class_am, encoded_line, hv_type="binary")
-
-            # Update AM for every incorrect prediction
-            if prediction != ucihar:
-                # Update the class AM
-                class_am_int[prediction] -= encoded_line
-
-                class_am_int[ucihar] += encoded_line
-
-                # Update the threshold
-                class_am_elem_count[prediction] -= 1
-                class_am_elem_count[ucihar] += 1
-
-    # After updating rebinarize the AM
-    for ucihar in range(num_classes):
-        # Save binarized AM
-        threshold = class_am_elem_count[ucihar] / 2
-        class_am[ucihar] = binarize_hv(class_am_int[ucihar], threshold, "binary")
-
-    return class_am, class_am_int, class_am_elem_count
-
-
-def test_ucihar_recog_model(
-    class_am,
-    ortho_im,
-    cim,
-    val_levels,
-    testing_dir,
-    num_classes,
-    num_features,
-    staring_num_test,
-    num_test,
-):
-    overall_count = 0
-    overall_score = 0
-
-    for ucihar in range(num_classes):
-        # Training dataset
-        read_file = f"{testing_dir}/uint8_ucihar_train_{ucihar}.txt"
-
-        sample_lines = []
-        with open(read_file, "r") as rf:
-            for line in rf:
-                line = line.strip().split()
-                int_line = [uint_convert_level(int(x), val_levels) for x in line]
-                sample_lines.append(int_line)
-
-        total_count = 0
-        total_score = 0
-
-        # Make a prediction
-        for i in tqdm(range(num_test), desc=f"Testing ucihar: {ucihar}"):
-            encoded_line = encode_sample(
-                sample_lines[staring_num_test + i], ortho_im, cim, num_features
-            )
-            prediction = prediction_idx(class_am, encoded_line, hv_type="binary")
-            if prediction == ucihar:
-                total_score += 1
-            total_count += 1
-
-        accuracy = total_score / total_count if total_count > 0 else 0
-        print(f"ucihar: {ucihar}, Accuracy: {accuracy:.2f}")
-
-        overall_score += total_score
-        overall_count += total_count
-
-    overall_accuracy = overall_score / overall_count if overall_count > 0 else 0
-    print(f"Overall Accuracy: {overall_accuracy:.2f}")
-
-    return
-
-
 if __name__ == "__main__":
     SEED_DIM = 32
-    HV_DIM = 512
+    HV_DIM = 10000
     NUM_TOT_IM = 1024
     NUM_PER_IM_BANK = 128
     NGRAM = 4
     USE_CA90_IM = False
-    EXTRACT_DATA = True
+    EXTRACT_DATA = False
 
     VAL_LEVELS = 21
     NUM_CLASSES = 6
     NUM_TRAIN = 951
     NUM_RETRAIN = NUM_TRAIN
-    NUM_TEST = 300
+    NUM_TEST = 400
 
     NUM_FEATURES = 561
 
@@ -272,47 +125,72 @@ if __name__ == "__main__":
         debug_info=False,
     )
 
-    # Training
-    class_am, class_am_int, class_am_elem_count = train_ucihar_recog_model(
-        ortho_im, cim, VAL_LEVELS, DATA_TRAIN_DIR, NUM_CLASSES, NUM_TRAIN, NUM_FEATURES
-    )
-    # Testing
-    test_ucihar_recog_model(
-        class_am,
-        ortho_im,
-        cim,
-        VAL_LEVELS,
-        DATA_TRAIN_DIR,
-        NUM_CLASSES,
-        NUM_FEATURES,
-        0,
-        NUM_TEST,
+    print("Extracting data...")
+    train_data = dict()
+    for num_class in range(NUM_CLASSES):
+        # Training dataset
+        read_file = f"{DATA_TRAIN_DIR}/uint8_ucihar_train_{num_class}.txt"
+        train_data[num_class] = load_dataset(read_file)
+
+    test_data = dict()
+    for num_class in range(NUM_CLASSES):
+        # Training dataset
+        read_file = f"{DATA_TEST_DIR}/uint8_ucihar_test_{num_class}.txt"
+        test_data[num_class] = load_dataset(read_file)
+
+    print("Converting data...")
+    train_data = convert_levels(train_data, VAL_LEVELS)
+    test_data = convert_levels(test_data, VAL_LEVELS)
+
+    print("Training model...")
+    class_am, class_am_int, class_am_elem_count = train_model(
+        train_dataset=train_data,
+        num_train=NUM_TRAIN,
+        ortho_im=ortho_im,
+        cim=cim,
+        encode_function=encode_ucihar,
+        tqdm_mode=1,
     )
 
-    # Retraining
-    class_am, class_am_int, class_am_elem_count = retrain_ucihar_recog_model(
-        class_am,
-        class_am_int,
-        class_am_elem_count,
-        ortho_im,
-        cim,
-        VAL_LEVELS,
-        DATA_TRAIN_DIR,
-        NUM_CLASSES,
-        NUM_RETRAIN,
-        NUM_FEATURES,
-        0,
+    print("Testing model...")
+    counts, scores, accuracies = test_model(
+        test_dataset=train_data,
+        ortho_im=ortho_im,
+        cim=cim,
+        class_am=class_am,
+        encode_function=encode_ucihar,
+        staring_num_test=0,
+        num_test=NUM_TEST,
+        tqdm_mode=1,
+        print_mode=1,
     )
 
-    # Testing
-    test_ucihar_recog_model(
-        class_am,
-        ortho_im,
-        cim,
-        VAL_LEVELS,
-        DATA_TRAIN_DIR,
-        NUM_CLASSES,
-        NUM_FEATURES,
-        0,
-        NUM_TEST,
+    print("Retraining model...")
+    (
+        class_am_retrained,
+        class_am_int_retrained,
+        class_am_elem_count_retrained,
+    ) = retrain_model(
+        retrain_dataset=train_data,
+        num_retrain=NUM_RETRAIN,
+        ortho_im=ortho_im,
+        cim=cim,
+        class_am=class_am,
+        class_am_int=class_am_int,
+        class_am_elem_count=class_am_elem_count,
+        encode_function=encode_ucihar,
+        tqdm_mode=1,
+    )
+
+    print("Testing re-trained model...")
+    counts, scores, accuracies = test_model(
+        test_dataset=train_data,
+        ortho_im=ortho_im,
+        cim=cim,
+        class_am=class_am_retrained,
+        encode_function=encode_ucihar,
+        staring_num_test=0,
+        num_test=NUM_TEST,
+        tqdm_mode=1,
+        print_mode=1,
     )
