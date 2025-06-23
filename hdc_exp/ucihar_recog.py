@@ -127,16 +127,16 @@ if __name__ == "__main__":
 
     print("Extracting data...")
     train_data = dict()
-    for ucihar in range(NUM_CLASSES):
+    for num_class in range(NUM_CLASSES):
         # Training dataset
-        read_file = f"{DATA_TRAIN_DIR}/uint8_ucihar_train_{ucihar}.txt"
-        train_data[ucihar] = load_dataset(read_file)
+        read_file = f"{DATA_TRAIN_DIR}/uint8_ucihar_train_{num_class}.txt"
+        train_data[num_class] = load_dataset(read_file)
 
     test_data = dict()
-    for ucihar in range(NUM_CLASSES):
+    for num_class in range(NUM_CLASSES):
         # Training dataset
-        read_file = f"{DATA_TEST_DIR}/uint8_ucihar_test_{ucihar}.txt"
-        test_data[ucihar] = load_dataset(read_file)
+        read_file = f"{DATA_TEST_DIR}/uint8_ucihar_test_{num_class}.txt"
+        test_data[num_class] = load_dataset(read_file)
 
     print("Converting data...")
     train_data = convert_levels(train_data, VAL_LEVELS)
