@@ -644,8 +644,8 @@ def train_model(train_dataset, num_train, ortho_im, cim, encode_function, tqdm_m
     class_am_elem_count = dict()
 
     # Initialize empty associative memory
-    for lang in range(num_classes):
-        class_am[lang] = gen_empty_hv(hv_dim)
+    for num_class in range(num_classes):
+        class_am[num_class] = gen_empty_hv(hv_dim)
 
     # Iterate throuhgh each class
     for num_class in tqdm(
