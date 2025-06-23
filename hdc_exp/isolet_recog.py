@@ -156,6 +156,7 @@ def test_isolet_recog_model(
     ortho_im,
     cim,
     val_levels,
+    num_classes,
     testing_dir,
     num_features,
     staring_num_test,
@@ -163,10 +164,8 @@ def test_isolet_recog_model(
 ):
     overall_count = 0
     overall_score = 0
-    total_count = 0
-    total_score = 0
 
-    for isolet in range(10):
+    for isolet in range(num_classes):
         # Training dataset
         read_file = f"{testing_dir}/uint8_isolet_{isolet}.txt"
 
@@ -177,6 +176,9 @@ def test_isolet_recog_model(
                 int_line = [uint_convert_level(int(x), val_levels) for x in line]
                 # int_line = [int(x) for x in line]
                 sample_lines.append(int_line)
+
+        total_count = 0
+        total_score = 0
 
         # Make a prediction
         for i in tqdm(range(num_test), desc=f"Testing isolet: {isolet}"):
@@ -275,7 +277,15 @@ if __name__ == "__main__":
     )
     # Testing
     test_isolet_recog_model(
-        class_am, ortho_im, cim, VAL_LEVELS, DATA_DIR, NUM_FEATURES, 0, NUM_TEST
+        class_am,
+        ortho_im,
+        cim,
+        VAL_LEVELS,
+        NUM_CLASSES,
+        DATA_DIR,
+        NUM_FEATURES,
+        0,
+        NUM_TEST,
     )
 
     # Retraining
@@ -295,5 +305,13 @@ if __name__ == "__main__":
 
     # Testing
     test_isolet_recog_model(
-        class_am, ortho_im, cim, VAL_LEVELS, DATA_DIR, NUM_FEATURES, 0, NUM_TEST
+        class_am,
+        ortho_im,
+        cim,
+        VAL_LEVELS,
+        NUM_CLASSES,
+        DATA_DIR,
+        NUM_FEATURES,
+        0,
+        NUM_TEST,
     )

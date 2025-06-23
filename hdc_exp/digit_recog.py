@@ -92,11 +92,12 @@ def retrain_digit_recog_model(
     class_am_elem_count,
     ortho_im,
     training_dir,
+    num_classes,
     num_retrain,
     num_features,
     staring_num_test,
 ):
-    for digit in range(10):
+    for digit in range(num_classes):
         # Retraining dataset
         read_file = f"{training_dir}/bin_mnist_{digit}.txt"
 
@@ -127,7 +128,7 @@ def retrain_digit_recog_model(
                 class_am_elem_count[digit] += 1
 
     # After updating rebinarize the AM
-    for digit in range(10):
+    for digit in range(num_classes):
         # Save binarized AM
         threshold = class_am_elem_count[digit] / 2
         class_am[digit] = binarize_hv(class_am_int[digit], threshold, "binary")
@@ -140,8 +141,6 @@ def test_digit_recog_model(
 ):
     overall_count = 0
     overall_score = 0
-    total_count = 0
-    total_score = 0
 
     for digit in range(10):
         # Training dataset
@@ -153,6 +152,9 @@ def test_digit_recog_model(
                 line = line.strip().split()
                 int_line = [int(x) for x in line]
                 image_lines.append(int_line)
+
+        total_count = 0
+        total_score = 0
 
         # Make a prediction
         for i in tqdm(range(num_test), desc=f"Testing digit: {digit}"):
@@ -185,6 +187,7 @@ if __name__ == "__main__":
     USE_CA90_IM = True
     EXTRACT_DATA = True
 
+    NUM_CLASSES = 10
     NUM_TRAIN = 999
     NUM_RETRAIN = NUM_TRAIN
     NUM_TEST = 1000
@@ -237,7 +240,7 @@ if __name__ == "__main__":
 
     # Testing
     test_digit_recog_model(
-        class_am, ortho_im, DATA_DIR, NUM_FEATURES, NUM_TRAIN, NUM_TEST
+        class_am, ortho_im, DATA_DIR, NUM_CLASSES, NUM_FEATURES, NUM_TRAIN, NUM_TEST
     )
 
     # Retraining
@@ -254,5 +257,5 @@ if __name__ == "__main__":
 
     # Testing
     test_digit_recog_model(
-        class_am, ortho_im, DATA_DIR, NUM_FEATURES, NUM_TRAIN, NUM_TEST
+        class_am, ortho_im, DATA_DIR, NUM_CLASSES, NUM_FEATURES, NUM_TRAIN, NUM_TEST
     )
