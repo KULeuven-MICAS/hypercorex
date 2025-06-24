@@ -15,7 +15,8 @@ import matplotlib.pyplot as plt
 import requests
 import tarfile
 import io
-
+import copy
+import math
 
 """
     General functions
@@ -64,20 +65,89 @@ def load_dataset(file_path):
     return dataset
 
 
+# Saving AM model
+def save_am_model(filepath, class_am):
+    with open(filepath, "w") as f:
+        for class_id, class_hv in class_am.items():
+            class_hv_str = "".join(class_am[class_id].astype(str))
+            f.write(f"{class_hv_str}\n")
+    return
+
+
+# Loading AM model
+def load_am_model(filepath):
+    class_am = dict()
+    class_num = 0
+    with open(filepath, "r") as rf:
+        for line in rf:
+            line_str = line.strip()
+            line_arr = np.array([int(c) for c in line_str])
+            class_am[class_num] = line_arr
+            class_num += 1
+    return class_am
+
+
+# This is just a convenience function
+# To sample 1 test item per class and save into a textfile
+def one_sample_per_class(
+    num_classes, ortho_im, cim, class_am, test_data, encode_function, output_fp
+):
+    class_and_idx = []
+    for i in range(num_classes):
+        for j in range(10):
+            prediction = predict_item(
+                ortho_im,
+                cim,
+                class_am,
+                test_data[i][j],
+                encode_function,
+                hv_type="binary",
+            )
+            if prediction == i:
+                class_and_idx.append(j)
+                break
+
+    # generate the output text
+    with open(output_fp, "w") as wf:
+        for i in range(num_classes):
+            line = " ".join(map(str, test_data[i][class_and_idx[i]]))
+            wf.write(line + "\n")
+    return
+
+
 # Convert from one uint level to another
-def uint_convert_level(in_data, dst_levels):
+def uint_convert_level(in_data, dst_levels, scale=1):
     # Scale the input value
-    return in_data // dst_levels
+    return (in_data // dst_levels) * scale
 
 
 # Convert levels of a dataset
-def convert_levels(dataset, val_levels):
+def convert_levels(dataset, val_levels, scale=1):
     for key in dataset:
         for j in range(len(dataset[key])):
             dataset[key][j] = [
-                uint_convert_level(x, val_levels) for x in dataset[key][j]
+                uint_convert_level(x, val_levels, scale) for x in dataset[key][j]
             ]
     return dataset
+
+
+# Pack lowdim to highdim data
+def pack_ld_to_hd(data, ld_dim, hd_dim):
+    num_per_chunk = hd_dim // ld_dim
+    num_features = len(data)
+    math.ceil(num_features / num_per_chunk)
+
+    new_data = []
+    for i in range(0, num_features, num_per_chunk):
+        packed_num = 0
+        for j in range(num_per_chunk):
+            if i + j < num_features:
+                value = data[i + j]
+            else:
+                value = 0  # pad with 0
+            packed_num += value << (j * ld_dim)
+        new_data.append(packed_num)
+    return new_data
 
 
 # Convert a number in binary to a list
@@ -779,6 +849,11 @@ def retrain_model(
     # Extract parameters
     num_classes = len(retrain_dataset)
 
+    # Deepcopy
+    class_am_copy = copy.deepcopy(class_am)
+    class_am_int_copy = copy.deepcopy(class_am_int)
+    class_am_elem_count_copy = copy.deepcopy(class_am_elem_count)
+
     for num_class in tqdm(
         range(num_classes), disable=disable_train_bar, desc="Training progress"
     ):
@@ -796,23 +871,33 @@ def retrain_model(
             # Update AM for every incorrect prediction
             if prediction != num_class:
                 # Update the class AMs
-                class_am_int[prediction] -= encoded_line
-                class_am_int[num_class] += encoded_line
+                class_am_int_copy[prediction] -= encoded_line
+                class_am_int_copy[num_class] += encoded_line
 
                 # Update the counts
-                class_am_elem_count[prediction] -= 1
-                class_am_elem_count[num_class] += 1
+                class_am_elem_count_copy[prediction] -= 1
+                class_am_elem_count_copy[num_class] += 1
 
     # After updating rebinarize the AM
     for num_class in range(num_classes):
         # Save binarized AM
-        threshold = class_am_elem_count[num_class] / 2
-        class_am[num_class] = binarize_hv(class_am_int[num_class], threshold, "binary")
+        threshold = class_am_elem_count_copy[num_class] / 2
+        class_am_copy[num_class] = binarize_hv(
+            class_am_int_copy[num_class], threshold, "binary"
+        )
 
     # Print for newline
     print()
 
-    return class_am, class_am_int, class_am_elem_count
+    return class_am_copy, class_am_int_copy, class_am_elem_count_copy
+
+
+def predict_item(ortho_im, cim, class_am, sample, encode_function, hv_type="binary"):
+    # Encode value
+    qhv = encode_function(sample, ortho_im, cim)
+    # Get prediction
+    prediction = prediction_idx(class_am, qhv, hv_type=hv_type)
+    return prediction
 
 
 """
@@ -986,25 +1071,3 @@ def heatmap_plot(
     # Step 4: Display the plot
     plt.show()
     return
-
-
-if __name__ == "__main__":
-    hv_dim = 1024
-    num_hv = 20
-
-    init_hv = gen_ri_hv(hv_dim=hv_dim, p_dense=0.5, hv_type="binary")
-
-    # Calculate % number of flips
-    num_flips = hv_dim // (num_hv - 1)
-
-    # Initialize empty matrix
-    cim = gen_empty_mem_hv(num_hv, hv_dim)
-
-    # First hv_seed is given
-    cim[0] = init_hv
-
-    # Iteratively generate other HVs
-    for i in range(num_hv - 1):
-        cim[i + 1] = rand_flip_hv(
-            cim[i], i * num_flips, (i + 1) * num_flips, hv_type="binary"
-        )
