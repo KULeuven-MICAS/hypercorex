@@ -9,7 +9,7 @@
 import math
 
 # Enable ROM IM
-ENABLE_ROM_IM = 1
+ENABLE_ROM_IM = 0
 
 # Test Parameters
 TEST_RUNS = 10
