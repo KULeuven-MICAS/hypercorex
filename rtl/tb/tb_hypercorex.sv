@@ -45,13 +45,17 @@ module tb_hypercorex # (
   //---------------------------
   // Don't touch!
   //---------------------------
-  parameter int unsigned ObservableWidth  = 4,
-  parameter int unsigned NumImSets        = NumTotIm/NumPerImBank,
-  parameter int unsigned InstMemAddrWidth = $clog2(InstMemDepth),
-  parameter int unsigned TbMemDepth       = 512,
-  parameter int unsigned TbMemAddrWidth   = CsrAddrWidth,
-  parameter int unsigned TbAMMemDepth     = 32,
-  parameter int unsigned TbQHVMemDepth    = 512
+  parameter int unsigned ObservableWidth    = 4,
+  parameter int unsigned NumImSets          = NumTotIm/NumPerImBank,
+  parameter int unsigned InstMemAddrWidth   = $clog2(InstMemDepth),
+  parameter int unsigned TbMemDepthLowDimA  = 2048,
+  parameter int unsigned TbMemDepthLowDimB  = 2048,
+  parameter int unsigned TbMemDepthHighDimA = 512,
+  parameter int unsigned TbMemDepthHighDimB = 512,
+  parameter int unsigned TbMemDepthPredict  = 128,
+  parameter int unsigned TbMemAddrWidth     = CsrAddrWidth,
+  parameter int unsigned TbAMMemDepth       = 32,
+  parameter int unsigned TbQHVMemDepth      = 512
 )(
   //---------------------------
   // Clocks and reset
@@ -161,7 +165,7 @@ module tb_hypercorex # (
   tb_rd_memory # (
     .DataWidth              ( LowDimWidth           ),
     .AddrWidth              ( CsrAddrWidth          ),
-    .MemDepth               ( TbMemDepth            )
+    .MemDepth               ( TbMemDepthLowDimA     )
   ) i_im_a_lowdim_memory (
     // Clock and reset
     .clk_i                  ( clk_i                 ),
@@ -189,7 +193,7 @@ module tb_hypercorex # (
   tb_rd_memory # (
     .DataWidth              ( HVDimension            ),
     .AddrWidth              ( CsrAddrWidth           ),
-    .MemDepth               ( TbMemDepth             )
+    .MemDepth               ( TbMemDepthHighDimA     )
   ) i_im_a_highdim_memory (
     // Clock and reset
     .clk_i                  ( clk_i                  ),
@@ -215,9 +219,9 @@ module tb_hypercorex # (
 
   // Memory module for low dimensional memory IM B
   tb_rd_memory # (
-    .DataWidth              ( LowDimWidth          ),
+    .DataWidth              ( LowDimWidth           ),
     .AddrWidth              ( CsrAddrWidth          ),
-    .MemDepth               ( TbMemDepth            )
+    .MemDepth               ( TbMemDepthLowDimB     )
   ) i_im_b_lowdim_memory (
     // Clock and reset
     .clk_i                  ( clk_i                 ),
@@ -245,7 +249,7 @@ module tb_hypercorex # (
   tb_rd_memory # (
     .DataWidth              ( HVDimension            ),
     .AddrWidth              ( CsrAddrWidth           ),
-    .MemDepth               ( TbMemDepth             )
+    .MemDepth               ( TbMemDepthHighDimB     )
   ) i_im_b_highdim_memory (
     // Clock and reset
     .clk_i                  ( clk_i                  ),
@@ -329,7 +333,7 @@ module tb_hypercorex # (
   tb_wr_memory # (
     .DataWidth              ( CsrDataWidth        ),
     .AddrWidth              ( CsrAddrWidth        ),
-    .MemDepth               ( TbAMMemDepth        )
+    .MemDepth               ( TbMemDepthPredict   )
   ) i_predict_memory (
     // Clock and reset
     .clk_i                  ( clk_i               ),
