@@ -196,7 +196,7 @@ async def tb_hypercorex_dut(dut):
         dut=dut,
         reg_addr=set_parameters.INST_LOOP_END_ADDR_REG_ADDR,
         val1=0,
-        val2=4,
+        val2=3,
         val3=0,
         data_width=set_parameters.INST_MEM_ADDR_WIDTH,
     )
@@ -233,7 +233,7 @@ async def tb_hypercorex_dut(dut):
     cocotb.log.info("         Configure Data Slice Mode          ")
     cocotb.log.info(" ------------------------------------------ ")
 
-    # Set port A to be the data slicing mode in 1bit sequence
+    # Set port A to be the data slicing mode in 4bit sequence
     # Set port B to be coming from the auto generator
     data_src_ctrl = 0x0000_0022
     await write_csr(dut, set_parameters.DATA_SRC_CTRL_REG_ADDR, data_src_ctrl)
