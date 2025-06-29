@@ -38,28 +38,30 @@ DATA_SET_DIR = "data_set"
 DATA_DIR = f"{DATA_SET_DIR}/dna_recog"
 
 
-def encode_dna(image, ortho_im, cim):
-    # Encode image
+def encode_dna(seq, ortho_im, cim):
+    # Encode seq
     hv_dim = len(ortho_im[0])
-    encoded_image = gen_empty_hv(hv_dim)
-    num_features = len(image)
+    encoded_seq = gen_empty_hv(hv_dim)
+    num_features = len(seq)
     threshold = num_features / 2
+
+    # DNA offset
+    # This is because there are 8 distinct letters
+    # In the DNA sequences.
+    dna_offset = 8
 
     # Cycle through the entire line
     for pixel in range(num_features):
         # Get pixel value
-        # Note that each pixel value is either 1 or 0
-        # So we use the first 2 ortho im for this
-        pixel_val_hv = ortho_im[image[pixel]]
-        # Then everything from 2+ will be the pixel locations
-        pixel_loc_hv = ortho_im[2 + pixel]
+        pixel_val_hv = ortho_im[seq[pixel]]
+        pixel_loc_hv = ortho_im[dna_offset + pixel]
         pixel_val_loc_hv = bind_hv(pixel_val_hv, pixel_loc_hv, hv_type="binary")
-        encoded_image += pixel_val_loc_hv
+        encoded_seq += pixel_val_loc_hv
 
-    # Binarize the encoded image
-    encoded_image = binarize_hv(encoded_image, threshold, "binary")
+    # Binarize the encoded seq
+    encoded_seq = binarize_hv(encoded_seq, threshold, "binary")
 
-    return encoded_image
+    return encoded_seq
 
 
 if __name__ == "__main__":
