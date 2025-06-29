@@ -24,6 +24,7 @@ jobs:
           --ignore=tests/test_hypercorex_ortho_im_only.py \
           --ignore=tests/test_hypercorex_isolet_recog.py \
           --ignore=tests/test_hypercorex_digit_recog.py \
+          --ignore=tests/test_hypercorex_ucihar_recog.py \
           --ignore=tests/test_hypercorex_char_recog_data_slice.py
 
   rtl-system-tests-vlt:
