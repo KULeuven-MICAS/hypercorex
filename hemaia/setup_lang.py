@@ -105,9 +105,11 @@ def extract_lang_dataset(read_file):
     return text_lines
 
 
+# Note that the encoding here is different because we need
+# to support the one that Hemaia can do
 def encode_lang(line, ortho_im, cim):
     # Parameters
-    ngram_count = 4
+    ngram_count = 3
     hv_dim = len(ortho_im[0])
 
     # Initializers
@@ -120,7 +122,7 @@ def encode_lang(line, ortho_im, cim):
         encoded_ngram = gen_empty_hv(hv_dim)
 
         # Grab the ngram
-        for ngram in range(ngram_count):
+        for ngram in range(ngram_count - 1, -1, -1):
             # Create n-gram by circularly permuting the character
             get_char = line[char + ngram]
             if get_char not in CHAR_MAP:
@@ -129,7 +131,7 @@ def encode_lang(line, ortho_im, cim):
             # Create character HV
             char_hv = ortho_im[CHAR_MAP[line[char + ngram]]]
             # Permute it
-            char_ngram = circ_perm_hv(char_hv, ngram)
+            char_ngram = circ_perm_hv(char_hv, ngram * 4)
             # Bind it nicely
             encoded_ngram = bind_hv(encoded_ngram, char_ngram)
 
@@ -148,7 +150,7 @@ if __name__ == "__main__":
     # Data paremeters
     EXTRACT_DATA = True
     TRAIN_MODEL = False
-    TEST_MODEL = False
+    TEST_MODEL = True
     TEST_PRUNED_MODEL = True
     SAVE_MODEL = False
     TRAINED_AM_FILEPATH = root + "/trained_am/hypx_lang_am.txt"
