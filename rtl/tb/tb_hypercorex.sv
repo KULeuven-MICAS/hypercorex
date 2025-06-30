@@ -48,7 +48,7 @@ module tb_hypercorex # (
   parameter int unsigned ObservableWidth    = 4,
   parameter int unsigned NumImSets          = NumTotIm/NumPerImBank,
   parameter int unsigned InstMemAddrWidth   = $clog2(InstMemDepth),
-  parameter int unsigned TbMemDepthLowDimA  = 2048,
+  parameter int unsigned TbMemDepthLowDimA  = 3000,
   parameter int unsigned TbMemDepthLowDimB  = 2048,
   parameter int unsigned TbMemDepthHighDimA = 512,
   parameter int unsigned TbMemDepthHighDimB = 512,
