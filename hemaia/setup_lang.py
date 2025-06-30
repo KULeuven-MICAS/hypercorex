@@ -122,7 +122,7 @@ def encode_lang(line, ortho_im, cim):
         encoded_ngram = gen_empty_hv(hv_dim)
 
         # Grab the ngram
-        for ngram in range(ngram_count - 1, -1, -1):
+        for ngram in range(ngram_count):
             # Create n-gram by circularly permuting the character
             get_char = line[char + ngram]
             if get_char not in CHAR_MAP:
@@ -131,7 +131,7 @@ def encode_lang(line, ortho_im, cim):
             # Create character HV
             char_hv = ortho_im[CHAR_MAP[line[char + ngram]]]
             # Permute it
-            char_ngram = circ_perm_hv(char_hv, ngram * 4)
+            char_ngram = circ_perm_hv(char_hv, ((2 - ngram) * 4))
             # Bind it nicely
             encoded_ngram = bind_hv(encoded_ngram, char_ngram)
 
@@ -149,10 +149,10 @@ def encode_lang(line, ortho_im, cim):
 if __name__ == "__main__":
     # Data paremeters
     EXTRACT_DATA = True
-    TRAIN_MODEL = False
+    TRAIN_MODEL = True
     TEST_MODEL = True
     TEST_PRUNED_MODEL = True
-    SAVE_MODEL = False
+    SAVE_MODEL = True
     TRAINED_AM_FILEPATH = root + "/trained_am/hypx_lang_am.txt"
     TEST_SAMPLES_FILEPATH = root + "/test_samples/hypx_lang_test.txt"
 
