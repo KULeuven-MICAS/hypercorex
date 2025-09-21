@@ -144,7 +144,7 @@ if __name__ == "__main__":
     NUM_TOT_IM = 1024
     NUM_PER_IM_BANK = 128
     NGRAM = 4
-    USE_CA90_IM = False
+    USE_CA90_IM = True
     EXTRACT_DATA = True
 
     NUM_TRAIN = 999
