@@ -18,10 +18,13 @@ from hdc_util import (
     retrain_model,
     gen_empty_hv,
     gen_orthogonal_im,
+    expand_im,
+    expand_cim,
     bind_hv,
     binarize_hv,
     gen_ca90_im_set,
     gen_cim,
+    gen_square_cim,
 )
 
 DATA_URL = "https://github.com/KULeuven-MICAS/hypercorex/releases/download/ds_hdc_ucihar_recog_v0.0.1/ucihar_recog.tar.gz"
@@ -58,16 +61,19 @@ def encode_ucihar(sample, ortho_im, cim):
 
 if __name__ == "__main__":
     SEED_DIM = 32
-    HV_DIM = 10000
+    HV_DIM = 512
+    ENABLE_HV_EXPANSION = True
+    HV_DIM_EXPANSION = 16
     NUM_TOT_IM = 1024
     NUM_PER_IM_BANK = 128
     NGRAM = 4
-    USE_CA90_IM = False
-    EXTRACT_DATA = False
+    USE_CA90_IM = True
+    USE_CA90_CIM = False
+    EXTRACT_DATA = True
 
     VAL_LEVELS = 21
     NUM_CLASSES = 6
-    NUM_TRAIN = 951
+    NUM_TRAIN = 511
     NUM_RETRAIN = NUM_TRAIN
     NUM_TEST = 400
 
@@ -113,17 +119,31 @@ if __name__ == "__main__":
             im_type="random",
         )
 
-    cim = gen_cim(
-        hv_dim=HV_DIM,
-        seed_size=32,
-        num_hv=VAL_LEVELS,
-        base_seed=CIM_BASE_SEED,
-        gen_seed=False,
-        max_ortho=True,
-        im_type="random",
-        hv_type="binary",
-        debug_info=False,
-    )
+    if USE_CA90_CIM:
+        _, cim = gen_square_cim(
+            hv_dim=HV_DIM,
+            seed_size=32,
+            base_seed=CIM_BASE_SEED,
+            gen_seed=False,
+            im_type="ca90_hier",
+            debug_info=False,
+        )
+    else:
+        cim = gen_cim(
+            hv_dim=HV_DIM,
+            seed_size=32,
+            num_hv=VAL_LEVELS,
+            base_seed=CIM_BASE_SEED,
+            gen_seed=False,
+            max_ortho=True,
+            im_type="random",
+            hv_type="binary",
+            debug_info=False,
+        )
+
+    if ENABLE_HV_EXPANSION:
+        ortho_im = expand_im(ortho_im, HV_DIM_EXPANSION)
+        cim = expand_cim(cim, HV_DIM_EXPANSION)
 
     print("Extracting data...")
     train_data = dict()
@@ -139,8 +159,12 @@ if __name__ == "__main__":
         test_data[num_class] = load_dataset(read_file)
 
     print("Converting data...")
-    train_data = convert_levels(train_data, VAL_LEVELS)
-    test_data = convert_levels(test_data, VAL_LEVELS)
+    if USE_CA90_CIM:
+        train_data = convert_levels(train_data, VAL_LEVELS, VAL_LEVELS - 1)
+        test_data = convert_levels(test_data, VAL_LEVELS, VAL_LEVELS - 1)
+    else:
+        train_data = convert_levels(train_data, VAL_LEVELS)
+        test_data = convert_levels(test_data, VAL_LEVELS)
 
     print("Training model...")
     class_am, class_am_int, class_am_elem_count = train_model(

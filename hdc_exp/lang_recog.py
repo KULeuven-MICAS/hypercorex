@@ -13,8 +13,10 @@ from hdc_util import (
     extract_git_dataset,
     train_model,
     test_model,
+    retrain_model,
     gen_empty_hv,
     gen_orthogonal_im,
+    expand_im,
     circ_perm_hv,
     bind_hv,
     binarize_hv,
@@ -136,15 +138,18 @@ def encode_lang(line, ortho_im, cim):
 if __name__ == "__main__":
     # Download and extract the training dataset
     SEED_DIM = 32
-    HV_DIM = 4096
+    HV_DIM = 512
+    ENABLE_HV_EXPANSION = True
+    HV_DIM_EXPANSION = 16
     NUM_TOT_IM = 1024
     NUM_PER_IM_BANK = 128
     NGRAM = 4
     USE_CA90_IM = False
     EXTRACT_DATA = True
 
-    NUM_TRAIN = 1000
-    NUM_TEST = 1000
+    NUM_TRAIN = 999
+    NUM_RETRAIN = NUM_TRAIN
+    NUM_TEST = 999
 
     BASE_SEEDS = [
         1103779247,
@@ -186,6 +191,9 @@ if __name__ == "__main__":
             im_type="random",
         )
 
+    if ENABLE_HV_EXPANSION:
+        ortho_im = expand_im(ortho_im, HV_DIM_EXPANSION)
+
     print("Extracting data...")
     training_dir = f"{DATA_DIR}/{TRAINING_DIR}"
     train_data = dict()
@@ -217,6 +225,36 @@ if __name__ == "__main__":
         ortho_im=ortho_im,
         cim=None,
         class_am=class_am,
+        encode_function=encode_lang,
+        staring_num_test=0,
+        num_test=NUM_TEST,
+        tqdm_mode=1,
+        print_mode=1,
+    )
+
+    print("Retraining model...")
+    (
+        class_am_retrained,
+        class_am_int_retrained,
+        class_am_elem_count_retrained,
+    ) = retrain_model(
+        retrain_dataset=train_data,
+        num_retrain=NUM_RETRAIN,
+        ortho_im=ortho_im,
+        cim=None,
+        class_am=class_am,
+        class_am_int=class_am_int,
+        class_am_elem_count=class_am_elem_count,
+        encode_function=encode_lang,
+        tqdm_mode=1,
+    )
+
+    print("Testing re-trained model...")
+    counts, scores, accuracies = test_model(
+        test_dataset=train_data,
+        ortho_im=ortho_im,
+        cim=None,
+        class_am=class_am_retrained,
         encode_function=encode_lang,
         staring_num_test=0,
         num_test=NUM_TEST,
