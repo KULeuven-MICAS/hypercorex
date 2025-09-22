@@ -67,7 +67,7 @@ if __name__ == "__main__":
     NUM_PER_IM_BANK = 128
     NGRAM = 4
     USE_CA90_IM = True
-    USE_CA90_CIM = False
+    USE_CA90_CIM = True
     EXTRACT_DATA = True
 
     VAL_LEVELS = 21
