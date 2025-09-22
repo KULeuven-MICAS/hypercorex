@@ -17,6 +17,7 @@ from hdc_util import (
     retrain_model,
     gen_empty_hv,
     gen_orthogonal_im,
+    expand_im,
     bind_hv,
     binarize_hv,
     gen_ca90_im_set,
@@ -51,11 +52,13 @@ def encode_digit(image, ortho_im, cim):
 
 if __name__ == "__main__":
     SEED_DIM = 32
-    HV_DIM = 4096
+    HV_DIM = 512
+    ENABLE_HV_EXPANSION = True
+    HV_DIM_EXPANSION = 16
     NUM_TOT_IM = 1024
     NUM_PER_IM_BANK = 128
     NGRAM = 4
-    USE_CA90_IM = False
+    USE_CA90_IM = True
     EXTRACT_DATA = True
 
     NUM_CLASSES = 10
@@ -103,6 +106,9 @@ if __name__ == "__main__":
             hv_type="binary",
             im_type="random",
         )
+
+    if ENABLE_HV_EXPANSION:
+        ortho_im = expand_im(ortho_im, HV_DIM_EXPANSION)
 
     print("Extracting data...")
     train_data = dict()

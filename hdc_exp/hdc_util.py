@@ -11,12 +11,14 @@
 
 import numpy as np
 from tqdm import tqdm
+from collections import Counter
 import matplotlib.pyplot as plt
 import requests
 import tarfile
 import io
 import copy
 import math
+
 
 """
     General functions
@@ -112,7 +114,7 @@ def one_sample_per_class(
         for i in range(num_classes):
             line = " ".join(map(str, test_data[i][class_and_idx[i]]))
             wf.write(line + "\n")
-    return
+    return class_and_idx
 
 
 # Convert from one uint level to another
@@ -397,6 +399,15 @@ def gen_conf_mat(num_levels, hv_list):
 
     gen_square_cim:
         - Generates a square cim that is half of the dimension size
+
+    expand_im:
+        - This expands the orthogonal IM by some multiplier
+        the expansion is done based on re-using a given ortho_IM set
+
+    expand_cim:
+        - This expands the cim by some multiplier
+        the expansion is simply a concatenation as it retains the
+        effective similarity levels
 """
 
 
@@ -479,6 +490,25 @@ def ca90_extract_seeds(seed_size, seed_num, hv_dim, ca90_mode="iter", debug_info
         print(f"Number of seeds: {seed_num}")
 
     return seed_list
+
+
+# Expansion of IM
+def expand_im(ortho_im, expansion_multiplier):
+    num_rows = len(ortho_im)
+    hv_dim = len(ortho_im[0])
+    ortho_im_expanded = gen_empty_mem_hv(num_rows, hv_dim * expansion_multiplier)
+    for i in range(expansion_multiplier):
+        ortho_im_expanded[:, i * hv_dim : (i + 1) * hv_dim] = np.roll(
+            ortho_im, shift=-1 * i, axis=0
+        )
+    return ortho_im_expanded.astype(int)
+
+
+def expand_cim(cim, expansion_multiplier):
+    cim_expanded = copy.deepcopy(cim)
+    for i in range(expansion_multiplier - 1):
+        cim_expanded = np.concatenate((cim_expanded, cim), axis=1)
+    return cim_expanded
 
 
 # Generating orthogonal item memory
@@ -890,6 +920,75 @@ def retrain_model(
     print()
 
     return class_am_copy, class_am_int_copy, class_am_elem_count_copy
+
+
+def train_ensemble_model(
+    train_dataset,
+    num_train,
+    num_ensemble,
+    ensemble_ortho_im,
+    cim,
+    encode_function,
+    tqdm_mode=0,
+):
+    ensemble_am = dict()
+
+    for i in range(num_ensemble):
+        class_am, _, _ = train_model(
+            train_dataset=train_dataset,
+            num_train=num_train,
+            ortho_im=ensemble_ortho_im[i],
+            cim=cim,
+            encode_function=encode_function,
+            tqdm_mode=tqdm_mode,
+        )
+
+        ensemble_am[i] = class_am
+    return ensemble_am
+
+
+def test_ensemble_model(
+    test_data,
+    ensemble_am,
+    ensemble_ortho_im,
+    cim,
+    num_ensemble,
+    num_test,
+    encode_function,
+):
+    num_classes = len(ensemble_am[0])
+    # Class prediction set
+    class_predict_set = []
+    for class_num in range(num_classes):
+        # First make a prediction per ensemble
+        pred_set_list = []
+        for i in tqdm(range(num_ensemble)):
+            qhv_list = []
+            for j in range(num_test):
+                qhv = encode_function(
+                    test_data[class_num][j], ensemble_ortho_im[i], cim
+                )
+                qhv_list.append(qhv)
+
+            sample_pred_set = prediction_set(ensemble_am[i], qhv_list)
+            pred_set_list.append(sample_pred_set)
+
+        # Then we do majority voting on ensemble
+        final_predict_set = []
+        for i in range(len(pred_set_list[0])):
+            ensemble_predict = []
+            # Append to the list the predictions
+            for j in range(len(pred_set_list)):
+                ensemble_predict.append(pred_set_list[j][i])
+            # Do majority counting
+            counter = Counter(ensemble_predict)
+            # Return majority
+            majority_element, count = counter.most_common(1)[0]
+            final_predict_set.append(majority_element)
+
+        class_predict_set.append(final_predict_set)
+
+    return class_predict_set
 
 
 def predict_item(ortho_im, cim, class_am, sample, encode_function, hv_type="binary"):
