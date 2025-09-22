@@ -8,11 +8,11 @@ on:
 jobs:
   rtl-unit-tests-vlt:
     name: Unit Tests using Verilator
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     container:
       image: ghcr.io/kuleuven-micas/hypercorex:main
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Running Pytest
         # We ignore slow system tests
         run: |
@@ -31,11 +31,11 @@ jobs:
 
   rtl-system-tests-vlt:
     name: System Tests using Verilator
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     container:
       image: ghcr.io/kuleuven-micas/hypercorex:main
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Running Pytest
         # We initialize testbench directory test first
         # Then run all other tests in parallel
@@ -50,11 +50,11 @@ jobs:
 
   sw-test:
     name: Test Compiler for ASM
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     container:
       image: ghcr.io/kuleuven-micas/hypercorex:main
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Running Compiler
         run: |
           python3 sw/hypercorex_compiler.py
