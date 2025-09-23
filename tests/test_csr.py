@@ -113,6 +113,15 @@ async def csr_dut(dut):
     test_val = dut.csr_clr_o.value.integer
     check_result(test_val, 1)
 
+    test_val = dut.csr_fifo_clr_o.value.integer
+    check_result(test_val, 1)
+
+    test_val = dut.csr_regs_clr_o.value.integer
+    check_result(test_val, 1)
+
+    test_val = dut.csr_dslc_clr_o.value.integer
+    check_result(test_val, 1)
+
     # Propagate time for some signals to return to 0
     await clock_and_time(dut.clk_i)
 
