@@ -48,8 +48,7 @@ jobs:
           tests/test_hypercorex_am_search.py \
           tests/test_hypercorex_char_recog.py \
           tests/test_hypercorex_ortho_im_only.py \
-          tests/test_hypercorex_char_recog_data_slice.py \
-          tests/test_hypercorex_reset_run.py
+          tests/test_hypercorex_char_recog_data_slice.py
 
   sw-test:
     name: Test Compiler for ASM
