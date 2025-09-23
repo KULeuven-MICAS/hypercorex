@@ -58,6 +58,9 @@ module csr import csr_addr_pkg::*; #(
   output logic                  [1:0]               csr_port_a_cim_o,
   output logic                                      csr_port_b_cim_o,
   output logic                                      csr_clr_o,
+  output logic                                      csr_fifo_clr_o,
+  output logic                                      csr_regs_clr_o,
+  output logic                                      csr_dslc_clr_o,
   // AM settings
   output logic [    CsrDataWidth-1:0]               csr_am_num_pred_o,
   input  logic [    CsrDataWidth-1:0]               csr_am_pred_i,
@@ -156,7 +159,10 @@ module csr import csr_addr_pkg::*; #(
       CORE_SET_REG_ADDR: begin
         csr_rd_data = {
                                                                  // verilog_lint: waive-start line-length
-                                       {(CsrDataWidth-5){1'b0}}, // [31:5] -- Unused
+                                       {(CsrDataWidth-10){1'b0}}, // [31:9] -- Unused
+                                                           1'b0, //    [9] WO Core DSL clear (generates pulse)
+                                                           1'b0, //    [8] WO Core regs clear (generates pulse)
+                                                           1'b0, //    [7] WO Core FIFO clear (generates pulse)
                                                            1'b0, //    [6] WO Core clear (generates pulse)
         csr_set[CORE_SET_REG_ADDR][  CORE_SET_IMB_MUX_BIT_ADDR], //    [5] RW IMB MUX
         csr_set[CORE_SET_REG_ADDR][4:CORE_SET_IMA_MUX_BIT_ADDR], //    [4:3] RW IMA MUX
@@ -327,6 +333,15 @@ module csr import csr_addr_pkg::*; #(
     csr_clr_o                  = csr_write_req &&
                                 (csr_req_addr_i == CORE_SET_REG_ADDR) &&
                                  csr_req_data_i[CORE_SET_CORE_CLR_BIT_ADDR];
+    csr_fifo_clr_o             = csr_write_req &&
+                                (csr_req_addr_i == CORE_SET_REG_ADDR) &&
+                                 csr_req_data_i[CORE_SET_CORE_FIFO_CLR_BIT_ADDR];
+    csr_regs_clr_o             = csr_write_req &&
+                                (csr_req_addr_i == CORE_SET_REG_ADDR) &&
+                                csr_req_data_i[CORE_SET_CORE_REGS_CLR_BIT_ADDR];
+    csr_dslc_clr_o             = csr_write_req &&
+                                (csr_req_addr_i == CORE_SET_REG_ADDR) &&
+                                csr_req_data_i[CORE_SET_CORE_DSLC_CLR_BIT_ADDR];
     csr_seq_test_mode_o        = csr_set[CORE_SET_REG_ADDR][ CORE_SET_SEQ_TEST_BIT_ADDR];
     csr_port_b_cim_o           = csr_set[CORE_SET_REG_ADDR][  CORE_SET_IMB_MUX_BIT_ADDR];
     csr_port_a_cim_o           = csr_set[CORE_SET_REG_ADDR][4:CORE_SET_IMA_MUX_BIT_ADDR];
