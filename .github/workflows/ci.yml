@@ -10,7 +10,8 @@ jobs:
     name: Unit Tests using Verilator
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/kuleuven-micas/hypercorex:main
+      # Use old container build first
+      image: ghcr.io/kuleuven-micas/hypercorex:main@sha256:35bc30f738177daff6a0bc590e8bc8efff3dca78c82bae70ae3eeb4c47bbddf6
     steps:
       - uses: actions/checkout@v4
       - name: Running Pytest
@@ -27,13 +28,14 @@ jobs:
           --ignore=tests/test_hypercorex_ucihar_recog.py \
           --ignore=tests/test_hypercorex_dna_recog.py \
           --ignore=tests/test_hypercorex_lang_recog.py \
-          --ignore=tests/test_hypercorex_char_recog_data_slice.py
+          --ignore=tests/test_hypercorex_char_recog_data_slice.py \
+          --ignore=tests/test_hypercorex_reset_run.py
 
   rtl-system-tests-vlt:
     name: System Tests using Verilator
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/kuleuven-micas/hypercorex:main
+      image: ghcr.io/kuleuven-micas/hypercorex:main@sha256:35bc30f738177daff6a0bc590e8bc8efff3dca78c82bae70ae3eeb4c47bbddf6
     steps:
       - uses: actions/checkout@v4
       - name: Running Pytest
@@ -52,7 +54,7 @@ jobs:
     name: Test Compiler for ASM
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/kuleuven-micas/hypercorex:main
+      image: ghcr.io/kuleuven-micas/hypercorex:main@sha256:35bc30f738177daff6a0bc590e8bc8efff3dca78c82bae70ae3eeb4c47bbddf6
     steps:
       - uses: actions/checkout@v4
       - name: Running Compiler
