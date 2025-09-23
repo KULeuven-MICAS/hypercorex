@@ -27,7 +27,8 @@ jobs:
           --ignore=tests/test_hypercorex_ucihar_recog.py \
           --ignore=tests/test_hypercorex_dna_recog.py \
           --ignore=tests/test_hypercorex_lang_recog.py \
-          --ignore=tests/test_hypercorex_char_recog_data_slice.py
+          --ignore=tests/test_hypercorex_char_recog_data_slice.py \
+          --ignore=tests/test_hypercorex_reset_run.py
 
   rtl-system-tests-vlt:
     name: System Tests using Verilator
@@ -46,7 +47,8 @@ jobs:
           tests/test_hypercorex_am_search.py \
           tests/test_hypercorex_char_recog.py \
           tests/test_hypercorex_ortho_im_only.py \
-          tests/test_hypercorex_char_recog_data_slice.py
+          tests/test_hypercorex_char_recog_data_slice.py \
+          tests/test_hypercorex_reset_run.py
 
   sw-test:
     name: Test Compiler for ASM
