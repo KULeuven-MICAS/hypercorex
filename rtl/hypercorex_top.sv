@@ -148,6 +148,9 @@ module hypercorex_top # (
   logic                  [1:0]                   port_a_cim;
   logic                                          port_b_cim;
   logic                                          clr;
+  logic                                          fifo_clr;
+  logic                                          regs_clr;
+  logic                                          dslc_clr;
   // AM settings
   logic [    CsrDataWidth-1:0]                   am_num_pred;
   logic                                          am_pred_valid;
@@ -350,6 +353,9 @@ module hypercorex_top # (
     .csr_port_a_cim_o           ( port_a_cim            ),
     .csr_port_b_cim_o           ( port_b_cim            ),
     .csr_clr_o                  ( clr                   ),
+    .csr_fifo_clr_o             ( fifo_clr              ),
+    .csr_regs_clr_o             ( regs_clr              ),
+    .csr_dslc_clr_o             ( dslc_clr              ),
     // AM settings
     .csr_am_num_pred_o          ( am_num_pred           ),
     .csr_am_pred_i              ( predict_o             ),
@@ -500,7 +506,7 @@ module hypercorex_top # (
     .rst_ni         ( rst_ni                  ),
     // Inputs
     .en_i           ( enable && data_src_sel[0]),
-    .clr_i          ( clr                     ),
+    .clr_i          ( clr || dslc_clr         ),
     .start_i        ( start                   ),
     .max_count_i    ( src_auto_num_a          ),
     .start_count_i  ( src_auto_start_num_a    ),
@@ -519,7 +525,7 @@ module hypercorex_top # (
     .rst_ni         ( rst_ni                  ),
     // Inputs
     .en_i           ( enable && data_src_sel[1] ),
-    .clr_i          ( clr                     ),
+    .clr_i          ( clr || dslc_clr         ),
     .start_i        ( start                   ),
     .max_count_i    ( src_auto_num_b          ),
     .start_count_i  ( src_auto_start_num_b    ),
@@ -546,7 +552,7 @@ module hypercorex_top # (
     .rst_ni               ( rst_ni              ),
     // Control inputs
     .enable_i             ( enable && !data_src_sel[0] ),
-    .clr_i                ( clr                 ),
+    .clr_i                ( clr || dslc_clr     ),
     .sel_mode_i           ( data_slice_mode_a   ),
     // Settings
     .csr_elem_size_i      ( data_slice_num_elem_a ),
@@ -574,7 +580,7 @@ module hypercorex_top # (
     .rst_ni               ( rst_ni              ),
     // Control inputs
     .enable_i             ( enable && !data_src_sel[1]),
-    .clr_i                ( clr                 ),
+    .clr_i                ( clr || dslc_clr     ),
     .sel_mode_i           ( data_slice_mode_b   ),
     // Settings
     .csr_elem_size_i      ( data_slice_num_elem_b ),
@@ -613,7 +619,7 @@ module hypercorex_top # (
     .port_b_cim_i               ( port_b_cim           ),
     .cim_seed_hv_i              ( CiMBaseSeed          ),
     .im_seed_hv_i               ( OrthoIMSeeds[NumImSets-1:0] ),
-    .clr_i                      ( clr                  ),
+    .clr_i                      ( clr || fifo_clr      ),
     .enable_i                   ( enable               ),
     .stall_o                    ( im_stall             ),
     //---------------------------
@@ -674,8 +680,8 @@ module hypercorex_top # (
     .bund_mux_b_i               ( bund_mux_b           ),
     .bund_valid_a_i             ( bund_valid_a         ),
     .bund_valid_b_i             ( bund_valid_b         ),
-    .bund_clr_a_i               ( bund_clr_a ||    clr ),
-    .bund_clr_b_i               ( bund_clr_b ||    clr ),
+    .bund_clr_a_i               ( bund_clr_a ||clr || regs_clr ),
+    .bund_clr_b_i               ( bund_clr_b ||clr || regs_clr ),
     // Control ports for register ops
     .reg_mux_i                  ( reg_mux              ),
     .reg_rd_addr_a_i            ( reg_rd_addr_a        ),
@@ -684,7 +690,7 @@ module hypercorex_top # (
     .reg_wr_en_i                ( reg_wr_en            ),
     // Control ports for query HV
     .qhv_wen_i                  ( qhv_wen              ),
-    .qhv_clr_i                  ( qhv_clr || clr       ),
+    .qhv_clr_i                  ( qhv_clr || clr || regs_clr ),
     .qhv_mux_i                  ( qhv_mux              ),
     .qhv_am_load_i              ( am_load              ),
     .qhv_ready_i                ( qhv_ready_i          ),
