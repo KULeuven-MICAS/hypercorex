@@ -47,9 +47,9 @@ module inst_loop_control # (
   // Local parameters
   //---------------------------
   localparam int unsigned LOOP_DISABLE = 2'b00;
-  localparam int unsigned LOOP_1D      = 2'b01;
-  localparam int unsigned LOOP_2D      = 2'b10;
-  localparam int unsigned LOOP_3D      = 2'b11;
+  localparam int unsigned Loop1D      = 2'b01;
+  localparam int unsigned Loop2D      = 2'b10;
+  localparam int unsigned Loop3D      = 2'b11;
 
   //---------------------------
   // Logic and wires
@@ -109,7 +109,7 @@ module inst_loop_control # (
         end
 
         // Loop 2D is only present in 2D and 3D modes
-        if (inst_loop_mode_i == LOOP_2D || inst_loop_mode_i == LOOP_3D) begin
+        if (inst_loop_mode_i == Loop2D || inst_loop_mode_i == Loop3D) begin
           if (loop2_hit_end_addr && loop2_bound_end) begin
             loop2_count <= {InstMemAddrWidth{1'b0}};
           end else if (loop2_hit_end_addr) begin
@@ -122,7 +122,7 @@ module inst_loop_control # (
         end
 
         // Loop 3D is only present in 3D mode
-        if (inst_loop_mode_i == LOOP_3D) begin
+        if (inst_loop_mode_i == Loop3D) begin
           if (loop3_hit_end_addr && loop3_bound_end) begin
             loop3_count <= {InstMemAddrWidth{1'b0}};
           end else if (loop3_hit_end_addr) begin
@@ -156,13 +156,13 @@ module inst_loop_control # (
           inst_jump_o      = 1'b0;
           inst_jump_addr_o = {InstMemAddrWidth{1'b0}};
         end
-        LOOP_1D: begin
+        Loop1D: begin
           inst_jump_o      = loop1_hit_end_addr && !loop1_bound_end;
           inst_jump_addr_o = inst_loop_jump_addr1_i;
           inst_loop_done_o = loop1_bound_end && loop1_hit_end_addr;
         end
 
-        LOOP_2D: begin
+        Loop2D: begin
           inst_jump_o      = (loop1_hit_end_addr && !loop1_bound_end) ||
                              (loop2_hit_end_addr && !loop2_bound_end);
 
@@ -176,7 +176,7 @@ module inst_loop_control # (
 
           inst_loop_done_o = loop2_bound_end && loop2_hit_end_addr;
         end
-        LOOP_3D: begin
+        Loop3D: begin
           inst_jump_o      = (loop1_hit_end_addr && !loop1_bound_end) ||
                              (loop2_hit_end_addr && !loop2_bound_end) ||
                              (loop3_hit_end_addr && !loop3_bound_end);
