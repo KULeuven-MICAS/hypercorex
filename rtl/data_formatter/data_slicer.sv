@@ -104,15 +104,15 @@ module data_slicer #(
   // Selection for max count
   always_comb begin
     case (sel_mode_i)
-      Mode1b:  max_chunk_count = MaxCounter1b;
-      Mode4b:  max_chunk_count = MaxCounter4b;
-      Mode8b:  max_chunk_count = MaxCounter8b;
+      Mode1b:  max_chunk_count = MaxCounter1b-1;
+      Mode4b:  max_chunk_count = MaxCounter4b-1;
+      Mode8b:  max_chunk_count = MaxCounter8b-1;
       default: max_chunk_count = {MaxElemWidth{1'b0}};
     endcase
   end
 
   // Chunk count finish
-  assign chunk_count_finish = (chunk_count_reg == max_chunk_count - 1);
+  assign chunk_count_finish = (chunk_count_reg == max_chunk_count);
 
   // Re-mapping signals
   always_comb begin
