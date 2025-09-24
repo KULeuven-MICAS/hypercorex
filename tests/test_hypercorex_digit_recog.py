@@ -82,7 +82,7 @@ async def tb_hypercorex_dut(dut):
     # Compress 8-bit data into a 64-bit data
     test_samples_compressed = []
     for i in range(len(test_samples)):
-        compressed_sample = pack_ld_to_hd(test_samples[i], 4, 64)
+        compressed_sample = pack_ld_to_hd(test_samples[i], 1, 64)
         test_samples_compressed.append(compressed_sample)
 
     # Extract asm file
@@ -235,7 +235,7 @@ async def tb_hypercorex_dut(dut):
 
     # Set port A to be the data slicing mode in 4bit sequence
     # Set port B to be coming from the auto generator
-    data_src_ctrl = 0x0000_0022
+    data_src_ctrl = 0x0000_0021
     await write_csr(dut, set_parameters.DATA_SRC_CTRL_REG_ADDR, data_src_ctrl)
 
     # Check if write is correct
