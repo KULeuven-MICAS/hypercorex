@@ -665,6 +665,7 @@ module hypercorex_top # (
     // Global stall
     //---------------------------
     .global_stall_i             ( stall                ),
+    .am_busy_i                  ( am_busy              ),
     //---------------------------
     // Item memory inputs
     //---------------------------

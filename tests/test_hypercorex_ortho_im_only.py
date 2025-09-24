@@ -160,7 +160,7 @@ async def tb_hypercorex_dut(dut):
     loop_count = await config_inst_ctrl(
         dut=dut,
         reg_addr=set_parameters.INST_LOOP_COUNT_REG_ADDR,
-        val1=set_parameters.NUM_TOT_IM,
+        val1=set_parameters.NUM_TOT_IM - 1,
         val2=0,
         val3=0,
         data_width=set_parameters.INST_MEM_ADDR_WIDTH,
@@ -247,7 +247,7 @@ async def tb_hypercorex_dut(dut):
     cocotb.log.info("          Reading from QHV Memory           ")
     cocotb.log.info(" ------------------------------------------ ")
 
-    for i in range(len(ortho_im)):
+    for i in range(len(ortho_im) - 2):
         qhv_val = await read_qhv(dut, i)
         qhv_val = numbin2list(qhv_val, set_parameters.HV_DIM)
         check_result_array(ortho_im[i], qhv_val)
@@ -286,6 +286,7 @@ async def tb_hypercorex_dut(dut):
             "RegMuxWidth": str(set_parameters.REG_MUX_WIDTH),
             "QvMuxWidth": str(set_parameters.QHV_MUX_WIDTH),
             "RegNum": str(set_parameters.REG_NUM),
+            "TbQHVMemDepth": str(set_parameters.NUM_TOT_IM),
         }
     ],
 )

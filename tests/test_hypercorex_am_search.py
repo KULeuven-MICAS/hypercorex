@@ -122,7 +122,7 @@ async def tb_hypercorex_dut(dut):
     await clock_and_time(dut.clk_i)
 
     # This needs to be the number of classes to check
-    dut.am_auto_loop_addr_i.value = 99
+    dut.am_auto_loop_addr_i.value = num_hv - 1
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("       Write to Number of Predictions       ")
@@ -161,7 +161,7 @@ async def tb_hypercorex_dut(dut):
     cocotb.log.info(" ------------------------------------------ ")
 
     # Write loop control
-    loop_ctrl_code = 0x0000_0002
+    loop_ctrl_code = 0x0000_0001
     await write_csr(dut, set_parameters.INST_LOOP_CTRL_REG_ADDR, loop_ctrl_code)
 
     # Write loop jump address
@@ -169,7 +169,7 @@ async def tb_hypercorex_dut(dut):
     loop_jump_addr = await config_inst_ctrl(
         dut=dut,
         reg_addr=set_parameters.INST_LOOP_JUMP_ADDR_REG_ADDR,
-        val1=3,
+        val1=0,
         val2=0,
         val3=0,
         data_width=set_parameters.INST_MEM_ADDR_WIDTH,
@@ -179,8 +179,8 @@ async def tb_hypercorex_dut(dut):
     loop_end_addr = await config_inst_ctrl(
         dut=dut,
         reg_addr=set_parameters.INST_LOOP_END_ADDR_REG_ADDR,
-        val1=3,
-        val2=4,
+        val1=2,
+        val2=0,
         val3=0,
         data_width=set_parameters.INST_MEM_ADDR_WIDTH,
     )
@@ -191,7 +191,7 @@ async def tb_hypercorex_dut(dut):
         dut=dut,
         reg_addr=set_parameters.INST_LOOP_COUNT_REG_ADDR,
         val1=num_hv,
-        val2=num_hv,
+        val2=0,
         val3=0,
         data_width=set_parameters.INST_LOOP_COUNT_WIDTH,
     )

@@ -20,6 +20,7 @@ module qhv #(
   input  logic                   qhv_wen_i,
   input  logic                   qhv_clr_i,
   input  logic                   qhv_am_load_i,
+  input  logic                   am_busy_i,
   output logic [HVDimension-1:0] qhv_o,
   output logic                   qhv_valid_o,
   input  logic                   qhv_ready_i,
@@ -35,7 +36,8 @@ module qhv #(
     end else begin
       if (qhv_clr_i) begin
         qhv_o <= {HVDimension{1'b0}};
-      end else if (qhv_wen_i) begin
+      // Only load or replace when AM is not busy
+      end else if (qhv_wen_i && !am_busy_i) begin
         qhv_o <= qhv_i;
       end else begin
         qhv_o <= qhv_o;
@@ -70,6 +72,7 @@ module qhv #(
   //---------------------------
   // Stall happens when query is still loaded
   // the valid signal indicates that previous write has not completed yet
-  assign qhv_stall_o = qhv_am_load_i && qhv_valid_o;
+  assign qhv_stall_o = (qhv_am_load_i && qhv_valid_o) ||
+                       (am_busy_i && qhv_wen_i);
 
 endmodule
