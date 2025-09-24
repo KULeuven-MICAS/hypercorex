@@ -44,6 +44,14 @@ module inst_loop_control # (
 );
 
   //---------------------------
+  // Local parameters
+  //---------------------------
+  localparam int unsigned LOOP_DISABLE = 2'b00;
+  localparam int unsigned LOOP_1D      = 2'b01;
+  localparam int unsigned LOOP_2D      = 2'b10;
+  localparam int unsigned LOOP_3D      = 2'b11;
+
+  //---------------------------
   // Logic and wires
   //---------------------------
   logic [InstLoopCountWidth-1:0] loop1_count, loop2_count, loop3_count;
@@ -87,36 +95,50 @@ module inst_loop_control # (
 
       end else if (en_i && !stall_i && !dbg_en_i) begin
 
-        if (loop1_hit_end_addr && loop1_bound_end) begin
+        // Loop 1D is always present in 1D, 2D, and 3D modes
+        if (inst_loop_mode_i != LOOP_DISABLE) begin
+          if (loop1_hit_end_addr && loop1_bound_end) begin
+            loop1_count <= {InstMemAddrWidth{1'b0}};
+          end else if (loop1_hit_end_addr) begin
+            loop1_count <= loop1_count + 1;
+          end else begin
+            loop1_count <= loop1_count;
+          end
+        end else begin
           loop1_count <= {InstMemAddrWidth{1'b0}};
-        end else if (loop1_hit_end_addr) begin
-          loop1_count <= loop1_count + 1;
-        end else begin
-          loop1_count <= loop1_count;
         end
 
-        if (loop2_hit_end_addr && loop2_bound_end) begin
+        // Loop 2D is only present in 2D and 3D modes
+        if (inst_loop_mode_i == LOOP_2D || inst_loop_mode_i == LOOP_3D) begin
+          if (loop2_hit_end_addr && loop2_bound_end) begin
+            loop2_count <= {InstMemAddrWidth{1'b0}};
+          end else if (loop2_hit_end_addr) begin
+            loop2_count <= loop2_count + 1;
+          end else begin
+            loop2_count <= loop2_count;
+          end
+        end else begin
           loop2_count <= {InstMemAddrWidth{1'b0}};
-        end else if (loop2_hit_end_addr) begin
-          loop2_count <= loop2_count + 1;
-        end else begin
-          loop2_count <= loop2_count;
         end
 
-        if (loop3_hit_end_addr && loop3_bound_end) begin
+        // Loop 3D is only present in 3D mode
+        if (inst_loop_mode_i == LOOP_3D) begin
+          if (loop3_hit_end_addr && loop3_bound_end) begin
+            loop3_count <= {InstMemAddrWidth{1'b0}};
+          end else if (loop3_hit_end_addr) begin
+            loop3_count <= loop3_count + 1;
+          end else begin
+            loop3_count <= loop3_count;
+          end
+        end else begin
           loop3_count <= {InstMemAddrWidth{1'b0}};
-        end else if (loop3_hit_end_addr) begin
-          loop3_count <= loop3_count + 1;
-        end else begin
-          loop3_count <= loop3_count;
         end
-
 
       end else begin
 
-        loop1_count <= {InstMemAddrWidth{1'b0}};
-        loop2_count <= {InstMemAddrWidth{1'b0}};
-        loop3_count <= {InstMemAddrWidth{1'b0}};
+        loop1_count <= loop1_count;
+        loop2_count <= loop2_count;
+        loop3_count <= loop3_count;
 
       end
     end
@@ -134,13 +156,13 @@ module inst_loop_control # (
           inst_jump_o      = 1'b0;
           inst_jump_addr_o = {InstMemAddrWidth{1'b0}};
         end
-        2'b01: begin
+        LOOP_1D: begin
           inst_jump_o      = loop1_hit_end_addr && !loop1_bound_end;
           inst_jump_addr_o = inst_loop_jump_addr1_i;
           inst_loop_done_o = loop1_bound_end && loop1_hit_end_addr;
         end
 
-        2'b10: begin
+        LOOP_2D: begin
           inst_jump_o      = (loop1_hit_end_addr && !loop1_bound_end) ||
                              (loop2_hit_end_addr && !loop2_bound_end);
 
@@ -154,7 +176,7 @@ module inst_loop_control # (
 
           inst_loop_done_o = loop2_bound_end && loop2_hit_end_addr;
         end
-        2'b11: begin
+        LOOP_3D: begin
           inst_jump_o      = (loop1_hit_end_addr && !loop1_bound_end) ||
                              (loop2_hit_end_addr && !loop2_bound_end) ||
                              (loop3_hit_end_addr && !loop3_bound_end);

@@ -29,6 +29,8 @@ module hv_encoder #(
   input  logic                    rst_ni,
   // Global stall
   input  logic                    global_stall_i,
+  // AM busy signal
+  input  logic                    am_busy_i,
   // Item memory inputs
   input  logic [ HVDimension-1:0] im_rd_a_i,
   input  logic [ HVDimension-1:0] im_rd_b_i,
@@ -283,6 +285,7 @@ module hv_encoder #(
     .qhv_wen_i     ( qhv_wen_i     ),
     .qhv_clr_i     ( qhv_clr_i     ),
     .qhv_am_load_i ( qhv_am_load_i ),
+    .am_busy_i     ( am_busy_i     ),
     .qhv_o         ( qhv_o         ),
     .qhv_valid_o   ( qhv_valid_o   ),
     .qhv_ready_i   ( qhv_ready_i   ),
