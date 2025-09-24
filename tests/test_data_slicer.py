@@ -15,8 +15,8 @@ import set_parameters
 import random
 
 # Somer internal parameters
-MAX_NUM_ELEM = 100
-MIN_NUM_ELEM = 10
+MAX_NUM_ELEM = 256
+MIN_NUM_ELEM = 128
 
 
 # Generate random numbers

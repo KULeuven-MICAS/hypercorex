@@ -45,7 +45,7 @@ module hypercorex_top # (
   //---------------------------
   // HDC Encoder Parameters
   //---------------------------
-  parameter int unsigned BundCountWidth   = 8,
+  parameter int unsigned BundCountWidth   = 10,
   parameter int unsigned BundMuxWidth     = 2,
   parameter int unsigned ALUMuxWidth      = 2,
   parameter int unsigned ALUMaxShiftAmt   = 128,
