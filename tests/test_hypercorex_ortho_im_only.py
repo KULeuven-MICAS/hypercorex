@@ -247,7 +247,7 @@ async def tb_hypercorex_dut(dut):
     cocotb.log.info("          Reading from QHV Memory           ")
     cocotb.log.info(" ------------------------------------------ ")
 
-    for i in range(len(ortho_im)-2):
+    for i in range(len(ortho_im) - 2):
         qhv_val = await read_qhv(dut, i)
         qhv_val = numbin2list(qhv_val, set_parameters.HV_DIM)
         check_result_array(ortho_im[i], qhv_val)
