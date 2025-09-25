@@ -146,7 +146,9 @@ async def inst_decode_dut(dut):
 
     # Do this in multiple loops
     for i in range(set_parameters.TEST_RUNS):
+        cocotb.log.info("TEST_RUN: " + str(i))
         inst_test_list = [
+            # IM
             "ima_reg x" + str(random.randint(0, 3)),
             "imb_reg x" + str(random.randint(0, 3)),
             "imab_bind_reg x" + str(random.randint(0, 3)),
@@ -158,6 +160,22 @@ async def inst_decode_dut(dut):
             + str(random.randint(0, 3))
             + " "
             + str(random.randint(0, 3)),
+            # IM-REG
+            "ima_regb_bind_reg x"
+            + str(random.randint(0, 3))
+            + " "
+            + str(random.randint(0, 3)),
+            "imb_rega_bind_reg x"
+            + str(random.randint(0, 3))
+            + " "
+            + str(random.randint(0, 3)),
+            "ima_permr_regb_bind_reg x"
+            + str(random.randint(0, 3))
+            + " x"
+            + str(random.randint(0, 3))
+            + " "
+            + str(random.randint(0, 3)),
+            # IM-BUND
             "ima_bunda",
             "ima_bundb",
             "imab_bind_bunda",
@@ -166,6 +184,7 @@ async def inst_decode_dut(dut):
             "ima_perm_r_bundb " + str(random.randint(0, 3)),
             "ima_perm_l_bunda " + str(random.randint(0, 3)),
             "ima_perm_l_bundb " + str(random.randint(0, 3)),
+            # REG
             "regab_bind_reg x"
             + str(random.randint(0, 3))
             + " x"
@@ -221,14 +240,17 @@ async def inst_decode_dut(dut):
             "mv_bundb_reg x" + str(random.randint(0, 3)),
             "mv_reg_bunda x" + str(random.randint(0, 3)),
             "mv_reg_bundb x" + str(random.randint(0, 3)),
+            # BUND
             "mv_bunda_bundb",
             "mv_bundb_bunda",
             "clr_bunda",
             "clr_bundb",
+            # QHV
             "mv_reg_qhv x" + str(random.randint(0, 3)),
             "mv_bunda_qhv",
             "mv_bundb_qhv",
             "clr_qhv",
+            # AM
             "am_search",
             "am_load",
         ]
@@ -252,6 +274,9 @@ async def inst_decode_dut(dut):
 
             # Convert to string list for easy comparison
             inst_control = list2str(inst_control)
+
+            if DEBUG:
+                print(f"inst_code: {inst_code:032b}")
 
             # Input and extract the instruction test
             actual_control_signal = await input_and_extract(
