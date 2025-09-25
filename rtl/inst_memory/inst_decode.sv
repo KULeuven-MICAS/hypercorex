@@ -211,6 +211,14 @@ module inst_decode import hypercorex_inst_pkg::*; #(
         reg_wr_en_o = 1'b1;
         alu_ops_o   = 3'b000;
       end
+      IMA_PERM_R_REGB_BIND_REG: begin
+        im_a_pop_o  = 1'b1;
+        alu_mux_a_o = 2'b00;
+        alu_mux_b_o = 2'b01;
+        reg_mux_o   = 2'b00;
+        reg_wr_en_o = 1'b1;
+        alu_ops_o   = 3'b101;
+      end
       //---------------------------
       // IM-BUND
       //---------------------------

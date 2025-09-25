@@ -73,6 +73,7 @@ module hv_alu_pe #(
       3'b010:  C_o = B_i;
       3'b011:  C_o = circular_shift_right;
       3'b100:  C_o = circular_shift_left;
+      3'b101:  C_o = circular_shift_right ^ B_i;
       default: C_o = A_i ^ B_i;
     endcase
   end
