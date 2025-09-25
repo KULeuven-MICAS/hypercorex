@@ -65,7 +65,8 @@ module hv_alu_pe #(
   // 0    | XOR               |
   // 1    | A_i pass through  |
   // 2    | B_i pass through  |
-  // 3    | Circular shifts   |
+  // 3, 4 | Circular shifts   |
+  // 5    | Shift & bind      |
   //---------------------------
   always_comb begin : alu_logic
     case (op_i)
@@ -73,6 +74,7 @@ module hv_alu_pe #(
       3'b010:  C_o = B_i;
       3'b011:  C_o = circular_shift_right;
       3'b100:  C_o = circular_shift_left;
+      3'b101:  C_o = circular_shift_right ^ B_i;
       default: C_o = A_i ^ B_i;
     endcase
   end

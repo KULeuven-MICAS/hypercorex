@@ -185,6 +185,18 @@ def decode_inst(asm_line, sanity_check=False, convert_str=False, print_ctrl=Fals
         alu_ops = [0, 0, 0]
         reg_wr_addr = num2list(asm_line[1], 2)
         reg_rd_addr_a = num2list(asm_line[2], 2)
+    elif asm_inst == "ima_permr_regb_bind_reg":
+        inst_type = num2list(1, TYPE_LEN)
+        func_type = num2list(3, FUNC_LEN)
+        im_a_pop = [1]
+        alu_mux_a = [0, 0]
+        alu_mux_b = [0, 1]
+        reg_mux = [0, 0]
+        reg_wr_en = [1]
+        alu_ops = [1, 0, 1]
+        reg_wr_addr = num2list(asm_line[1], 2)
+        reg_rd_addr_b = num2list(asm_line[2], 2)
+        alu_shift_amt = num2list(asm_line[3], 2)
     # IM-BUND
     elif asm_inst == "ima_bunda":
         inst_type = num2list(2, TYPE_LEN)
