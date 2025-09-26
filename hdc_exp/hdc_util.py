@@ -780,7 +780,7 @@ def test_model(
     cim,
     class_am,
     encode_function,
-    staring_num_test,
+    starting_num_test,
     num_test,
     tqdm_mode=0,
     print_mode=0,
@@ -801,6 +801,9 @@ def test_model(
 
     if print_mode == 1:
         disable_per_class_accuracy = True
+    elif print_mode == 2:
+        disable_per_class_accuracy = True
+        disable_accuracy = True
 
     # Extract parameters
     num_classes = len(test_dataset)
@@ -822,7 +825,7 @@ def test_model(
         ):
             # Encode value
             qhv = encode_function(
-                test_dataset[num_class][staring_num_test + i], ortho_im, cim
+                test_dataset[num_class][starting_num_test + i], ortho_im, cim
             )
             # Get prediction
             prediction = prediction_idx(class_am, qhv, hv_type="binary")
@@ -845,11 +848,108 @@ def test_model(
         for i in range(num_classes):
             print(f"Class: {i}, Accuracy: {accuracies[i]:.2f}")
 
-    overall_score = sum(scores)
-    overall_count = sum(counts)
+    if not disable_accuracy:
+        overall_score = sum(scores)
+        overall_count = sum(counts)
 
-    overall_accuracy = overall_score / overall_count if overall_count > 0 else 0
-    print(f"Overall Accuracy: {overall_accuracy:.2f}")
+        overall_accuracy = overall_score / overall_count if overall_count > 0 else 0
+        print(f"Overall Accuracy: {overall_accuracy:.2f}")
+
+    return counts, scores, accuracies
+
+
+def test_model_cuts_version(
+    test_dataset,
+    ortho_im,
+    cim,
+    class_am,
+    num_cuts,
+    encode_function,
+    starting_num_test,
+    num_test,
+    tqdm_mode=0,
+    print_mode=0,
+):
+    # Logging modes
+    disable_per_class_accuracy = False
+    disable_accuracy = False
+
+    # Set TQDM
+    disable_test_bar = True
+    disable_per_class_bar = False
+
+    if tqdm_mode == 1:
+        disable_test_bar = False
+        disable_per_class_bar = True
+    elif tqdm_mode == 2:
+        disable_test_bar = True
+        disable_per_class_bar = True
+
+    if print_mode == 1:
+        disable_per_class_accuracy = True
+    elif print_mode == 2:
+        disable_per_class_accuracy = True
+        disable_accuracy = True
+
+    # Extract parameters
+    num_classes = len(test_dataset)
+
+    counts = []
+    scores = []
+    accuracies = []
+
+    # Iterate through each class
+    for num_class in tqdm(
+        range(num_classes), disable=disable_test_bar, desc="Testing progress"
+    ):
+        total_count = 0
+        total_score = 0
+
+        # Make predictions
+        for i in tqdm(
+            range(num_test), disable=disable_per_class_bar, desc=f"Testing: {num_class}"
+        ):
+            # Encode value
+            predict_score_data = np.zeros(num_classes).astype(int)
+
+            for set_num in range(num_cuts):
+                qhv = encode_function(
+                    test_dataset[num_class][starting_num_test + i],
+                    ortho_im[set_num],
+                    cim,
+                )
+                # Get prediction
+                predict_score_data = predict_score_data + np.array(
+                    predict_score_list(class_am[set_num], qhv, hv_type="binary")
+                )
+            # Find maximum of the max predicted score_list
+            prediction = np.argmax(predict_score_data)
+
+            # Update score
+            if prediction == num_class:
+                total_score += 1
+            total_count += 1
+
+        # Calculate accuracy
+        accuracy = total_score / total_count if total_count > 0 else 0
+
+        counts.append(total_count)
+        scores.append(total_score)
+        accuracies.append(accuracy)
+
+    # For new line of tqdm
+    print()
+
+    if not disable_per_class_accuracy:
+        for i in range(num_classes):
+            print(f"Class: {i}, Accuracy: {accuracies[i]:.2f}")
+
+    if not disable_accuracy:
+        overall_score = sum(scores)
+        overall_count = sum(counts)
+
+        overall_accuracy = overall_score / overall_count if overall_count > 0 else 0
+        print(f"Overall Accuracy: {overall_accuracy:.2f}")
 
     return counts, scores, accuracies
 
@@ -1036,6 +1136,15 @@ def prediction_idx(assoc_mem, query_hv, hv_type="binary"):
     predict_idx = np.argmax(score_list)
 
     return predict_idx
+
+
+# Return score list only
+def predict_score_list(assoc_mem, query_hv, hv_type="binary"):
+    score_list = []
+
+    for i in range(len(assoc_mem)):
+        score_list.append(norm_dist_hv(assoc_mem[i], query_hv, hv_type=hv_type))
+    return score_list
 
 
 # Get prediction set
