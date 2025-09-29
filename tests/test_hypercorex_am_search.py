@@ -22,7 +22,8 @@ from util import (
     read_csr,
     load_im_list,
     load_am_list,
-    config_inst_ctrl,
+    config_inst_addr_ctrl,
+    config_inst_loop_count,
     read_predict,
 )
 
@@ -166,34 +167,32 @@ async def tb_hypercorex_dut(dut):
 
     # Write loop jump address
     # Combination of loop 1, loop 2, and loop 3
-    loop_jump_addr = await config_inst_ctrl(
+    loop_jump_addr = await config_inst_addr_ctrl(
         dut=dut,
         reg_addr=set_parameters.INST_LOOP_JUMP_ADDR_REG_ADDR,
         val1=0,
         val2=0,
         val3=0,
-        data_width=set_parameters.INST_MEM_ADDR_WIDTH,
+        val4=0,
     )
 
     # Write loop end address
-    loop_end_addr = await config_inst_ctrl(
+    loop_end_addr = await config_inst_addr_ctrl(
         dut=dut,
         reg_addr=set_parameters.INST_LOOP_END_ADDR_REG_ADDR,
         val1=2,
         val2=0,
         val3=0,
-        data_width=set_parameters.INST_MEM_ADDR_WIDTH,
+        val4=0,
     )
 
     # Write loop count
     # Note that we are reading out all ortho im values
-    loop_count = await config_inst_ctrl(
+    loop_count = await config_inst_loop_count(
         dut=dut,
         reg_addr=set_parameters.INST_LOOP_COUNT1_REG_ADDR,
         val1=num_hv,
         val2=0,
-        val3=0,
-        data_width=set_parameters.INST_LOOP_COUNT_WIDTH,
     )
 
     # Check if the loop control is written correctly
