@@ -316,6 +316,9 @@ async def csr_dut(dut):
     test_val = dut.csr_inst_loop_hvdim_extend_count_o.value.integer
     check_result(test_val, (golden_val & 0x0000_03E0) >> 5)
 
+    test_val = dut.csr_inst_loop_hvdim_extend_enable_o.value.integer
+    check_result(test_val, int(bool((golden_val & 0x0000_03E0) >> 5)))
+
     csr_read_val = await read_csr(dut, set_parameters.INST_LOOP_CTRL_REG_ADDR)
     check_result(csr_read_val, (golden_val & 0x0000_03FF))
 
