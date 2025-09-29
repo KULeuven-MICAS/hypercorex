@@ -36,9 +36,9 @@ module inst_control # (
   output logic [RegAddrWidth-1:0]     inst_rd_o,
   // CSR control for loop control
   input  logic [LoopNumWidth-1:0]     inst_loop_mode_i,
-  // Note: this is 5 bits only
-  // input  logic [4:0]                  inst_loop_hvdim_extend_count_i,
-  // input  logic                        inst_loop_hvdim_extend_enable_i,
+  input  logic              [1:0]     inst_loop_hvdim_sel_i,
+  input  logic                        inst_loop_hvdim_extend_enable_i,
+  output logic                        inst_loop_hvdim_extend_increment_o,
   input  logic [InstMemAddrWidth-1:0] inst_loop_jump_addr1_i,
   input  logic [InstMemAddrWidth-1:0] inst_loop_jump_addr2_i,
   input  logic [InstMemAddrWidth-1:0] inst_loop_jump_addr3_i,
@@ -114,6 +114,9 @@ module inst_control # (
     .inst_pc_i                ( program_counter                               ),
     // Loop control from CSR registers
     .inst_loop_mode_i         ( inst_loop_mode_i                              ),
+    .inst_loop_hvdim_sel_i              ( inst_loop_hvdim_sel_i               ),
+    .inst_loop_hvdim_extend_enable_i    ( inst_loop_hvdim_extend_enable_i     ),
+    .inst_loop_hvdim_extend_increment_o ( inst_loop_hvdim_extend_increment_o  ),
     .inst_loop_jump_addr1_i   ( inst_loop_jump_addr1_i[InstMemAddrWidth-1:0]  ),
     .inst_loop_jump_addr2_i   ( inst_loop_jump_addr2_i[InstMemAddrWidth-1:0]  ),
     .inst_loop_jump_addr3_i   ( inst_loop_jump_addr3_i[InstMemAddrWidth-1:0]  ),
