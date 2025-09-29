@@ -42,6 +42,10 @@ module item_memory_top #(
   input  logic                [HVDimension-1:0] highdim_b_data_i,
   input  logic                                  im_b_data_valid_i,
   output logic                                  im_b_data_ready_o,
+  // For dimensional expansion
+  input  logic                                  extend_enable_i,
+  input  logic                                  extend_increment_i,
+  input  logic                [            4:0] extend_count_i,
   // Outputs towards the encoder
   output logic                [HVDimension-1:0] im_a_o,
   input  logic                                  im_a_pop_i,
@@ -95,11 +99,21 @@ module item_memory_top #(
     .SeedWidth     ( SeedWidth       ),
     .EnableRomIM   ( EnableRomIM     )
   ) i_item_memory (
+    // Clock and reset
+    .clk_i         ( clk_i          ),
+    .rst_ni        ( rst_ni         ),
+    // Configurations from CSR
     .port_a_cim_i  ( port_a_cim_i[0] ),
     .cim_seed_hv_i ( cim_seed_hv_i   ),
     .im_seed_hv_i  ( im_seed_hv_i    ),
     .im_a_addr_i   ( lowdim_a_data_i ),
     .im_b_addr_i   ( lowdim_b_data_i ),
+    // For dimensional expansion
+    .enable_i           ( enable_i           ),
+    .extend_enable_i    ( extend_enable_i    ),
+    .extend_increment_i ( extend_increment_i ),
+    .extend_count_i     ( extend_count_i     ),
+    // Outputs
     .im_a_o        ( project_im_a    ),
     .im_b_o        ( project_im_b    )
   );
