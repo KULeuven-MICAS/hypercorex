@@ -92,6 +92,10 @@ async def inst_control_dut(dut):
     dut.inst_loop_count_addr3_i.value = 0
     dut.inst_loop_count_addr4_i.value = 0
 
+    # For dimensional expansion
+    dut.inst_loop_hvdim_sel_i.value = 0
+    dut.inst_loop_hvdim_extend_enable_i.value = 0
+
     # Initialize clock always
     clock = Clock(dut.clk_i, 10, units="ns")
     cocotb.start_soon(clock.start(start_high=False))
@@ -260,69 +264,101 @@ async def inst_control_dut(dut):
 
     # Chunk size chosen
     # arbitrarily for test purposes only
-    chunk_size = 20
+    chunk_size = 10
     loop_size = 3
 
-    # Loop values
-    loop1_end_addr = random.randint(5, 5 + chunk_size)
-    loop2_end_addr = random.randint(loop1_end_addr + 1, loop1_end_addr + chunk_size)
-    loop3_end_addr = random.randint(loop2_end_addr + 1, loop2_end_addr + chunk_size)
-    loop4_end_addr = random.randint(loop3_end_addr + 1, loop3_end_addr + chunk_size)
+    for loop_hv_extend_sel in range(4):
+        cocotb.log.info(" ------------------------------------------ ")
+        cocotb.log.info(f"   Test 4D loop with HV dim sel {loop_hv_extend_sel}   ")
+        cocotb.log.info(" ------------------------------------------ ")
 
-    loop1_count = random.randint(2, 2 + loop_size)
-    loop2_count = random.randint(loop1_count + 1, loop1_count + loop_size)
-    loop3_count = random.randint(loop2_count + 1, loop2_count + loop_size)
-    loop4_count = random.randint(loop3_count + 1, loop3_count + loop_size)
+        # Loop values
+        loop1_end_addr = random.randint(5, 5 + chunk_size)
+        loop2_end_addr = random.randint(loop1_end_addr + 1, loop1_end_addr + chunk_size)
+        loop3_end_addr = random.randint(loop2_end_addr + 1, loop2_end_addr + chunk_size)
+        loop4_end_addr = random.randint(loop3_end_addr + 1, loop3_end_addr + chunk_size)
 
-    cocotb.log.info(" ------------------------------------------ ")
-    cocotb.log.info(
-        f"loop1_end: {loop1_end_addr};\n \
-        loop2_end: {loop2_end_addr};\n \
-        loop3_end: {loop3_end_addr};\n \
-        loop4_end: {loop4_end_addr};\n"
-    )
-    cocotb.log.info(
-        f"loop1_count: {loop1_count};\n \
-        loop2_count: {loop2_count};\n \
-        loop3_count: {loop3_count};\n \
-        loop4_count: {loop4_count};\n"
-    )
-    cocotb.log.info(" ------------------------------------------ ")
+        loop1_count = random.randint(2, 2 + loop_size)
+        loop2_count = random.randint(loop1_count + 1, loop1_count + loop_size)
+        loop3_count = random.randint(loop2_count + 1, loop2_count + loop_size)
+        loop4_count = random.randint(loop3_count + 1, loop3_count + loop_size)
 
-    # Start the system
-    dut.start_i.value = 1
+        cocotb.log.info(" ------------------------------------------ ")
+        cocotb.log.info(
+            f"loop1_end: {loop1_end_addr};\n \
+            loop2_end: {loop2_end_addr};\n \
+            loop3_end: {loop3_end_addr};\n \
+            loop4_end: {loop4_end_addr};\n"
+        )
+        cocotb.log.info(
+            f"loop1_count: {loop1_count};\n \
+            loop2_count: {loop2_count};\n \
+            loop3_count: {loop3_count};\n \
+            loop4_count: {loop4_count};\n"
+        )
+        cocotb.log.info(" ------------------------------------------ ")
 
-    dut.inst_loop_mode_i.value = 4
-    dut.inst_loop_jump_addr1_i.value = 0
-    dut.inst_loop_jump_addr2_i.value = 0
-    dut.inst_loop_jump_addr3_i.value = 0
-    dut.inst_loop_jump_addr4_i.value = 0
-    dut.inst_loop_end_addr1_i.value = loop1_end_addr
-    dut.inst_loop_end_addr2_i.value = loop2_end_addr
-    dut.inst_loop_end_addr3_i.value = loop3_end_addr
-    dut.inst_loop_end_addr4_i.value = loop4_end_addr
-    dut.inst_loop_count_addr1_i.value = loop1_count
-    dut.inst_loop_count_addr2_i.value = loop2_count
-    dut.inst_loop_count_addr3_i.value = loop3_count
-    dut.inst_loop_count_addr4_i.value = loop4_count
+        # Start the system
+        dut.start_i.value = 1
 
-    await clock_and_time(dut.clk_i)
+        dut.inst_loop_mode_i.value = 4
+        dut.inst_loop_jump_addr1_i.value = 0
+        dut.inst_loop_jump_addr2_i.value = 0
+        dut.inst_loop_jump_addr3_i.value = 0
+        dut.inst_loop_jump_addr4_i.value = 0
+        dut.inst_loop_end_addr1_i.value = loop1_end_addr
+        dut.inst_loop_end_addr2_i.value = loop2_end_addr
+        dut.inst_loop_end_addr3_i.value = loop3_end_addr
+        dut.inst_loop_end_addr4_i.value = loop4_end_addr
+        dut.inst_loop_count_addr1_i.value = loop1_count
+        dut.inst_loop_count_addr2_i.value = loop2_count
+        dut.inst_loop_count_addr3_i.value = loop3_count
+        dut.inst_loop_count_addr4_i.value = loop4_count
 
-    # Clear
-    dut.start_i.value = 0
+        # For dimensional expansion
+        dut.inst_loop_hvdim_sel_i.value = loop_hv_extend_sel
+        dut.inst_loop_hvdim_extend_enable_i.value = 1
 
-    # Check for PC if it's correct
-    # But consider the 3D loop
+        await clock_and_time(dut.clk_i)
 
-    # Initialize the golden working address
-    current_addr = 0
+        # Clear
+        dut.start_i.value = 0
 
-    for i in range(loop4_count):
-        for j in range(loop3_count):
-            for k in range(loop2_count):
-                for x in range(loop1_count):
-                    current_addr = 0
-                    while current_addr <= loop1_end_addr:
+        # Check for PC if it's correct
+        # But consider the 3D loop
+
+        # Initialize the golden working address
+        current_addr = 0
+
+        for i in range(loop4_count):
+            for j in range(loop3_count):
+                for k in range(loop2_count):
+                    for x in range(loop1_count):
+                        current_addr = 0
+                        while current_addr <= loop1_end_addr:
+                            # Extract the 1st data that is readily available
+                            pc_val = dut.inst_pc_o.value.integer
+                            inst_data_val = dut.inst_rd_o.value.integer
+
+                            check_result(pc_val, current_addr)
+                            check_result(inst_data_val, golden_data_list[current_addr])
+
+                            await clock_and_time(dut.clk_i)
+                            current_addr += 1
+
+                        if current_addr == loop1_end_addr:
+                            if loop_hv_extend_sel == 0:
+                                extend_val = (
+                                    dut.inst_loop_hvdim_extend_increment_o.value.integer
+                                )
+                                check_result(extend_val, 1)
+                        else:
+                            extend_val = (
+                                dut.inst_loop_hvdim_extend_increment_o.value.integer
+                            )
+                            check_result(extend_val, 0)
+
+                    while current_addr <= loop2_end_addr:
                         # Extract the 1st data that is readily available
                         pc_val = dut.inst_pc_o.value.integer
                         inst_data_val = dut.inst_rd_o.value.integer
@@ -333,7 +369,19 @@ async def inst_control_dut(dut):
                         await clock_and_time(dut.clk_i)
                         current_addr += 1
 
-                while current_addr <= loop2_end_addr:
+                    if current_addr == loop2_end_addr:
+                        if loop_hv_extend_sel == 1:
+                            extend_val = (
+                                dut.inst_loop_hvdim_extend_increment_o.value.integer
+                            )
+                            check_result(extend_val, 1)
+                    else:
+                        extend_val = (
+                            dut.inst_loop_hvdim_extend_increment_o.value.integer
+                        )
+                        check_result(extend_val, 0)
+
+                while current_addr <= loop3_end_addr:
                     # Extract the 1st data that is readily available
                     pc_val = dut.inst_pc_o.value.integer
                     inst_data_val = dut.inst_rd_o.value.integer
@@ -344,7 +392,17 @@ async def inst_control_dut(dut):
                     await clock_and_time(dut.clk_i)
                     current_addr += 1
 
-            while current_addr <= loop3_end_addr:
+                if current_addr == loop3_end_addr:
+                    if loop_hv_extend_sel == 2:
+                        extend_val = (
+                            dut.inst_loop_hvdim_extend_increment_o.value.integer
+                        )
+                        check_result(extend_val, 1)
+                else:
+                    extend_val = dut.inst_loop_hvdim_extend_increment_o.value.integer
+                    check_result(extend_val, 0)
+
+            while current_addr <= loop4_end_addr:
                 # Extract the 1st data that is readily available
                 pc_val = dut.inst_pc_o.value.integer
                 inst_data_val = dut.inst_rd_o.value.integer
@@ -355,16 +413,20 @@ async def inst_control_dut(dut):
                 await clock_and_time(dut.clk_i)
                 current_addr += 1
 
-        while current_addr <= loop4_end_addr:
-            # Extract the 1st data that is readily available
-            pc_val = dut.inst_pc_o.value.integer
-            inst_data_val = dut.inst_rd_o.value.integer
+            if current_addr == loop4_end_addr:
+                if loop_hv_extend_sel == 3:
+                    extend_val = dut.inst_loop_hvdim_extend_increment_o.value.integer
+                    check_result(extend_val, 1)
+            else:
+                extend_val = dut.inst_loop_hvdim_extend_increment_o.value.integer
+                check_result(extend_val, 0)
 
-            check_result(pc_val, current_addr)
-            check_result(inst_data_val, golden_data_list[current_addr])
+        # Reset the instruction counter
+        dut.inst_pc_reset_i.value = 1
+        await clock_and_time(dut.clk_i)
 
-            await clock_and_time(dut.clk_i)
-            current_addr += 1
+        dut.inst_pc_reset_i.value = 0
+        await clock_and_time(dut.clk_i)
 
     for i in range(10):
         await clock_and_time(dut.clk_i)
