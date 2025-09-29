@@ -55,7 +55,7 @@ module hypercorex_top # (
   //---------------------------
   // Don't touch!
   //---------------------------
-  parameter int unsigned InstLoopCountWidth = 10,
+  parameter int unsigned InstLoopCountWidth = 16,
   parameter int unsigned SlicerModeWidth  = 2,
   parameter int unsigned SrcSelWidth      = 2,
   parameter int unsigned NumALUOps        = 8,
@@ -64,7 +64,7 @@ module hypercorex_top # (
   parameter int unsigned ShiftWidth       = $clog2(ALUMaxShiftAmt),
   parameter int unsigned RegAddrWidth     = $clog2(RegNum        ),
   parameter int unsigned NumImSets        = NumTotIm/NumPerImBank,
-  parameter int unsigned InstMemAddrWidth = $clog2(InstMemDepth  )
+  parameter int unsigned InstMemAddrWidth = 8// Previously $clog2(InstMemDepth  )
 )(
   //---------------------------
   // Clocks and reset
@@ -167,16 +167,21 @@ module hypercorex_top # (
   logic [InstMemAddrWidth-1:0]                   inst_pc;
   logic [    CsrDataWidth-1:0]                   inst_at_addr;
   // Instruction loop control
-  logic                  [1:0]                   inst_loop_mode;
+  logic                  [2:0]                   inst_loop_mode;
+  logic                  [4:0]                   inst_loop_hvdim_extend_count;
+  logic                                          inst_loop_hvdim_extend_enable;
   logic [InstMemAddrWidth-1:0]                   loop_jump_addr1;
   logic [InstMemAddrWidth-1:0]                   loop_jump_addr2;
   logic [InstMemAddrWidth-1:0]                   loop_jump_addr3;
+  logic [InstMemAddrWidth-1:0]                   loop_jump_addr4;
   logic [InstMemAddrWidth-1:0]                   loop_end_addr1;
   logic [InstMemAddrWidth-1:0]                   loop_end_addr2;
   logic [InstMemAddrWidth-1:0]                   loop_end_addr3;
+  logic [InstMemAddrWidth-1:0]                   loop_end_addr4;
   logic [InstLoopCountWidth-1:0]                 loop_count_addr1;
   logic [InstLoopCountWidth-1:0]                 loop_count_addr2;
   logic [InstLoopCountWidth-1:0]                 loop_count_addr3;
+  logic [InstLoopCountWidth-1:0]                 loop_count_addr4;
   // Data slicer configurations
   logic [ SlicerModeWidth-1:0]                   data_slice_mode_a;
   logic [ SlicerModeWidth-1:0]                   data_slice_mode_b;
@@ -323,7 +328,10 @@ module hypercorex_top # (
     .InstMemDepth               ( InstMemDepth          ),
     .SlicerModeWidth            ( SlicerModeWidth       ),
     .SrcSelWidth                ( SrcSelWidth           ),
-    .ObservableWidth            ( ObservableWidth       )
+    .ObservableWidth            ( ObservableWidth       ),
+    // Don't touch
+    .InstLoopCountWidth         ( InstLoopCountWidth    ),
+    .InstMemAddrWidth           ( InstMemAddrWidth      )
   ) i_csr (
     //---------------------------
     // Clocks and reset
@@ -374,15 +382,20 @@ module hypercorex_top # (
     .csr_inst_at_addr_i         ( inst_at_addr          ),
     // Instruction loop control
     .csr_inst_loop_mode_o       ( inst_loop_mode        ),
+    .csr_inst_loop_hvdim_extend_count_o ( inst_loop_hvdim_extend_count ),
+    .csr_inst_loop_hvdim_extend_enable_o ( inst_loop_hvdim_extend_enable ),
     .csr_loop_jump_addr1_o      ( loop_jump_addr1       ),
     .csr_loop_jump_addr2_o      ( loop_jump_addr2       ),
     .csr_loop_jump_addr3_o      ( loop_jump_addr3       ),
+    .csr_loop_jump_addr4_o      ( loop_jump_addr4       ),
     .csr_loop_end_addr1_o       ( loop_end_addr1        ),
     .csr_loop_end_addr2_o       ( loop_end_addr2        ),
     .csr_loop_end_addr3_o       ( loop_end_addr3        ),
+    .csr_loop_end_addr4_o       ( loop_end_addr4        ),
     .csr_loop_count_addr1_o     ( loop_count_addr1      ),
     .csr_loop_count_addr2_o     ( loop_count_addr2      ),
     .csr_loop_count_addr3_o     ( loop_count_addr3      ),
+    .csr_loop_count_addr4_o     ( loop_count_addr4      ),
     // Observable registers
     .csr_obs_logic_o            ( obs_logic_o           ),
     // Data slicer configurations
@@ -403,7 +416,10 @@ module hypercorex_top # (
   //---------------------------
   inst_control # (
     .RegAddrWidth               ( CsrDataWidth          ),
-    .InstMemDepth               ( InstMemDepth          )
+    .InstMemDepth               ( InstMemDepth          ),
+    // Don't touch!
+    .InstLoopCountWidth         ( InstLoopCountWidth    ),
+    .InstMemAddrWidth           ( InstMemAddrWidth      )
   ) i_inst_control (
     //---------------------------
     // Clocks and reset
@@ -435,12 +451,15 @@ module hypercorex_top # (
     .inst_loop_jump_addr1_i     ( loop_jump_addr1      ),
     .inst_loop_jump_addr2_i     ( loop_jump_addr2      ),
     .inst_loop_jump_addr3_i     ( loop_jump_addr3      ),
+    .inst_loop_jump_addr4_i     ( loop_jump_addr4      ),
     .inst_loop_end_addr1_i      ( loop_end_addr1       ),
     .inst_loop_end_addr2_i      ( loop_end_addr2       ),
     .inst_loop_end_addr3_i      ( loop_end_addr3       ),
+    .inst_loop_end_addr4_i      ( loop_end_addr4       ),
     .inst_loop_count_addr1_i    ( loop_count_addr1     ),
     .inst_loop_count_addr2_i    ( loop_count_addr2     ),
     .inst_loop_count_addr3_i    ( loop_count_addr3     ),
+    .inst_loop_count_addr4_i    ( loop_count_addr4     ),
     //---------------------------
     // Debug control signals
     //---------------------------
