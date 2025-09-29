@@ -146,28 +146,28 @@ module item_memory #(
   //---------------------------
   if (EnableRomIM) begin: gen_use_rom_im
     rom_item_memory #(
-    .HVDimension  ( HVDimension     ),
-    .NumTotIm     ( NumTotIm        ),
-    .SeedWidth    ( SeedWidth       )
-  ) i_rom_item_memory (
-    .im_sel_a_i   ( mux_im_addr_out ),
-    .im_sel_b_i   ( im_addr_b_ext   ),
-    .im_a_o       ( im_a            ),
-    .im_b_o       ( im_b_o          )
-  );
+      .HVDimension  ( HVDimension     ),
+      .NumTotIm     ( NumTotIm        ),
+      .SeedWidth    ( SeedWidth       )
+    ) i_rom_item_memory (
+      .im_sel_a_i   ( mux_im_addr_out ),
+      .im_sel_b_i   ( im_addr_b_ext   ),
+      .im_a_o       ( im_a            ),
+      .im_b_o       ( im_b_o          )
+    );
   end else begin: gen_use_ca90_im
     ca90_item_memory #(
-    .HVDimension  ( HVDimension     ),
-    .NumTotIm     ( NumTotIm        ),
-    .NumPerImBank ( NumPerImBank    ),
-    .SeedWidth    ( SeedWidth       )
-  ) i_ca90_item_memory (
-    .seed_hv_i    ( im_seed_hv_i    ),
-    .im_sel_a_i   ( mux_im_addr_out ),
-    .im_sel_b_i   ( im_b_addr_i     ),
-    .im_a_o       ( im_a            ),
-    .im_b_o       ( im_b_o          )
-  );
+      .HVDimension  ( HVDimension     ),
+      .NumTotIm     ( NumTotIm        ),
+      .NumPerImBank ( NumPerImBank    ),
+      .SeedWidth    ( SeedWidth       )
+    ) i_ca90_item_memory (
+      .seed_hv_i    ( im_seed_hv_i    ),
+      .im_sel_a_i   ( mux_im_addr_out ),
+      .im_sel_b_i   ( im_addr_b_ext   ),
+      .im_a_o       ( im_a            ),
+      .im_b_o       ( im_b_o          )
+    );
   end
 
   //---------------------------
