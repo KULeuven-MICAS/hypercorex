@@ -46,6 +46,7 @@ package csr_addr_pkg;
   // Instruction loop control
   localparam logic [31:0] INST_LOOP_CTRL_REG_ADDR         = 32'd9;
   localparam logic [ 4:0] INST_LOOP_CTRL_MODE_BIT_ADDR    = 5'd0;
+  localparam logic [ 4:0] INST_LOOP_CTRL_HVDIM_EXTEND_COUNT = 5'd2;
 
   localparam logic [31:0] INST_LOOP_JUMP_ADDR_REG_ADDR    = 32'd10;
   localparam logic [ 4:0] INST_LOOP_JUMP_ADDR1_BIT_ADDR   = 5'd0;

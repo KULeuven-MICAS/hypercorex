@@ -79,6 +79,8 @@ module csr import csr_addr_pkg::*; #(
   input  logic [    CsrDataWidth-1:0]               csr_inst_at_addr_i,
   // Instruction loop control
   output logic                  [1:0]               csr_inst_loop_mode_o,
+  output logic                  [4:0]               csr_inst_loop_hvdim_extend_count_o,
+  output logic                                      csr_inst_loop_hvdim_extend_enable_o,
   output logic [InstMemAddrWidth-1:0]               csr_loop_jump_addr1_o,
   output logic [InstMemAddrWidth-1:0]               csr_loop_jump_addr2_o,
   output logic [InstMemAddrWidth-1:0]               csr_loop_jump_addr3_o,
@@ -105,6 +107,7 @@ module csr import csr_addr_pkg::*; #(
   //---------------------------
   // Wires and logic
   //---------------------------
+  // verilog_lint: waive-start line-length
 
   // Register set
   logic [CsrDataWidth-1:0] csr_set [NumRegs];
@@ -158,7 +161,6 @@ module csr import csr_addr_pkg::*; #(
     case(csr_req_addr_i)
       CORE_SET_REG_ADDR: begin
         csr_rd_data = {
-                                                                 // verilog_lint: waive-start line-length
                                        {(CsrDataWidth-10){1'b0}}, // [31:9] -- Unused
                                                            1'b0, //    [9] WO Core DSL clear (generates pulse)
                                                            1'b0, //    [8] WO Core regs clear (generates pulse)
@@ -169,7 +171,6 @@ module csr import csr_addr_pkg::*; #(
         csr_set[CORE_SET_REG_ADDR][ CORE_SET_SEQ_TEST_BIT_ADDR], //    [2] RW Sequential test
                                                      csr_busy_i, //    [1] RO Busy
                                                            1'b0  //    [0] WO Start Core (generates pulse)
-                                                                 // verilog_lint: waive-stop line-length
         };
       end
       AM_NUM_PREDICT_REG_ADDR: begin
@@ -184,12 +185,10 @@ module csr import csr_addr_pkg::*; #(
       end
       INST_CTRL_REG_ADDR: begin
         csr_rd_data = {
-                                                                      // verilog_lint: waive-start line-length
                                             {(CsrDataWidth-3){1'b0}}, // [31:3] -- Unused
                                                                 1'b0, //    [2] WO Instruction clear
           csr_set[INST_CTRL_REG_ADDR][  INST_CTRL_DBG_MODE_BIT_ADDR], //    [1] RW Instruction debug mode
           csr_set[INST_CTRL_REG_ADDR][INST_CTRL_WRITE_MODE_BIT_ADDR]  //    [0] RW Instruction write mode
-                                                                      // verilog_lint: waive-stop line-length
 
         };
       end
@@ -208,8 +207,9 @@ module csr import csr_addr_pkg::*; #(
       end
       INST_LOOP_CTRL_REG_ADDR: begin
         csr_rd_data = {
-                       {(CsrDataWidth-2){1'b0}}, // [31:2] -- Unused
-          csr_set[INST_LOOP_CTRL_REG_ADDR][1:0]  //  [1:0] RW Instruction loop mode
+                                                       {(CsrDataWidth-7){1'b0}}, // [31:7] -- Unused
+          csr_set[INST_LOOP_CTRL_REG_ADDR][7:INST_LOOP_CTRL_HVDIM_EXTEND_COUNT], //  [6:2] Number of HV dim extension counts
+          csr_set[INST_LOOP_CTRL_REG_ADDR][     1:INST_LOOP_CTRL_MODE_BIT_ADDR]  //  [1:0] RW Instruction loop mode
         };
       end
       INST_LOOP_JUMP_ADDR_REG_ADDR,
@@ -370,8 +370,10 @@ module csr import csr_addr_pkg::*; #(
     //---------------------------
     // Instruction loop control
     //---------------------------
-    // verilog_lint: waive-start line-length
-    csr_inst_loop_mode_o       = csr_set[INST_LOOP_CTRL_REG_ADDR][1:0];
+    csr_inst_loop_mode_o                =   csr_set[INST_LOOP_CTRL_REG_ADDR][     1:INST_LOOP_CTRL_MODE_BIT_ADDR];
+    csr_inst_loop_hvdim_extend_count_o  =   csr_set[INST_LOOP_CTRL_REG_ADDR][6:INST_LOOP_CTRL_HVDIM_EXTEND_COUNT];
+    csr_inst_loop_hvdim_extend_enable_o = |(csr_inst_loop_hvdim_extend_count_o);
+
     csr_loop_jump_addr1_o      = csr_set[INST_LOOP_JUMP_ADDR_REG_ADDR][  InstMemAddrWidth-1:                 0];
     csr_loop_jump_addr2_o      = csr_set[INST_LOOP_JUMP_ADDR_REG_ADDR][2*InstMemAddrWidth-1:  InstMemAddrWidth];
     csr_loop_jump_addr3_o      = csr_set[INST_LOOP_JUMP_ADDR_REG_ADDR][3*InstMemAddrWidth-1:2*InstMemAddrWidth];
