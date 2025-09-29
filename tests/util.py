@@ -814,8 +814,13 @@ async def read_csr(dut, addr):
 
 
 # For writing the instruction loop parameters
-async def config_inst_ctrl(dut, reg_addr, val1, val2, val3, data_width):
-    data = val1 + (val2 << data_width) + (val3 << 2 * data_width)
+async def config_inst_addr_ctrl(dut, reg_addr=0, val1=0, val2=0, val3=0, val4=0):
+    data = val1 + (val2 << 8) + (val3 << 16) + (val4 << 24)
     await write_csr(dut, reg_addr, data)
+    return data
 
+
+async def config_inst_loop_count(dut, reg_addr, val1, val2):
+    data = val1 + (val2 << 16)
+    await write_csr(dut, reg_addr, data)
     return data

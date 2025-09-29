@@ -82,12 +82,15 @@ async def inst_control_dut(dut):
     dut.inst_loop_jump_addr1_i.value = 0
     dut.inst_loop_jump_addr2_i.value = 0
     dut.inst_loop_jump_addr3_i.value = 0
+    dut.inst_loop_jump_addr4_i.value = 0
     dut.inst_loop_end_addr1_i.value = 0
     dut.inst_loop_end_addr2_i.value = 0
     dut.inst_loop_end_addr3_i.value = 0
+    dut.inst_loop_end_addr4_i.value = 0
     dut.inst_loop_count_addr1_i.value = 0
     dut.inst_loop_count_addr2_i.value = 0
     dut.inst_loop_count_addr3_i.value = 0
+    dut.inst_loop_count_addr4_i.value = 0
 
     # Initialize clock always
     clock = Clock(dut.clk_i, 10, units="ns")
@@ -257,44 +260,51 @@ async def inst_control_dut(dut):
 
     # Chunk size chosen
     # arbitrarily for test purposes only
-    chunk_size = 10
+    chunk_size = 20
     loop_size = 3
 
     # Loop values
     loop1_end_addr = random.randint(5, 5 + chunk_size)
     loop2_end_addr = random.randint(loop1_end_addr + 1, loop1_end_addr + chunk_size)
     loop3_end_addr = random.randint(loop2_end_addr + 1, loop2_end_addr + chunk_size)
+    loop4_end_addr = random.randint(loop3_end_addr + 1, loop3_end_addr + chunk_size)
 
     loop1_count = random.randint(2, 2 + loop_size)
     loop2_count = random.randint(loop1_count + 1, loop1_count + loop_size)
     loop3_count = random.randint(loop2_count + 1, loop2_count + loop_size)
+    loop4_count = random.randint(loop3_count + 1, loop3_count + loop_size)
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info(
-        f"loop1_end: {loop1_end_addr}; \
-        loop2_end: {loop2_end_addr}; \
-        loop3_end: {loop3_end_addr};"
+        f"loop1_end: {loop1_end_addr};\n \
+        loop2_end: {loop2_end_addr};\n \
+        loop3_end: {loop3_end_addr};\n \
+        loop4_end: {loop4_end_addr};\n"
     )
     cocotb.log.info(
-        f"loop1_count: {loop1_count}; \
-        loop2_count: {loop2_count}; \
-        loop3_count: {loop3_count};"
+        f"loop1_count: {loop1_count};\n \
+        loop2_count: {loop2_count};\n \
+        loop3_count: {loop3_count};\n \
+        loop4_count: {loop4_count};\n"
     )
     cocotb.log.info(" ------------------------------------------ ")
 
     # Start the system
     dut.start_i.value = 1
 
-    dut.inst_loop_mode_i.value = 3
+    dut.inst_loop_mode_i.value = 4
     dut.inst_loop_jump_addr1_i.value = 0
     dut.inst_loop_jump_addr2_i.value = 0
     dut.inst_loop_jump_addr3_i.value = 0
+    dut.inst_loop_jump_addr4_i.value = 0
     dut.inst_loop_end_addr1_i.value = loop1_end_addr
     dut.inst_loop_end_addr2_i.value = loop2_end_addr
     dut.inst_loop_end_addr3_i.value = loop3_end_addr
+    dut.inst_loop_end_addr4_i.value = loop4_end_addr
     dut.inst_loop_count_addr1_i.value = loop1_count
     dut.inst_loop_count_addr2_i.value = loop2_count
     dut.inst_loop_count_addr3_i.value = loop3_count
+    dut.inst_loop_count_addr4_i.value = loop4_count
 
     await clock_and_time(dut.clk_i)
 
@@ -304,14 +314,26 @@ async def inst_control_dut(dut):
     # Check for PC if it's correct
     # But consider the 3D loop
 
-    # Initialize the golden workgin address
+    # Initialize the golden working address
     current_addr = 0
 
-    for i in range(loop3_count):
-        for j in range(loop2_count):
-            for k in range(loop1_count):
-                current_addr = 0
-                while current_addr <= loop1_end_addr:
+    for i in range(loop4_count):
+        for j in range(loop3_count):
+            for k in range(loop2_count):
+                for x in range(loop1_count):
+                    current_addr = 0
+                    while current_addr <= loop1_end_addr:
+                        # Extract the 1st data that is readily available
+                        pc_val = dut.inst_pc_o.value.integer
+                        inst_data_val = dut.inst_rd_o.value.integer
+
+                        check_result(pc_val, current_addr)
+                        check_result(inst_data_val, golden_data_list[current_addr])
+
+                        await clock_and_time(dut.clk_i)
+                        current_addr += 1
+
+                while current_addr <= loop2_end_addr:
                     # Extract the 1st data that is readily available
                     pc_val = dut.inst_pc_o.value.integer
                     inst_data_val = dut.inst_rd_o.value.integer
@@ -322,7 +344,7 @@ async def inst_control_dut(dut):
                     await clock_and_time(dut.clk_i)
                     current_addr += 1
 
-            while current_addr <= loop2_end_addr:
+            while current_addr <= loop3_end_addr:
                 # Extract the 1st data that is readily available
                 pc_val = dut.inst_pc_o.value.integer
                 inst_data_val = dut.inst_rd_o.value.integer
@@ -333,7 +355,7 @@ async def inst_control_dut(dut):
                 await clock_and_time(dut.clk_i)
                 current_addr += 1
 
-        while current_addr <= loop3_end_addr:
+        while current_addr <= loop4_end_addr:
             # Extract the 1st data that is readily available
             pc_val = dut.inst_pc_o.value.integer
             inst_data_val = dut.inst_rd_o.value.integer

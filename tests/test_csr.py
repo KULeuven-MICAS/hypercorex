@@ -306,13 +306,18 @@ async def csr_dut(dut):
 
     await write_csr(dut, golden_val, set_parameters.INST_LOOP_CTRL_REG_ADDR)
 
-    # Check if value is correct
-    # Only lower 2 bits
+    # Check if values are correct
     test_val = dut.csr_inst_loop_mode_o.value.integer
-    check_result(test_val, (golden_val & 0x0000_0003))
+    check_result(test_val, (golden_val & 0x0000_0007))
+
+    test_val = dut.csr_inst_loop_hvdim_sel_o.value.integer
+    check_result(test_val, (golden_val & 0x0000_0018) >> 3)
+
+    test_val = dut.csr_inst_loop_hvdim_extend_count_o.value.integer
+    check_result(test_val, (golden_val & 0x0000_03E0) >> 5)
 
     csr_read_val = await read_csr(dut, set_parameters.INST_LOOP_CTRL_REG_ADDR)
-    check_result(csr_read_val, (golden_val & 0x0000_0003))
+    check_result(csr_read_val, (golden_val & 0x0000_03FF))
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("         Instruction Jump Address           ")
@@ -327,44 +332,31 @@ async def csr_dut(dut):
     # Check if value is correct
     # Make sure to shift the values accordingly
     test_val = dut.csr_loop_jump_addr1_o.value.integer
-    check_result(test_val, (golden_val & (set_parameters.INST_MEM_DEPTH - 1)))
+    await clock_and_time(dut.clk_i)
+    await clock_and_time(dut.clk_i)
+    await clock_and_time(dut.clk_i)
+    check_result(test_val, (golden_val & 0x0000_00FF))
 
     test_val = dut.csr_loop_jump_addr2_o.value.integer
     check_result(
         test_val,
-        (
-            (golden_val >> set_parameters.INST_MEM_ADDR_WIDTH)
-            & (set_parameters.INST_MEM_DEPTH - 1)
-        ),
+        ((golden_val >> set_parameters.JUMP_LOOP_WIDTH) & 0x0000_00FF),
     )
 
     test_val = dut.csr_loop_jump_addr3_o.value.integer
     check_result(
         test_val,
-        (
-            (golden_val >> (2 * set_parameters.INST_MEM_ADDR_WIDTH))
-            & (set_parameters.INST_MEM_DEPTH - 1)
-        ),
+        ((golden_val >> (2 * set_parameters.JUMP_LOOP_WIDTH)) & 0x0000_00FF),
+    )
+
+    test_val = dut.csr_loop_jump_addr4_o.value.integer
+    check_result(
+        test_val,
+        ((golden_val >> (3 * set_parameters.JUMP_LOOP_WIDTH)) & 0x0000_00FF),
     )
 
     csr_read_val = await read_csr(dut, set_parameters.INST_LOOP_JUMP_ADDR_REG_ADDR)
-    check_result(
-        csr_read_val,
-        (
-            golden_val
-            & (
-                (set_parameters.INST_MEM_DEPTH - 1)
-                | (
-                    set_parameters.INST_MEM_DEPTH - 1
-                    << set_parameters.INST_MEM_ADDR_WIDTH
-                )
-                | (
-                    set_parameters.INST_MEM_DEPTH - 1
-                    << 2 * set_parameters.INST_MEM_ADDR_WIDTH
-                )
-            )
-        ),
-    )
+    check_result(csr_read_val, golden_val)
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("         Instruction End Address            ")
@@ -378,44 +370,28 @@ async def csr_dut(dut):
     # Check if value is correct
     # Make sure to shift the values accordingly
     test_val = dut.csr_loop_end_addr1_o.value.integer
-    check_result(test_val, (golden_val & (set_parameters.INST_MEM_DEPTH - 1)))
+    check_result(test_val, (golden_val & 0x0000_00FF))
 
     test_val = dut.csr_loop_end_addr2_o.value.integer
     check_result(
         test_val,
-        (
-            (golden_val >> set_parameters.INST_MEM_ADDR_WIDTH)
-            & (set_parameters.INST_MEM_DEPTH - 1)
-        ),
+        ((golden_val >> set_parameters.JUMP_LOOP_WIDTH) & 0x0000_00FF),
     )
 
     test_val = dut.csr_loop_end_addr3_o.value.integer
     check_result(
         test_val,
-        (
-            (golden_val >> (2 * set_parameters.INST_MEM_ADDR_WIDTH))
-            & (set_parameters.INST_MEM_DEPTH - 1)
-        ),
+        ((golden_val >> (2 * set_parameters.JUMP_LOOP_WIDTH)) & 0x0000_00FF),
+    )
+
+    test_val = dut.csr_loop_end_addr4_o.value.integer
+    check_result(
+        test_val,
+        ((golden_val >> (3 * set_parameters.JUMP_LOOP_WIDTH)) & 0x0000_00FF),
     )
 
     csr_read_val = await read_csr(dut, set_parameters.INST_LOOP_END_ADDR_REG_ADDR)
-    check_result(
-        csr_read_val,
-        (
-            golden_val
-            & (
-                (set_parameters.INST_MEM_DEPTH - 1)
-                | (
-                    set_parameters.INST_MEM_DEPTH - 1
-                    << set_parameters.INST_MEM_ADDR_WIDTH
-                )
-                | (
-                    set_parameters.INST_MEM_DEPTH - 1
-                    << 2 * set_parameters.INST_MEM_ADDR_WIDTH
-                )
-            )
-        ),
-    )
+    check_result(csr_read_val, golden_val)
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("         Instruction Loop Counts            ")
@@ -425,7 +401,7 @@ async def csr_dut(dut):
     golden_val = gen_rand_bits(set_parameters.REG_FILE_WIDTH)
     mask_val = (2**set_parameters.INST_LOOP_COUNT_WIDTH) - 1
 
-    await write_csr(dut, golden_val, set_parameters.INST_LOOP_COUNT_REG_ADDR)
+    await write_csr(dut, golden_val, set_parameters.INST_LOOP_COUNT1_REG_ADDR)
 
     # Check if value is correct
     # Make sure to shift the values accordingly
@@ -438,24 +414,26 @@ async def csr_dut(dut):
         ((golden_val >> set_parameters.INST_LOOP_COUNT_WIDTH) & (mask_val)),
     )
 
+    csr_read_val = await read_csr(dut, set_parameters.INST_LOOP_COUNT1_REG_ADDR)
+    check_result(csr_read_val, golden_val)
+
+    # Generate random bits to write
+    golden_val = gen_rand_bits(set_parameters.REG_FILE_WIDTH)
+    mask_val = (2**set_parameters.INST_LOOP_COUNT_WIDTH) - 1
+
+    await write_csr(dut, golden_val, set_parameters.INST_LOOP_COUNT2_REG_ADDR)
+
     test_val = dut.csr_loop_count_addr3_o.value.integer
+    check_result(test_val, (golden_val & (mask_val)))
+
+    test_val = dut.csr_loop_count_addr4_o.value.integer
     check_result(
         test_val,
-        ((golden_val >> (2 * set_parameters.INST_LOOP_COUNT_WIDTH)) & (mask_val)),
+        ((golden_val >> set_parameters.INST_LOOP_COUNT_WIDTH) & (mask_val)),
     )
 
-    csr_read_val = await read_csr(dut, set_parameters.INST_LOOP_COUNT_REG_ADDR)
-    check_result(
-        csr_read_val,
-        (
-            golden_val
-            & (
-                (mask_val)
-                | (mask_val << set_parameters.INST_LOOP_COUNT_WIDTH)
-                | (mask_val << 2 * set_parameters.INST_LOOP_COUNT_WIDTH)
-            )
-        ),
-    )
+    csr_read_val = await read_csr(dut, set_parameters.INST_LOOP_COUNT2_REG_ADDR)
+    check_result(csr_read_val, golden_val)
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("         Data Slicer Configurations         ")
