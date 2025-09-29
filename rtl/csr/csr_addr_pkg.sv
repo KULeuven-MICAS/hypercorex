@@ -46,7 +46,8 @@ package csr_addr_pkg;
   // Instruction loop control
   localparam logic [31:0] INST_LOOP_CTRL_REG_ADDR         = 32'd9;
   localparam logic [ 4:0] INST_LOOP_CTRL_MODE_BIT_ADDR    = 5'd0;
-  localparam logic [ 4:0] INST_LOOP_CTRL_HVDIM_EXTEND_COUNT = 5'd2;
+  localparam logic [ 4:0] INST_LOOP_HDIM_SEL_BIT_ADDR     = 5'd3;
+  localparam logic [ 4:0] INST_LOOP_CTRL_HVDIM_EXTEND_COUNT = 5'd5;
 
   localparam logic [31:0] INST_LOOP_JUMP_ADDR_REG_ADDR    = 32'd10;
   localparam logic [ 4:0] INST_LOOP_JUMP_ADDR1_BIT_ADDR   = 5'd0;
@@ -58,25 +59,27 @@ package csr_addr_pkg;
   localparam logic [ 4:0] INST_LOOP_END_ADDR2_BIT_ADDR    = 5'd8;
   localparam logic [ 4:0] INST_LOOP_END_ADDR3_BIT_ADDR    = 5'd16;
 
-  localparam logic [31:0] INST_LOOP_COUNT_REG_ADDR        = 32'd12;
-  localparam logic [ 4:0] INST_LOOP_COUNT_ADDR1_BIT_ADDR  = 5'd0;
-  localparam logic [ 4:0] INST_LOOP_COUNT_ADDR2_BIT_ADDR  = 5'd8;
-  localparam logic [ 4:0] INST_LOOP_COUNT_ADDR3_BIT_ADDR  = 5'd16;
+  localparam logic [31:0] INST_LOOP_COUNT1_REG_ADDR        = 32'd12;
+  localparam logic [ 4:0] INST_LOOP_COUNT1_ADDR1_BIT_ADDR  = 5'd0;
+  localparam logic [ 4:0] INST_LOOP_COUNT1_ADDR2_BIT_ADDR  = 5'd16;
+  localparam logic [31:0] INST_LOOP_COUNT2_REG_ADDR        = 32'd13;
+  localparam logic [ 4:0] INST_LOOP_COUNT2_ADDR1_BIT_ADDR  = 5'd0;
+  localparam logic [ 4:0] INST_LOOP_COUNT2_ADDR2_BIT_ADDR  = 5'd16;
 
   // Data slicer configurationsss
-  localparam logic [31:0] DATA_SRC_CTRL_REG_ADDR          = 32'd13;
+  localparam logic [31:0] DATA_SRC_CTRL_REG_ADDR          = 32'd14;
   localparam logic [ 4:0] DATA_SLICE_MODE_A_BIT_ADDR      = 5'd0;
   localparam logic [ 4:0] DATA_SLICE_MODE_B_BIT_ADDR      = 5'd2;
   localparam logic [ 4:0] DATA_SRC_SEL_BIT_ADDR           = 5'd4;
-  localparam logic [31:0] DATA_SLICE_NUM_ELEM_A_REG_ADDR  = 32'd14;
-  localparam logic [31:0] DATA_SLICE_NUM_ELEM_B_REG_ADDR  = 32'd15;
-  localparam logic [31:0] DATA_SRC_AUTO_START_A_REG_ADDR  = 32'd16;
-  localparam logic [31:0] DATA_SRC_AUTO_START_B_REG_ADDR  = 32'd17;
-  localparam logic [31:0] DATA_SRC_AUTO_NUM_A_REG_ADDR    = 32'd18;
-  localparam logic [31:0] DATA_SRC_AUTO_NUM_B_REG_ADDR    = 32'd19;
+  localparam logic [31:0] DATA_SLICE_NUM_ELEM_A_REG_ADDR  = 32'd15;
+  localparam logic [31:0] DATA_SLICE_NUM_ELEM_B_REG_ADDR  = 32'd16;
+  localparam logic [31:0] DATA_SRC_AUTO_START_A_REG_ADDR  = 32'd17;
+  localparam logic [31:0] DATA_SRC_AUTO_START_B_REG_ADDR  = 32'd18;
+  localparam logic [31:0] DATA_SRC_AUTO_NUM_A_REG_ADDR    = 32'd19;
+  localparam logic [31:0] DATA_SRC_AUTO_NUM_B_REG_ADDR    = 32'd20;
 
   // Observable general purpose register
-  localparam logic [31:0] OBSERVABLE_REG_DATA             = 32'd20;
+  localparam logic [31:0] OBSERVABLE_REG_DATA             = 32'd21;
 
 endpackage
 // verilog_lint: waive-stop parameter-name-style

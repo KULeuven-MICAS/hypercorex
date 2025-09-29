@@ -26,8 +26,8 @@ module csr import csr_addr_pkg::*; #(
   parameter int unsigned SlicerModeWidth    = 2,
   parameter int unsigned SrcSelWidth        = 2,
   parameter int unsigned ObservableWidth    = 4,
-  parameter int unsigned InstMemAddrWidth   = $clog2(InstMemDepth),
-  parameter int unsigned InstLoopCountWidth = 10,
+  parameter int unsigned InstMemAddrWidth   = 8, // Previously $clog2(InstMemDepth)
+  parameter int unsigned InstLoopCountWidth = 16,
   parameter int unsigned RegBitAddrWidth    = $clog2(CsrAddrWidth)
 )(
   //---------------------------
@@ -78,18 +78,22 @@ module csr import csr_addr_pkg::*; #(
   input  logic [InstMemAddrWidth-1:0]               csr_inst_pc_i,
   input  logic [    CsrDataWidth-1:0]               csr_inst_at_addr_i,
   // Instruction loop control
-  output logic                  [1:0]               csr_inst_loop_mode_o,
+  output logic                  [2:0]               csr_inst_loop_mode_o,
+  output logic                  [1:0]               csr_inst_loop_hvdim_sel_o,
   output logic                  [4:0]               csr_inst_loop_hvdim_extend_count_o,
   output logic                                      csr_inst_loop_hvdim_extend_enable_o,
   output logic [InstMemAddrWidth-1:0]               csr_loop_jump_addr1_o,
   output logic [InstMemAddrWidth-1:0]               csr_loop_jump_addr2_o,
   output logic [InstMemAddrWidth-1:0]               csr_loop_jump_addr3_o,
+  output logic [InstMemAddrWidth-1:0]               csr_loop_jump_addr4_o,
   output logic [InstMemAddrWidth-1:0]               csr_loop_end_addr1_o,
   output logic [InstMemAddrWidth-1:0]               csr_loop_end_addr2_o,
   output logic [InstMemAddrWidth-1:0]               csr_loop_end_addr3_o,
+  output logic [InstMemAddrWidth-1:0]               csr_loop_end_addr4_o,
   output logic [InstLoopCountWidth-1:0]             csr_loop_count_addr1_o,
   output logic [InstLoopCountWidth-1:0]             csr_loop_count_addr2_o,
   output logic [InstLoopCountWidth-1:0]             csr_loop_count_addr3_o,
+  output logic [InstLoopCountWidth-1:0]             csr_loop_count_addr4_o,
   output logic [ ObservableWidth-1:0]               csr_obs_logic_o,
   // Data slicer configurations
   output logic [ SlicerModeWidth-1:0]               csr_data_slice_mode_a_o,
@@ -207,27 +211,17 @@ module csr import csr_addr_pkg::*; #(
       end
       INST_LOOP_CTRL_REG_ADDR: begin
         csr_rd_data = {
-                                                       {(CsrDataWidth-7){1'b0}}, // [31:7] -- Unused
-          csr_set[INST_LOOP_CTRL_REG_ADDR][7:INST_LOOP_CTRL_HVDIM_EXTEND_COUNT], //  [6:2] Number of HV dim extension counts
-          csr_set[INST_LOOP_CTRL_REG_ADDR][     1:INST_LOOP_CTRL_MODE_BIT_ADDR]  //  [1:0] RW Instruction loop mode
+                                                      {(CsrDataWidth-10){1'b0}}, // [31:10] -- Unused
+          csr_set[INST_LOOP_CTRL_REG_ADDR][9:INST_LOOP_CTRL_HVDIM_EXTEND_COUNT], // [ 9: 5] Number of HV dim extension counts
+          csr_set[INST_LOOP_CTRL_REG_ADDR][      4:INST_LOOP_HDIM_SEL_BIT_ADDR], // [ 4: 3] Number of HV dim extension counts
+          csr_set[INST_LOOP_CTRL_REG_ADDR][     2:INST_LOOP_CTRL_MODE_BIT_ADDR]  // [ 2: 0] RW Instruction loop mode
         };
       end
       INST_LOOP_JUMP_ADDR_REG_ADDR,
-      INST_LOOP_END_ADDR_REG_ADDR: begin
-        csr_rd_data = {
-                                                 {(CsrDataWidth-22){1'b0}}, // [31:22] -- Unused
-          csr_set[csr_req_addr_i][3*InstMemAddrWidth-1:2*InstMemAddrWidth], //   [7:0] RW Loop addr3
-          csr_set[csr_req_addr_i][2*InstMemAddrWidth-1:  InstMemAddrWidth], //   [7:0] RW Loop addr2
-          csr_set[csr_req_addr_i][  InstMemAddrWidth-1:                 0]  //   [7:0] RW Loop addr1
-        };
-      end
-      INST_LOOP_COUNT_REG_ADDR: begin
-        csr_rd_data = {
-                                                     {(CsrDataWidth-30){1'b0}}, // [31:30] -- Unused
-          csr_set[csr_req_addr_i][3*InstLoopCountWidth-1:2*InstLoopCountWidth], // [29:20] RW count3
-          csr_set[csr_req_addr_i][2*InstLoopCountWidth-1:  InstLoopCountWidth], // [19:10] RW count2
-          csr_set[csr_req_addr_i][  InstLoopCountWidth-1:                   0]  // [  9:0] RW count1
-        };
+      INST_LOOP_END_ADDR_REG_ADDR,
+      INST_LOOP_COUNT1_REG_ADDR,
+      INST_LOOP_COUNT2_REG_ADDR: begin
+        csr_rd_data = csr_set[csr_req_addr_i];
       end
       DATA_SRC_CTRL_REG_ADDR: begin
         csr_rd_data = {
@@ -370,21 +364,26 @@ module csr import csr_addr_pkg::*; #(
     //---------------------------
     // Instruction loop control
     //---------------------------
-    csr_inst_loop_mode_o                =   csr_set[INST_LOOP_CTRL_REG_ADDR][     1:INST_LOOP_CTRL_MODE_BIT_ADDR];
-    csr_inst_loop_hvdim_extend_count_o  =   csr_set[INST_LOOP_CTRL_REG_ADDR][6:INST_LOOP_CTRL_HVDIM_EXTEND_COUNT];
+    csr_inst_loop_mode_o                =   csr_set[INST_LOOP_CTRL_REG_ADDR][     2:INST_LOOP_CTRL_MODE_BIT_ADDR];
+    csr_inst_loop_hvdim_sel_o           =   csr_set[INST_LOOP_CTRL_REG_ADDR][     4:INST_LOOP_HDIM_SEL_BIT_ADDR ];
+    csr_inst_loop_hvdim_extend_count_o  =   csr_set[INST_LOOP_CTRL_REG_ADDR][9:INST_LOOP_CTRL_HVDIM_EXTEND_COUNT];
     csr_inst_loop_hvdim_extend_enable_o = |(csr_inst_loop_hvdim_extend_count_o);
 
     csr_loop_jump_addr1_o      = csr_set[INST_LOOP_JUMP_ADDR_REG_ADDR][  InstMemAddrWidth-1:                 0];
     csr_loop_jump_addr2_o      = csr_set[INST_LOOP_JUMP_ADDR_REG_ADDR][2*InstMemAddrWidth-1:  InstMemAddrWidth];
     csr_loop_jump_addr3_o      = csr_set[INST_LOOP_JUMP_ADDR_REG_ADDR][3*InstMemAddrWidth-1:2*InstMemAddrWidth];
+    csr_loop_jump_addr4_o      = csr_set[INST_LOOP_JUMP_ADDR_REG_ADDR][4*InstMemAddrWidth-1:3*InstMemAddrWidth];
 
     csr_loop_end_addr1_o       = csr_set[INST_LOOP_END_ADDR_REG_ADDR][  InstMemAddrWidth-1:                 0];
     csr_loop_end_addr2_o       = csr_set[INST_LOOP_END_ADDR_REG_ADDR][2*InstMemAddrWidth-1:  InstMemAddrWidth];
     csr_loop_end_addr3_o       = csr_set[INST_LOOP_END_ADDR_REG_ADDR][3*InstMemAddrWidth-1:2*InstMemAddrWidth];
+    csr_loop_end_addr4_o       = csr_set[INST_LOOP_END_ADDR_REG_ADDR][4*InstMemAddrWidth-1:3*InstMemAddrWidth];
 
-    csr_loop_count_addr1_o     = csr_set[INST_LOOP_COUNT_REG_ADDR][  InstLoopCountWidth-1:                 0];
-    csr_loop_count_addr2_o     = csr_set[INST_LOOP_COUNT_REG_ADDR][2*InstLoopCountWidth-1:  InstLoopCountWidth];
-    csr_loop_count_addr3_o     = csr_set[INST_LOOP_COUNT_REG_ADDR][3*InstLoopCountWidth-1:2*InstLoopCountWidth];
+    // Two separate chunks
+    csr_loop_count_addr1_o     = csr_set[INST_LOOP_COUNT1_REG_ADDR][  InstLoopCountWidth-1:                   0];
+    csr_loop_count_addr2_o     = csr_set[INST_LOOP_COUNT1_REG_ADDR][2*InstLoopCountWidth-1:  InstLoopCountWidth];
+    csr_loop_count_addr3_o     = csr_set[INST_LOOP_COUNT2_REG_ADDR][  InstLoopCountWidth-1:                   0];
+    csr_loop_count_addr4_o     = csr_set[INST_LOOP_COUNT2_REG_ADDR][2*InstLoopCountWidth-1:  InstLoopCountWidth];
 
     //---------------------------
     // Data slicer configurations
