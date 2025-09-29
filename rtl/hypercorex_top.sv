@@ -168,8 +168,10 @@ module hypercorex_top # (
   logic [    CsrDataWidth-1:0]                   inst_at_addr;
   // Instruction loop control
   logic                  [2:0]                   inst_loop_mode;
+  logic                  [1:0]                   inst_loop_hvdim_sel;
   logic                  [4:0]                   inst_loop_hvdim_extend_count;
   logic                                          inst_loop_hvdim_extend_enable;
+  logic                                          inst_loop_hvdim_extend_increment;
   logic [InstMemAddrWidth-1:0]                   loop_jump_addr1;
   logic [InstMemAddrWidth-1:0]                   loop_jump_addr2;
   logic [InstMemAddrWidth-1:0]                   loop_jump_addr3;
@@ -382,8 +384,9 @@ module hypercorex_top # (
     .csr_inst_at_addr_i         ( inst_at_addr          ),
     // Instruction loop control
     .csr_inst_loop_mode_o       ( inst_loop_mode        ),
-    .csr_inst_loop_hvdim_extend_count_o ( inst_loop_hvdim_extend_count ),
-    .csr_inst_loop_hvdim_extend_enable_o ( inst_loop_hvdim_extend_enable ),
+    .csr_inst_loop_hvdim_sel_o            ( inst_loop_hvdim_sel           ),
+    .csr_inst_loop_hvdim_extend_count_o   ( inst_loop_hvdim_extend_count  ),
+    .csr_inst_loop_hvdim_extend_enable_o  ( inst_loop_hvdim_extend_enable ),
     .csr_loop_jump_addr1_o      ( loop_jump_addr1       ),
     .csr_loop_jump_addr2_o      ( loop_jump_addr2       ),
     .csr_loop_jump_addr3_o      ( loop_jump_addr3       ),
@@ -448,6 +451,9 @@ module hypercorex_top # (
     // CSR control for loop control
     //---------------------------
     .inst_loop_mode_i           ( inst_loop_mode       ),
+    .inst_loop_hvdim_sel_i              ( inst_loop_hvdim_sel              ),
+    .inst_loop_hvdim_extend_enable_i    ( inst_loop_hvdim_extend_enable    ),
+    .inst_loop_hvdim_extend_increment_o ( inst_loop_hvdim_extend_increment ),
     .inst_loop_jump_addr1_i     ( loop_jump_addr1      ),
     .inst_loop_jump_addr2_i     ( loop_jump_addr2      ),
     .inst_loop_jump_addr3_i     ( loop_jump_addr3      ),
@@ -652,6 +658,12 @@ module hypercorex_top # (
     .highdim_b_data_i           ( highdim_b_data_i     ),
     .im_b_data_valid_i          ( src_sel_b_valid      ),
     .im_b_data_ready_o          ( src_sel_b_ready      ),
+    //---------------------------
+    // For dimensional expansion
+    //---------------------------
+    .extend_enable_i            ( inst_loop_hvdim_extend_enable    ),
+    .extend_increment_i         ( inst_loop_hvdim_extend_increment ),
+    .extend_count_i             ( inst_loop_hvdim_extend_count     ),
     //---------------------------
     // Outputs towards the encoder
     //---------------------------

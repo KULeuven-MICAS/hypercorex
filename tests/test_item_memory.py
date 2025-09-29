@@ -7,13 +7,21 @@
   that contains both the CiM and CA90
 """
 
+import random
 import set_parameters
 import cocotb
-from cocotb.triggers import Timer
+from cocotb.clock import Clock
 import pytest
 import sys
 
-from util import get_root, setup_and_run, check_result_array, numbin2list, hvlist2num
+from util import (
+    get_root,
+    setup_and_run,
+    check_result_array,
+    numbin2list,
+    hvlist2num,
+    clock_and_time,
+)
 
 # Add hdc utility functions
 hdc_util_path = get_root() + "/hdc_exp/"
@@ -65,6 +73,9 @@ async def item_memory_dut(dut):
             im_seed_input << set_parameters.REG_FILE_WIDTH
         ) + im_seed_input_list[num_im_banks - i - 1]
 
+    # Reset
+    dut.rst_ni.value = 0
+
     # Input the CiM seed and the iM seeds
     dut.cim_seed_hv_i.value = cim_seed_input
     dut.im_seed_hv_i.value = im_seed_input
@@ -74,8 +85,22 @@ async def item_memory_dut(dut):
     dut.im_a_addr_i.value = 0
     dut.im_b_addr_i.value = 0
 
+    # Set dimensional expansion to 0 first
+    dut.enable_i.value = 0
+    dut.extend_enable_i.value = 0
+    dut.extend_increment_i.value = 0
+    dut.extend_count_i.value = 0
+
+    # Initialize clock always
+    clock = Clock(dut.clk_i, 10, units="ns")
+    cocotb.start_soon(clock.start(start_high=False))
+
     # Propagate time for logic
-    await Timer(1, units="ps")
+    await clock_and_time(dut.clk_i)
+
+    dut.rst_ni.value = 1
+
+    await clock_and_time(dut.clk_i)
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("         Checking CA90 Item Memory          ")
@@ -88,7 +113,7 @@ async def item_memory_dut(dut):
     for i in range(set_parameters.NUM_TOT_IM):
         dut.im_a_addr_i.value = i
         dut.im_b_addr_i.value = i
-        await Timer(1, units="ps")
+        await clock_and_time(dut.clk_i)
 
         actual_val_a = dut.im_a_o.value.integer
         actual_val_b = dut.im_b_o.value.integer
@@ -110,7 +135,7 @@ async def item_memory_dut(dut):
     dut.im_b_addr_i.value = 0
 
     # Propagate time for logic
-    await Timer(1, units="ps")
+    await clock_and_time(dut.clk_i)
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("               Checking CiM                 ")
@@ -124,7 +149,7 @@ async def item_memory_dut(dut):
         dut.im_a_addr_i.value = i
 
         # Propagate time for logic
-        await Timer(1, units="ps")
+        await clock_and_time(dut.clk_i)
 
         # Obtain actual value
         actual_val_a = dut.im_a_o.value.integer
@@ -133,10 +158,49 @@ async def item_memory_dut(dut):
         # Compare to golden
         check_result_array(actual_val_a, golden_cim[i])
 
+    # Bring back to 0
+    dut.port_a_cim_i.value = 0
+    dut.im_a_addr_i.value = 0
+    dut.im_b_addr_i.value = 0
+
+    await clock_and_time(dut.clk_i)
+
+    cocotb.log.info(" ------------------------------------------ ")
+    cocotb.log.info("         Checking Extension Counter         ")
+    cocotb.log.info(" ------------------------------------------ ")
+
+    # Enable extension
+    dut.enable_i.value = 1
+    dut.extend_enable_i.value = 1
+
+    random_count = random.randint(5, 16)
+    dut.extend_count_i.value = random_count
+    await clock_and_time(dut.clk_i)
+
+    for i in range(random_count):
+        # Extend increment
+        dut.extend_increment_i.value = 1
+
+        # Extract data
+        actual_val_a = dut.im_a_o.value.integer
+        actual_val_b = dut.im_b_o.value.integer
+
+        # Convert actual values to binary list
+        actual_val_a = numbin2list(actual_val_a, set_parameters.HV_DIM)
+        actual_val_b = numbin2list(actual_val_b, set_parameters.HV_DIM)
+
+        # Check arrays if they are equal
+        # Unfortunately, this is needed because there are
+        # bit-width limitations for integer conversions
+        check_result_array(actual_val_a, golden_im[i])
+        check_result_array(actual_val_b, golden_im[i])
+
+        await clock_and_time(dut.clk_i)
+
     # This is for waveform checking later
-    for i in range(set_parameters.TEST_RUNS):
+    for i in range(10):
         # Propagate time for logic
-        await Timer(1, units="ps")
+        await clock_and_time(dut.clk_i)
 
 
 # Actual test run

@@ -27,6 +27,9 @@ module inst_loop_control # (
   input  logic [InstMemAddrWidth-1:0]  inst_pc_i,
   // Loop control from CSR registers
   input  logic [    LoopNumWidth-1:0]  inst_loop_mode_i,
+  input  logic                  [1:0]  inst_loop_hvdim_sel_i,
+  input  logic                         inst_loop_hvdim_extend_enable_i,
+  output logic                         inst_loop_hvdim_extend_increment_o,
   // Jump addresses
   input  logic [InstMemAddrWidth-1:0]  inst_loop_jump_addr1_i,
   input  logic [InstMemAddrWidth-1:0]  inst_loop_jump_addr2_i,
@@ -243,6 +246,35 @@ module inst_loop_control # (
       endcase
   end
 
-
+  //---------------------------
+  // Assignment for dimension expansion loop control
+  //---------------------------
+  always_comb begin
+    if (inst_loop_hvdim_extend_enable_i) begin
+      case(inst_loop_hvdim_sel_i)
+        2'b00: begin
+          // Extend on loop 1D
+          inst_loop_hvdim_extend_increment_o = loop1_hit_end_addr;
+        end
+        2'b01: begin
+          // Extend on loop 2D
+          inst_loop_hvdim_extend_increment_o = loop2_hit_end_addr;
+        end
+        2'b10: begin
+          // Extend on loop 3D
+          inst_loop_hvdim_extend_increment_o = loop3_hit_end_addr;
+        end
+        2'b11: begin
+          // Extend on loop 4D
+          inst_loop_hvdim_extend_increment_o = loop4_hit_end_addr;
+        end
+        default: begin
+          inst_loop_hvdim_extend_increment_o = 1'b0;
+        end
+      endcase
+    end else begin
+      inst_loop_hvdim_extend_increment_o = 1'b0;
+    end
+  end
 
 endmodule

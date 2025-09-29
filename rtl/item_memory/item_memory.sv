@@ -22,11 +22,21 @@ module item_memory #(
   parameter int unsigned NumImSets   = NumTotIm/NumPerImBank
 
 )(
+  // Clock and reset
+  input  logic                                  clk_i,
+  input  logic                                  rst_ni,
+  // Configurations from CSR
   input  logic                                  port_a_cim_i,
   input  logic                [  SeedWidth-1:0] cim_seed_hv_i,
   input  logic [NumImSets-1:0][  SeedWidth-1:0] im_seed_hv_i,
   input  logic                [ImAddrWidth-1:0] im_a_addr_i,
   input  logic                [ImAddrWidth-1:0] im_b_addr_i,
+  // For dimensional expansion
+  input  logic                                  enable_i,
+  input  logic                                  extend_enable_i,
+  input  logic                                  extend_increment_i,
+  input  logic                [            4:0] extend_count_i,
+  // Outputs towards the encoder
   output logic                [HVDimension-1:0] im_a_o,
   output logic                [HVDimension-1:0] im_b_o
 );
@@ -51,6 +61,12 @@ module item_memory #(
 
   logic [1:0][ ImAddrWidth-1:0] mux_im_addr_in;
   logic      [ ImAddrWidth-1:0] mux_im_addr_out;
+
+  logic [ImAddrWidth-1:0] im_addr_a_ext;
+  logic [ImAddrWidth-1:0] im_addr_b_ext;
+
+  logic [ImAddrWidth-1:0] im_ext_counter;
+  logic                   im_ext_counter_end;
 
   //---------------------------
   // Input MUX for CiM
@@ -82,7 +98,7 @@ module item_memory #(
   //---------------------------
   // Input MUX for iM
   //---------------------------
-  assign mux_im_addr_in[0] = im_a_addr_i[ImAddrWidth-1:0];
+  assign mux_im_addr_in[0] = im_addr_a_ext[ImAddrWidth-1:0];
   assign mux_im_addr_in[1] = {ImAddrWidth{1'b0}};
 
   mux #(
@@ -95,32 +111,63 @@ module item_memory #(
   );
 
   //---------------------------
+  // Dimensional expansion
+  //---------------------------
+  assign im_ext_counter_end = (im_ext_counter == extend_count_i-1);
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      im_ext_counter <= '0;
+    end else begin
+      if (extend_enable_i && enable_i) begin
+        if (im_ext_counter_end && extend_increment_i) begin
+          im_ext_counter <= '0;
+        end else if (extend_increment_i) begin
+          im_ext_counter <= im_ext_counter + 1'b1;
+        end else begin
+          im_ext_counter <= im_ext_counter;
+        end
+      end else begin
+        im_ext_counter <= '0;
+      end
+    end
+  end
+
+  assign im_addr_a_ext = (extend_enable_i) ?
+                         (im_a_addr_i + im_ext_counter):
+                         im_a_addr_i;
+
+  assign im_addr_b_ext = (extend_enable_i) ?
+                         (im_b_addr_i + im_ext_counter):
+                         im_b_addr_i;
+
+  //---------------------------
   // CA90 iM Module
   //---------------------------
   if (EnableRomIM) begin: gen_use_rom_im
     rom_item_memory #(
-    .HVDimension  ( HVDimension     ),
-    .NumTotIm     ( NumTotIm        ),
-    .SeedWidth    ( SeedWidth       )
-  ) i_rom_item_memory (
-    .im_sel_a_i   ( mux_im_addr_out ),
-    .im_sel_b_i   ( im_b_addr_i     ),
-    .im_a_o       ( im_a            ),
-    .im_b_o       ( im_b_o          )
-  );
+      .HVDimension  ( HVDimension     ),
+      .NumTotIm     ( NumTotIm        ),
+      .SeedWidth    ( SeedWidth       )
+    ) i_rom_item_memory (
+      .im_sel_a_i   ( mux_im_addr_out ),
+      .im_sel_b_i   ( im_addr_b_ext   ),
+      .im_a_o       ( im_a            ),
+      .im_b_o       ( im_b_o          )
+    );
   end else begin: gen_use_ca90_im
     ca90_item_memory #(
-    .HVDimension  ( HVDimension     ),
-    .NumTotIm     ( NumTotIm        ),
-    .NumPerImBank ( NumPerImBank    ),
-    .SeedWidth    ( SeedWidth       )
-  ) i_ca90_item_memory (
-    .seed_hv_i    ( im_seed_hv_i    ),
-    .im_sel_a_i   ( mux_im_addr_out ),
-    .im_sel_b_i   ( im_b_addr_i     ),
-    .im_a_o       ( im_a            ),
-    .im_b_o       ( im_b_o          )
-  );
+      .HVDimension  ( HVDimension     ),
+      .NumTotIm     ( NumTotIm        ),
+      .NumPerImBank ( NumPerImBank    ),
+      .SeedWidth    ( SeedWidth       )
+    ) i_ca90_item_memory (
+      .seed_hv_i    ( im_seed_hv_i    ),
+      .im_sel_a_i   ( mux_im_addr_out ),
+      .im_sel_b_i   ( im_addr_b_ext   ),
+      .im_a_o       ( im_a            ),
+      .im_b_o       ( im_b_o          )
+    );
   end
 
   //---------------------------
