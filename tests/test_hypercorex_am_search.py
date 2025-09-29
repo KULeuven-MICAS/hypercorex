@@ -189,7 +189,7 @@ async def tb_hypercorex_dut(dut):
     # Note that we are reading out all ortho im values
     loop_count = await config_inst_ctrl(
         dut=dut,
-        reg_addr=set_parameters.INST_LOOP_COUNT_REG_ADDR,
+        reg_addr=set_parameters.INST_LOOP_COUNT1_REG_ADDR,
         val1=num_hv,
         val2=0,
         val3=0,
@@ -211,7 +211,7 @@ async def tb_hypercorex_dut(dut):
     check_result(loop_end_addr, read_loop_end_addr)
 
     # Check if the loop count is written correctly
-    read_loop_count = await read_csr(dut, set_parameters.INST_LOOP_COUNT_REG_ADDR)
+    read_loop_count = await read_csr(dut, set_parameters.INST_LOOP_COUNT1_REG_ADDR)
     check_result(loop_count, read_loop_count)
 
     cocotb.log.info(" ------------------------------------------ ")

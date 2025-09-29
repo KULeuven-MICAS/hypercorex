@@ -109,17 +109,7 @@ async def tb_hypercorex_dut(dut):
     # Read back the value
     read_val = await read_csr(dut, set_parameters.INST_LOOP_CTRL_REG_ADDR)
     # Mask only the lower 2 bits
-    check_result((golden_val & 0x0000_0003), read_val)
-
-    # General mask for the 3*INST_MEM_ADDR_WIDTH bits of loop registers
-    mask = (
-        (set_parameters.INST_MEM_DEPTH - 1)
-        | ((set_parameters.INST_MEM_DEPTH - 1) << set_parameters.INST_MEM_ADDR_WIDTH)
-        | (
-            (set_parameters.INST_MEM_DEPTH - 1)
-            << 2 * set_parameters.INST_MEM_ADDR_WIDTH
-        )
-    )
+    check_result((golden_val & 0x0000_03FF), read_val)
 
     # Write to inst loop jump
     golden_val = gen_rand_bits(set_parameters.REG_FILE_WIDTH)
@@ -127,8 +117,7 @@ async def tb_hypercorex_dut(dut):
 
     # Read back the value
     read_val = await read_csr(dut, set_parameters.INST_LOOP_JUMP_ADDR_REG_ADDR)
-    # Mask only the lower 3*INST_MEM_ADDR_WIDTH bits
-    check_result((golden_val & mask), read_val)
+    check_result(golden_val, read_val)
 
     # Write to inst loop end
     golden_val = gen_rand_bits(set_parameters.REG_FILE_WIDTH)
@@ -136,25 +125,25 @@ async def tb_hypercorex_dut(dut):
 
     # Read back the value
     read_val = await read_csr(dut, set_parameters.INST_LOOP_END_ADDR_REG_ADDR)
-    # Mask only the lower 3*INST_MEM_ADDR_WIDTH bits
-    check_result((golden_val & mask), read_val)
+    check_result(golden_val, read_val)
 
     # Write to inst loop count
     golden_val = gen_rand_bits(set_parameters.REG_FILE_WIDTH)
-    await write_csr(dut, set_parameters.INST_LOOP_COUNT_REG_ADDR, golden_val)
-
-    # Mask is of different size for loop counters
-    mask_val = (2**set_parameters.INST_LOOP_COUNT_WIDTH) - 1
-    mask = (
-        mask_val
-        | (mask_val << set_parameters.INST_LOOP_COUNT_WIDTH)
-        | (mask_val << 2 * set_parameters.INST_LOOP_COUNT_WIDTH)
-    )
+    await write_csr(dut, set_parameters.INST_LOOP_COUNT1_REG_ADDR, golden_val)
 
     # Read back the value
-    read_val = await read_csr(dut, set_parameters.INST_LOOP_COUNT_REG_ADDR)
+    read_val = await read_csr(dut, set_parameters.INST_LOOP_COUNT1_REG_ADDR)
     # Mask only the lower 3*INST_MEM_ADDR_WIDTH bits
-    check_result((golden_val & mask), read_val)
+    check_result(golden_val, read_val)
+
+    # Write to inst loop count
+    golden_val = gen_rand_bits(set_parameters.REG_FILE_WIDTH)
+    await write_csr(dut, set_parameters.INST_LOOP_COUNT2_REG_ADDR, golden_val)
+
+    # Read back the value
+    read_val = await read_csr(dut, set_parameters.INST_LOOP_COUNT2_REG_ADDR)
+    # Mask only the lower 3*INST_MEM_ADDR_WIDTH bits
+    check_result(golden_val, read_val)
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("     Writing to Loop Control Registers      ")
