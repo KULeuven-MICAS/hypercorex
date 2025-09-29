@@ -332,33 +332,27 @@ async def csr_dut(dut):
     # Check if value is correct
     # Make sure to shift the values accordingly
     test_val = dut.csr_loop_jump_addr1_o.value.integer
-    check_result(test_val, (golden_val & (set_parameters.INST_MEM_DEPTH - 1)))
+    await clock_and_time(dut.clk_i)
+    await clock_and_time(dut.clk_i)
+    await clock_and_time(dut.clk_i)
+    check_result(test_val, (golden_val & 0x0000_00FF))
 
     test_val = dut.csr_loop_jump_addr2_o.value.integer
     check_result(
         test_val,
-        (
-            (golden_val >> set_parameters.INST_MEM_ADDR_WIDTH)
-            & (set_parameters.INST_MEM_DEPTH - 1)
-        ),
+        ((golden_val >> set_parameters.JUMP_LOOP_WIDTH) & 0x0000_00FF),
     )
 
     test_val = dut.csr_loop_jump_addr3_o.value.integer
     check_result(
         test_val,
-        (
-            (golden_val >> (2 * set_parameters.INST_MEM_ADDR_WIDTH))
-            & (set_parameters.INST_MEM_DEPTH - 1)
-        ),
+        ((golden_val >> (2 * set_parameters.JUMP_LOOP_WIDTH)) & 0x0000_00FF),
     )
 
     test_val = dut.csr_loop_jump_addr4_o.value.integer
     check_result(
         test_val,
-        (
-            (golden_val >> (3 * set_parameters.INST_MEM_ADDR_WIDTH))
-            & (set_parameters.INST_MEM_DEPTH - 1)
-        ),
+        ((golden_val >> (3 * set_parameters.JUMP_LOOP_WIDTH)) & 0x0000_00FF),
     )
 
     csr_read_val = await read_csr(dut, set_parameters.INST_LOOP_JUMP_ADDR_REG_ADDR)
@@ -376,33 +370,24 @@ async def csr_dut(dut):
     # Check if value is correct
     # Make sure to shift the values accordingly
     test_val = dut.csr_loop_end_addr1_o.value.integer
-    check_result(test_val, (golden_val & (set_parameters.INST_MEM_DEPTH - 1)))
+    check_result(test_val, (golden_val & 0x0000_00FF))
 
     test_val = dut.csr_loop_end_addr2_o.value.integer
     check_result(
         test_val,
-        (
-            (golden_val >> set_parameters.INST_MEM_ADDR_WIDTH)
-            & (set_parameters.INST_MEM_DEPTH - 1)
-        ),
+        ((golden_val >> set_parameters.JUMP_LOOP_WIDTH) & 0x0000_00FF),
     )
 
     test_val = dut.csr_loop_end_addr3_o.value.integer
     check_result(
         test_val,
-        (
-            (golden_val >> (2 * set_parameters.INST_MEM_ADDR_WIDTH))
-            & (set_parameters.INST_MEM_DEPTH - 1)
-        ),
+        ((golden_val >> (2 * set_parameters.JUMP_LOOP_WIDTH)) & 0x0000_00FF),
     )
 
     test_val = dut.csr_loop_end_addr4_o.value.integer
     check_result(
         test_val,
-        (
-            (golden_val >> (3 * set_parameters.INST_MEM_ADDR_WIDTH))
-            & (set_parameters.INST_MEM_DEPTH - 1)
-        ),
+        ((golden_val >> (3 * set_parameters.JUMP_LOOP_WIDTH)) & 0x0000_00FF),
     )
 
     csr_read_val = await read_csr(dut, set_parameters.INST_LOOP_END_ADDR_REG_ADDR)
