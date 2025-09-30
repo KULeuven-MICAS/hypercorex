@@ -91,9 +91,11 @@ def setup_and_run(
             "1024",
         ]
         timescale = None
+        extra_args = None
     else:
         compile_args = None
         timescale = "1ns/1ps"
+        extra_args = ["+acc=rnb"]
 
     run(
         verilog_sources=verilog_sources,
@@ -107,6 +109,7 @@ def setup_and_run(
         timescale=timescale,
         waves=waves,
         parameters=parameters,
+        extra_args=extra_args,
     )
 
 

@@ -38,6 +38,7 @@ sources:
       #---------------------------
       # Level 0
       - rtl/assoc_memory/ham_dist.sv
+      - rtl/assoc_memory/binary_compare.sv
       # Level 1
       - rtl/assoc_memory/assoc_mem.sv
       # ----------------------------
