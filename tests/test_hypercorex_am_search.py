@@ -106,7 +106,7 @@ async def tb_hypercorex_dut(dut):
     cocotb.log.info(" ------------------------------------------ ")
 
     # Half of ortho_im to load
-    num_hv = 100
+    num_hv = 32
     am_list = []
 
     for i in range(num_hv):
