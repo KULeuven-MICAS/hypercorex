@@ -163,14 +163,14 @@ module assoc_mem #(
   // Fully combinational popcount
   //---------------------------
   ham_dist #(
-    .HVDimension    ( HVDimension    ),
-    .DataWidth      ( DataWidth      )
+    .HVDimension    ( HVDimension      ),
+    .DataWidth      ( CompareRegsWidth )
   ) i_ham_dist (
     // Inputs
-    .A_i            ( query_hv_i     ),
-    .B_i            ( class_hv_i     ),
+    .A_i            ( query_hv_i       ),
+    .B_i            ( class_hv_i       ),
     // Outputs
-    .hamming_dist_o ( ham_dist_score )
+    .hamming_dist_o ( ham_dist_score   )
   );
 
   //---------------------------
@@ -188,7 +188,7 @@ module assoc_mem #(
         end
       end else if (busy_reg && class_hv_success) begin
         // Starting from the FFFF state allows usu to "overflow"
-        compare_regs[am_counter_address] <= compare_regs[am_counter_address] + ham_dist_score;
+        compare_regs[am_counter_address] <= compare_regs[am_counter_address] + ham_dist_score + 1;
       end else begin
         for (int i = 0; i < NumCompareRegs; i++) begin
           compare_regs[i] <= compare_regs[i];
@@ -234,7 +234,7 @@ module assoc_mem #(
                    ( extend_enable_i && am_ext_counter_end && am_finished_set)) begin
         last_compare_reg_save <= 1'b1;
       end else begin
-        last_compare_reg_save <= last_compare_reg_save;
+        last_compare_reg_save <= 1'b0;
       end
     end
   end

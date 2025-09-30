@@ -750,6 +750,9 @@ module hypercorex_top # (
     .class_hv_i                 ( class_hv_i           ),
     .class_hv_valid_i           ( class_hv_valid_i     ),
     .class_hv_ready_o           ( class_hv_ready_o     ),
+    // Dimension expansion control
+    .extend_enable_i            ( inst_loop_hvdim_extend_enable ),
+    .extend_count_i             ( inst_loop_hvdim_extend_count  ),
     // CSR output side
     .am_num_class_i             ( am_num_pred          ),
     .am_predict_valid_o         ( am_pred_valid        ),
