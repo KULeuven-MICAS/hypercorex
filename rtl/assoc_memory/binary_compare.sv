@@ -48,8 +48,6 @@ module binary_compare #(
     generate
         for (i = 0; i < NumCompareRegs/2; i++) begin : gen_compare_stage_1
             always_comb begin
-                // stage1_vals[i] = {CompareRegsWidth{1'b0}};
-                // stage1_idxs[i] = {NumCompareWidth{1'b0}};
                 if (compare_regs[2*i] <= compare_regs[2*i+1]) begin
                     stage1_vals[i] = compare_regs[2*i];
                     stage1_idxs[i] = 2*i;
@@ -67,8 +65,6 @@ module binary_compare #(
     generate
         for (i = 0; i < NumCompareRegs/4; i++) begin : gen_compare_stage_2
             always_comb begin
-                // stage2_vals[i] = {CompareRegsWidth{1'b0}};
-                // stage2_idxs[i] = {NumCompareWidth{1'b0}};
                 if (stage1_vals[2*i] <= stage1_vals[2*i+1]) begin
                     stage2_vals[i] = stage1_vals[2*i];
                     stage2_idxs[i] = stage1_idxs[2*i];
@@ -86,8 +82,6 @@ module binary_compare #(
     generate
         for (i = 0; i < NumCompareRegs/8; i++) begin : gen_compare_stage_3
             always_comb begin
-                // stage3_vals[i] = {CompareRegsWidth{1'b0}};
-                // stage3_idxs[i] = {NumCompareWidth{1'b0}};
                 if (stage2_vals[2*i] <= stage2_vals[2*i+1]) begin
                     stage3_vals[i] = stage2_vals[2*i];
                     stage3_idxs[i] = stage2_idxs[2*i];
@@ -105,8 +99,6 @@ module binary_compare #(
     generate
         for (i = 0; i < NumCompareRegs/16; i++) begin : gen_compare_stage_4
             always_comb begin
-                // stage4_vals[i] = {CompareRegsWidth{1'b0}};
-                // stage4_idxs[i] = {NumCompareWidth{1'b0}};
                 if (stage3_vals[2*i] <= stage3_vals[2*i+1]) begin
                     stage4_vals[i] = stage3_vals[2*i];
                     stage4_idxs[i] = stage3_idxs[2*i];
