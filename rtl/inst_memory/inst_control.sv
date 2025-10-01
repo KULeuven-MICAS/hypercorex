@@ -187,6 +187,9 @@ module inst_control # (
   // be replaced with an actual memory
   //---------------------------
 
+  // TODO: temporary work around to align bitwidths for synthesis
+  localparam int unsigned InstRegDepthWidth = $clog2(InstMemDepth);
+
   reg_file_1w1r #(
     .DataWidth  ( RegAddrWidth      ),
     .NumRegs    ( InstMemDepth      )
@@ -196,11 +199,11 @@ module inst_control # (
     .rst_ni     ( rst_ni            ),
     // Write port
     .clr_i      ( clr_i             ),
-    .wr_addr_i  ( program_counter   ),
+    .wr_addr_i  ( program_counter[InstRegDepthWidth-1:0]),
     .wr_data_i  ( inst_wr_data_i    ),
     .wr_en_i    ( inst_wr_data_en_i ),
     // Read port A
-    .rd_addr_i  ( inst_rd_addr      ),
+    .rd_addr_i  ( inst_rd_addr[InstRegDepthWidth-1:0]),
     .rd_data_o  ( inst_rd_o         )
   );
 
