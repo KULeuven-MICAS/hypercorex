@@ -71,10 +71,10 @@ module assoc_mem #(
   //---------------------------
   // Combinational logic
   //---------------------------
-  assign counter_done        = (am_counter_address == (am_num_class_i-1)) ? 1'b1 : 1'b0;
+  assign counter_done        = (am_counter_address >= (am_num_class_i-1)) ? 1'b1 : 1'b0;
   assign class_hv_success    = (class_hv_ready_o && class_hv_valid_i);
   assign am_finished_set     = (counter_done && class_hv_success);
-  assign am_ext_counter_end  = (am_ext_counter == extend_count_i-1);
+  assign am_ext_counter_end  = (am_ext_counter >= extend_count_i-1);
   assign am_extend_finish    = (am_ext_counter_end && am_finished_set);
 
   // Class HV side is always ready when started
@@ -96,8 +96,8 @@ module assoc_mem #(
     if (!rst_ni) begin
       am_ext_counter <= '0;
     end else begin
-      if (extend_enable_i && busy_reg) begin
-        if (am_extend_finish) begin
+      if (extend_enable_i) begin
+        if ((am_ext_counter >= extend_count_i) && am_start_i) begin
           am_ext_counter <= '0;
         end else if (am_finished_set) begin
           am_ext_counter <= am_ext_counter + 1'b1;
@@ -125,7 +125,7 @@ module assoc_mem #(
     if (!rst_ni) begin
       am_counter_address <= {DataWidth{1'b0}};
     end else begin
-      if (am_finished_set || (am_finished_set && am_ext_counter_end && extend_enable_i)) begin
+      if (am_finished_set) begin
         am_counter_address <= {DataWidth{1'b0}};
       end else if (busy_reg && class_hv_success) begin
         am_counter_address <= am_counter_address + 1;
@@ -147,8 +147,7 @@ module assoc_mem #(
     if (!rst_ni) begin
       busy_reg <= 1'b0;
     end else begin
-      if ((!extend_enable_i && am_finished_set) ||
-          ( extend_enable_i && am_ext_counter_end && am_finished_set)) begin
+      if (am_finished_set) begin
         busy_reg <= 1'b0;
       end else if (!busy_reg && am_start_i) begin
         busy_reg <= 1'b1;
@@ -157,7 +156,8 @@ module assoc_mem #(
       end
     end
   end
-
+// (!extend_enable_i && am_finished_set) ||
+//           ( extend_enable_i && am_ext_counter_end && am_finished_set)
   //---------------------------
   // Hamming distance unit
   // Fully combinational popcount
@@ -182,7 +182,11 @@ module assoc_mem #(
         compare_regs[i] <= {CompareRegsWidth{1'b1}};
       end
     end else begin
-      if (!busy_reg && am_start_i) begin
+      if (!extend_enable_i && !busy_reg && am_start_i) begin
+        for (int i = 0; i < NumCompareRegs; i++) begin
+          compare_regs[i] <= {CompareRegsWidth{1'b1}};
+        end
+      end else if (extend_enable_i && !busy_reg && am_ext_counter_end && am_start_i) begin
         for (int i = 0; i < NumCompareRegs; i++) begin
           compare_regs[i] <= {CompareRegsWidth{1'b1}};
         end
@@ -231,7 +235,7 @@ module assoc_mem #(
       if (!busy_reg && am_start_i || am_predict_valid_clr_i) begin
         last_compare_reg_save <= 1'b0;
       end else if ((!extend_enable_i && am_finished_set) ||
-                   ( extend_enable_i && am_ext_counter_end && am_finished_set)) begin
+                   ( extend_enable_i && am_extend_finish)) begin
         last_compare_reg_save <= 1'b1;
       end else begin
         last_compare_reg_save <= 1'b0;
