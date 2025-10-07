@@ -56,6 +56,14 @@ async def load_query_hv(dut, query_hv):
     return
 
 
+# Relaunch start
+async def relaunch_start(dut):
+    dut.am_start_i.value = 1
+    await clock_and_time(dut.clk_i)
+    dut.am_start_i.value = 0
+    return
+
+
 async def load_am_hv(dut, am_hv):
     dut.class_hv_i.value = am_hv
     dut.class_hv_valid_i.value = 1
@@ -248,7 +256,7 @@ async def assoc_mem_dut(dut):
         # Clear every new test run
         clear_inputs_no_clock(dut)
 
-        # Generate the golde index answer, the query hv and the assoc mem
+        # Generate the golden index answer, the query hv and the assoc mem
         golden_idx, query_hv, assoc_mem = gen_am_and_qv(
             NUM_CLASSES, set_parameters.HV_DIM
         )
@@ -277,6 +285,9 @@ async def assoc_mem_dut(dut):
         # Load the associative memory
         # But do it in EXTEND_COUNT batches
         for j in range(EXTEND_COUNT):
+            # AM starts after relaunching the am_start_i again
+            if j > 0:
+                await relaunch_start(dut)
             for k in range(NUM_CLASSES):
                 await load_am_hv(dut, assoc_mem[k])
 

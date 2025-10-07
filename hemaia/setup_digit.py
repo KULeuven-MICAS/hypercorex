@@ -10,6 +10,7 @@
 """
 import sys
 import os
+import numpy as np
 
 # Extract paths
 root = os.getcwd()
@@ -23,13 +24,16 @@ from hdc_util import (  # noqa: E402
     load_dataset,
     save_am_model,
     load_am_model,
-    one_sample_per_class,
     train_model,
     test_model,
     gen_empty_hv,
     bind_hv,
     binarize_hv,
     gen_ca90_im_set,
+    test_model_cuts_version,
+    expand_im,
+    expand_am_from_dict,
+    n_sample_per_class,
 )
 
 
@@ -65,11 +69,20 @@ def encode_digit(image, ortho_im, cim):
 if __name__ == "__main__":
     # Data paremeters
     EXTRACT_DATA = True
-    TRAIN_MODEL = False
+    TRAIN_MODEL = True
     TEST_MODEL = True
-    SAVE_MODEL = False
-    TRAINED_AM_FILEPATH = root + "/trained_am/hypx_digit_am.txt"
+    SAVE_MODEL = True
+    MULTI_MODE = True
+    SAVE_SAMPLES = True
+    HV_DIM_EXPANSION = 16
+
     TEST_SAMPLES_FILEPATH = root + "/test_samples/hypx_digit_test.txt"
+    TEST_NSAMPLES_FILEPATH = root + "/test_samples/hypx_digit_nsample_test.txt"
+
+    if MULTI_MODE:
+        TRAINED_AM_FILEPATH = root + "/trained_am/hypx_digit_am_multi.txt"
+    else:
+        TRAINED_AM_FILEPATH = root + "/trained_am/hypx_digit_am.txt"
 
     # Hypercorex parameters
     SEED_DIM = 32
@@ -91,9 +104,9 @@ if __name__ == "__main__":
     # Application parameters
     NUM_FEATURES = 28 * 28
     NUM_CLASSES = 10
-    NUM_TRAIN = 1024
+    NUM_TRAIN = 501
     NUM_RETRAIN = NUM_TRAIN
-    NUM_TEST = 1000
+    NUM_TEST = 200
 
     # Take note of granularity
     VAL_LEVELS = 15
@@ -115,6 +128,11 @@ if __name__ == "__main__":
         display_heatmap=False,
     )
 
+    if MULTI_MODE:
+        ortho_im_set = []
+        for i in range(HV_DIM_EXPANSION):
+            ortho_im_set.append(np.roll(ortho_im, shift=-1 * i, axis=0))
+
     print("Extracting data...")
     train_data = dict()
     for num_class in range(NUM_CLASSES):
@@ -124,41 +142,84 @@ if __name__ == "__main__":
 
     if TRAIN_MODEL:
         print("Training model...")
-        class_am, _, _ = train_model(
-            train_dataset=train_data,
-            num_train=NUM_TRAIN,
-            ortho_im=ortho_im,
-            cim=None,
-            encode_function=encode_digit,
-            tqdm_mode=1,
-        )
+        if MULTI_MODE:
+            class_am = []
+            for i in range(HV_DIM_EXPANSION):
+                print(f"Set number: {i}")
+                class_am_temp, _, _ = train_model(
+                    train_dataset=train_data,
+                    num_train=NUM_TRAIN,
+                    ortho_im=ortho_im_set[i],
+                    cim=None,
+                    encode_function=encode_digit,
+                    tqdm_mode=1,
+                )
+                class_am.append(class_am_temp)
+        else:
+            class_am, _, _ = train_model(
+                train_dataset=train_data,
+                num_train=NUM_TRAIN,
+                ortho_im=ortho_im,
+                cim=None,
+                encode_function=encode_digit,
+                tqdm_mode=1,
+            )
     else:
         print("Loading AM model...")
         class_am = load_am_model(TRAINED_AM_FILEPATH)
 
     if SAVE_MODEL:
-        save_am_model(TRAINED_AM_FILEPATH, class_am)
+        if MULTI_MODE:
+            save_am_model(TRAINED_AM_FILEPATH, class_am, multi_mode=True)
+        else:
+            save_am_model(TRAINED_AM_FILEPATH, class_am)
 
+    HV_DIM_EXPANSION = 2
     if TEST_MODEL:
         print("Testing model...")
-        counts, scores, accuracies = test_model(
-            test_dataset=train_data,
-            ortho_im=ortho_im,
-            cim=None,
-            class_am=class_am,
-            encode_function=encode_digit,
-            staring_num_test=0,
-            num_test=NUM_TEST,
-            tqdm_mode=1,
-            print_mode=1,
-        )
+        if MULTI_MODE:
+            counts, scores, accuracies = test_model_cuts_version(
+                test_dataset=train_data,
+                ortho_im=ortho_im_set,
+                cim=None,
+                class_am=class_am,
+                num_cuts=HV_DIM_EXPANSION,
+                encode_function=encode_digit,
+                starting_num_test=0,
+                num_test=NUM_TEST,
+                tqdm_mode=1,
+                print_mode=1,
+            )
+        else:
+            counts, scores, accuracies = test_model(
+                test_dataset=train_data,
+                ortho_im=ortho_im,
+                cim=None,
+                class_am=class_am,
+                encode_function=encode_digit,
+                starting_num_test=0,
+                num_test=NUM_TEST,
+                tqdm_mode=1,
+                print_mode=1,
+            )
 
-    class_and_idx = one_sample_per_class(
-        num_classes=NUM_CLASSES,
-        ortho_im=ortho_im,
-        cim=None,
-        class_am=class_am,
-        test_data=train_data,
-        encode_function=encode_digit,
-        output_fp=TEST_SAMPLES_FILEPATH,
-    )
+    NUM_SAMPLES = 10
+    if SAVE_SAMPLES:
+        if MULTI_MODE:
+            ortho_im_expand = expand_im(ortho_im, HV_DIM_EXPANSION)
+            # AM expand uses same expand_cim
+            class_am_expand = expand_am_from_dict(class_am, HV_DIM_EXPANSION)
+        else:
+            ortho_im_expand = ortho_im
+            class_am_expand = class_am
+
+        prediction_list = n_sample_per_class(
+            num_samples=NUM_SAMPLES,
+            num_classes=NUM_CLASSES,
+            ortho_im=ortho_im_expand,
+            cim=None,
+            class_am=class_am_expand,
+            test_data=train_data,
+            encode_function=encode_digit,
+            output_fp=TEST_NSAMPLES_FILEPATH,
+        )

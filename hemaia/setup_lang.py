@@ -10,6 +10,7 @@
 """
 import sys
 import os
+import numpy as np
 
 # Extract paths
 root = os.getcwd()
@@ -25,12 +26,14 @@ from hdc_util import (  # noqa: E402
     train_model,
     test_model,
     gen_empty_hv,
-    gen_square_cim,
     bind_hv,
     binarize_hv,
-    circ_perm_hv,
-    predict_item,
     gen_ca90_im_set,
+    test_model_cuts_version,
+    expand_im,
+    expand_am_from_dict,
+    n_sample_per_class,
+    circ_perm_hv,
 )
 
 TRAINING_URL = "https://github.com/KULeuven-MICAS/hypercorex/releases/download/ds_hdc_lang_recog_v.0.0.1/lang_recog_training.tar.gz"
@@ -151,10 +154,20 @@ if __name__ == "__main__":
     EXTRACT_DATA = True
     TRAIN_MODEL = True
     TEST_MODEL = True
-    TEST_PRUNED_MODEL = True
     SAVE_MODEL = True
-    TRAINED_AM_FILEPATH = root + "/trained_am/hypx_lang_am.txt"
+    MULTI_MODE = True
+    TEST_PRUNED_MODEL = True
+    SAVE_SAMPLES = True
+    HV_DIM_EXPANSION = 16
+
     TEST_SAMPLES_FILEPATH = root + "/test_samples/hypx_lang_test.txt"
+    TEST_NSAMPLES_FILEPATH = root + "/test_samples/hypx_lang_nsample_test.txt"
+    TEST_NSAMPLES2_FILEPATH = root + "/test_samples/hypx_lang_nsample2_test.txt"
+
+    if MULTI_MODE:
+        TRAINED_AM_FILEPATH = root + "/trained_am/hypx_lang_am_multi.txt"
+    else:
+        TRAINED_AM_FILEPATH = root + "/trained_am/hypx_lang_am.txt"
 
     # Hypercorex parameters
     SEED_DIM = 32
@@ -176,9 +189,9 @@ if __name__ == "__main__":
     # Application parameters
     NUM_FEATURES = 128
     NUM_CLASSES = 21
-    NUM_TRAIN = 999
+    NUM_TRAIN = 200
     NUM_RETRAIN = NUM_TRAIN
-    NUM_TEST = 999
+    NUM_TEST = 200
 
     if EXTRACT_DATA:
         extract_git_dataset(TRAINING_URL, DATA_DIR)
@@ -197,14 +210,10 @@ if __name__ == "__main__":
         display_heatmap=False,
     )
 
-    # CIM generation
-    cim_seed, cim = gen_square_cim(
-        base_seed=CIM_BASE_SEED,
-        gen_seed=False,
-        hv_dim=HV_DIM,
-        seed_size=SEED_DIM,
-        im_type="ca90_hier",
-    )
+    if MULTI_MODE:
+        ortho_im_set = []
+        for i in range(HV_DIM_EXPANSION):
+            ortho_im_set.append(np.roll(ortho_im, shift=-1 * i, axis=0))
 
     print("Extracting data...")
     training_dir = f"{DATA_DIR}/{TRAINING_DIR}"
@@ -241,51 +250,106 @@ if __name__ == "__main__":
 
     if TRAIN_MODEL:
         print("Training model...")
-        class_am, _, _ = train_model(
-            train_dataset=train_data,
-            num_train=NUM_TRAIN,
-            ortho_im=ortho_im,
-            cim=cim,
-            encode_function=encode_lang,
-            tqdm_mode=1,
-        )
+        if MULTI_MODE:
+            class_am = []
+            for i in range(HV_DIM_EXPANSION):
+                print(f"Set number: {i}")
+                class_am_temp, _, _ = train_model(
+                    train_dataset=train_data,
+                    num_train=NUM_TRAIN,
+                    ortho_im=ortho_im_set[i],
+                    cim=None,
+                    encode_function=encode_lang,
+                    tqdm_mode=1,
+                )
+                class_am.append(class_am_temp)
+        else:
+            class_am, _, _ = train_model(
+                train_dataset=train_data,
+                num_train=NUM_TRAIN,
+                ortho_im=ortho_im,
+                cim=None,
+                encode_function=encode_lang,
+                tqdm_mode=1,
+            )
     else:
         print("Loading AM model...")
         class_am = load_am_model(TRAINED_AM_FILEPATH)
 
     if SAVE_MODEL:
-        save_am_model(TRAINED_AM_FILEPATH, class_am)
+        if MULTI_MODE:
+            save_am_model(TRAINED_AM_FILEPATH, class_am, multi_mode=True)
+        else:
+            save_am_model(TRAINED_AM_FILEPATH, class_am)
 
+    # Post-process test data to get data that are just 128 in length
+    num_128_test_data = {i: [] for i in range(21)}
+    for i in range(len(test_data)):
+        for j in range(len(test_data[i])):
+            if len(test_data[i][j]) >= 128:
+                num_128_test_data[i].append(test_data[i][j][0:128])
+
+    HV_DIM_EXPANSION = 2
     if TEST_MODEL:
         print("Testing model...")
-        counts, scores, accuracies = test_model(
-            test_dataset=train_data,
-            ortho_im=ortho_im,
-            cim=cim,
-            class_am=class_am,
+        if MULTI_MODE:
+            counts, scores, accuracies = test_model_cuts_version(
+                test_dataset=num_128_test_data,
+                ortho_im=ortho_im_set,
+                cim=None,
+                class_am=class_am,
+                num_cuts=HV_DIM_EXPANSION,
+                encode_function=encode_lang,
+                starting_num_test=0,
+                num_test=NUM_TEST,
+                tqdm_mode=1,
+                print_mode=1,
+            )
+        else:
+            counts, scores, accuracies = test_model(
+                test_dataset=num_128_test_data,
+                ortho_im=ortho_im,
+                cim=None,
+                class_am=class_am,
+                encode_function=encode_lang,
+                starting_num_test=0,
+                num_test=NUM_TEST,
+                tqdm_mode=1,
+                print_mode=1,
+            )
+
+    NUM_SAMPLES = 10
+    if SAVE_SAMPLES:
+        if MULTI_MODE:
+            ortho_im_expand = expand_im(ortho_im, HV_DIM_EXPANSION)
+            # AM expand uses same expand_cim
+            class_am_expand = expand_am_from_dict(class_am, HV_DIM_EXPANSION)
+        else:
+            ortho_im_expand = ortho_im
+            class_am_expand = class_am
+
+        prediction_list = n_sample_per_class(
+            num_samples=NUM_SAMPLES,
+            num_classes=NUM_CLASSES,
+            ortho_im=ortho_im_expand,
+            cim=None,
+            class_am=class_am_expand,
+            test_data=num_128_test_data,
             encode_function=encode_lang,
-            staring_num_test=0,
-            num_test=NUM_TEST,
-            tqdm_mode=1,
-            print_mode=1,
+            output_fp=TEST_NSAMPLES_FILEPATH,
         )
 
-    if TEST_PRUNED_MODEL:
-        pruned_prediction_set = []
-        for i in range(len(pruned_test_data)):
-            prediction = predict_item(
-                ortho_im,
-                cim,
-                class_am,
-                pruned_test_data_char[i],
-                encode_lang,
-                hv_type="binary",
-            )
-            print(prediction)
-            pruned_prediction_set.append(prediction)
+    # We need to post-process the trained data to be shortened to 64 only
+    # But here, we will get 1 sample each only and regardless of prediction
+    pruned_test_data = dict()
+    for i in range(NUM_CLASSES):
+        vector_to_num = []
+        for j in range(NUM_FEATURES):
+            vector_to_num.append(CHAR_MAP[num_128_test_data[i][0][j]])
+        pruned_test_data[i] = vector_to_num
 
     # Write to output
-    with open(TEST_SAMPLES_FILEPATH, "w") as wf:
+    with open(TEST_NSAMPLES2_FILEPATH, "w") as wf:
         for i in range(NUM_CLASSES):
             line = " ".join(map(str, pruned_test_data[i]))
             wf.write(line + "\n")

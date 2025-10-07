@@ -10,6 +10,7 @@
 """
 import sys
 import os
+import numpy as np
 
 # Extract paths
 root = os.getcwd()
@@ -23,15 +24,19 @@ from hdc_util import (  # noqa: E402
     load_dataset,
     save_am_model,
     load_am_model,
-    one_sample_per_class,
-    convert_levels,
     train_model,
     test_model,
     gen_empty_hv,
-    gen_square_cim,
     bind_hv,
     binarize_hv,
     gen_ca90_im_set,
+    gen_square_cim,
+    test_model_cuts_version,
+    expand_im,
+    expand_cim,
+    expand_am_from_dict,
+    convert_levels,
+    n_sample_per_class,
 )
 
 DATA_URL = "https://github.com/KULeuven-MICAS/hypercorex/releases/download/ds_hdc_ucihar_recog_v0.0.1/ucihar_recog.tar.gz"
@@ -68,12 +73,21 @@ def encode_ucihar(sample, ortho_im, cim):
 
 if __name__ == "__main__":
     # Data paremeters
-    EXTRACT_DATA = False
-    TRAIN_MODEL = False
+    EXTRACT_DATA = True
+    TRAIN_MODEL = True
     TEST_MODEL = True
-    SAVE_MODEL = False
-    TRAINED_AM_FILEPATH = root + "/trained_am/hypx_ucihar_am.txt"
+    SAVE_MODEL = True
+    MULTI_MODE = True
+    SAVE_SAMPLES = True
+    HV_DIM_EXPANSION = 16
+
     TEST_SAMPLES_FILEPATH = root + "/test_samples/hypx_ucihar_test.txt"
+    TEST_NSAMPLES_FILEPATH = root + "/test_samples/hypx_ucihar_nsample_test.txt"
+
+    if MULTI_MODE:
+        TRAINED_AM_FILEPATH = root + "/trained_am/hypx_ucihar_am_multi.txt"
+    else:
+        TRAINED_AM_FILEPATH = root + "/trained_am/hypx_ucihar_am.txt"
 
     # Hypercorex parameters
     SEED_DIM = 32
@@ -128,6 +142,11 @@ if __name__ == "__main__":
         im_type="ca90_hier",
     )
 
+    if MULTI_MODE:
+        ortho_im_set = []
+        for i in range(HV_DIM_EXPANSION):
+            ortho_im_set.append(np.roll(ortho_im, shift=-1 * i, axis=0))
+
     print("Extracting data...")
     train_data = dict()
     for num_class in range(NUM_CLASSES):
@@ -148,41 +167,85 @@ if __name__ == "__main__":
 
     if TRAIN_MODEL:
         print("Training model...")
-        class_am, _, _ = train_model(
-            train_dataset=train_data,
-            num_train=NUM_TRAIN,
-            ortho_im=ortho_im,
-            cim=cim,
-            encode_function=encode_ucihar,
-            tqdm_mode=1,
-        )
+        if MULTI_MODE:
+            class_am = []
+            for i in range(HV_DIM_EXPANSION):
+                print(f"Set number: {i}")
+                class_am_temp, _, _ = train_model(
+                    train_dataset=train_data,
+                    num_train=NUM_TRAIN,
+                    ortho_im=ortho_im_set[i],
+                    cim=cim,
+                    encode_function=encode_ucihar,
+                    tqdm_mode=1,
+                )
+                class_am.append(class_am_temp)
+        else:
+            class_am, _, _ = train_model(
+                train_dataset=train_data,
+                num_train=NUM_TRAIN,
+                ortho_im=ortho_im,
+                cim=cim,
+                encode_function=encode_ucihar,
+                tqdm_mode=1,
+            )
     else:
         print("Loading AM model...")
         class_am = load_am_model(TRAINED_AM_FILEPATH)
 
     if SAVE_MODEL:
-        save_am_model(TRAINED_AM_FILEPATH, class_am)
+        if MULTI_MODE:
+            save_am_model(TRAINED_AM_FILEPATH, class_am, multi_mode=True)
+        else:
+            save_am_model(TRAINED_AM_FILEPATH, class_am)
 
+    HV_DIM_EXPANSION = 16
     if TEST_MODEL:
         print("Testing model...")
-        counts, scores, accuracies = test_model(
-            test_dataset=train_data,
-            ortho_im=ortho_im,
-            cim=cim,
-            class_am=class_am,
-            encode_function=encode_ucihar,
-            staring_num_test=0,
-            num_test=NUM_TEST,
-            tqdm_mode=1,
-            print_mode=1,
-        )
+        if MULTI_MODE:
+            counts, scores, accuracies = test_model_cuts_version(
+                test_dataset=train_data,
+                ortho_im=ortho_im_set,
+                cim=cim,
+                class_am=class_am,
+                num_cuts=HV_DIM_EXPANSION,
+                encode_function=encode_ucihar,
+                starting_num_test=0,
+                num_test=NUM_TEST,
+                tqdm_mode=1,
+                print_mode=1,
+            )
+        else:
+            counts, scores, accuracies = test_model(
+                test_dataset=train_data,
+                ortho_im=ortho_im,
+                cim=cim,
+                class_am=class_am,
+                encode_function=encode_ucihar,
+                starting_num_test=0,
+                num_test=NUM_TEST,
+                tqdm_mode=1,
+                print_mode=1,
+            )
 
-    one_sample_per_class(
-        num_classes=NUM_CLASSES,
-        ortho_im=ortho_im,
-        cim=cim,
-        class_am=class_am,
-        test_data=test_data,
-        encode_function=encode_ucihar,
-        output_fp=TEST_SAMPLES_FILEPATH,
-    )
+    NUM_SAMPLES = 16
+    if SAVE_SAMPLES:
+        if MULTI_MODE:
+            ortho_im_expand = expand_im(ortho_im, HV_DIM_EXPANSION)
+            cim_expand = expand_cim(cim, HV_DIM_EXPANSION)
+            class_am_expand = expand_am_from_dict(class_am, HV_DIM_EXPANSION)
+        else:
+            ortho_im_expand = ortho_im
+            class_am_expand = class_am
+            cim_expand = cim
+
+        prediction_list = n_sample_per_class(
+            num_samples=NUM_SAMPLES,
+            num_classes=NUM_CLASSES,
+            ortho_im=ortho_im_expand,
+            cim=cim_expand,
+            class_am=class_am_expand,
+            test_data=train_data,
+            encode_function=encode_ucihar,
+            output_fp=TEST_NSAMPLES_FILEPATH,
+        )
