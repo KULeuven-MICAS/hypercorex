@@ -156,8 +156,7 @@ module assoc_mem #(
       end
     end
   end
-// (!extend_enable_i && am_finished_set) ||
-//           ( extend_enable_i && am_ext_counter_end && am_finished_set)
+
   //---------------------------
   // Hamming distance unit
   // Fully combinational popcount
