@@ -322,61 +322,61 @@ def binarize_hv(hv_a, threshold, hv_type="binary"):
 
 def quantize_hv(encoded_line, threshold, hv_type="binary", quant_type="INT8"):
     if hv_type == "binary":
-        encoded_line -= threshold #to use symmetric quantization, shifts range from [0,2*threshold] to [-threshold,threshold]
-        min_val = -threshold
-        max_val = threshold
-    else: #bipolar
-        min_val = -2*threshold
-        max_val = 2*threshold
+        encoded_line -= threshold  # to use symmetric quantization,
+        min_val = -threshold  # shifts range from [0,2*threshold] to
+        max_val = threshold  # [-threshold,threshold]
+    else:  # bipolar
+        min_val = -2 * threshold
+        max_val = 2 * threshold
 
     if quant_type == "INT8":
-        scale = max(abs(min_val), abs(max_val))/128.0
+        scale = max(abs(min_val), abs(max_val)) / 128.0
         if scale == 0:
             scale = 1
         quantized_vals = np.round(encoded_line / scale).clip(-128, 127).astype(np.int64)
-        quant_encoded_line = quantized_vals.astype(np.float64)*scale
+        quant_encoded_line = quantized_vals.astype(np.float64) * scale
     elif quant_type == "INT4":
         scale = max(abs(min_val), abs(max_val)) / 8.0
         if scale == 0:
             scale = 1
         quantized_vals = np.round(encoded_line / scale).clip(-8.0, 7.0).astype(np.int64)
-        quant_encoded_line = quantized_vals.astype(np.float64)*scale
+        quant_encoded_line = quantized_vals.astype(np.float64) * scale
     elif quant_type == "INT2":
         scale = max(abs(min_val), abs(max_val)) / 2.0
         if scale == 0:
             scale = 1
         quantized_vals = np.round(encoded_line / scale).clip(-2.0, 1.0).astype(np.int64)
-        quant_encoded_line = quantized_vals.astype(np.float64)*scale
+        quant_encoded_line = quantized_vals.astype(np.float64) * scale
     elif quant_type == "FP8_E4M3":
         scale = max(abs(min_val), abs(max_val)) / 448.0
         if scale == 0:
             scale = 1
-        quantized_vals = fp864_quantize(encoded_line/scale, mode="E4M3")
-        quant_encoded_line = quantized_vals.astype(np.float64)*scale
+        quantized_vals = fp864_quantize(encoded_line / scale, mode="E4M3")
+        quant_encoded_line = quantized_vals.astype(np.float64) * scale
     elif quant_type == "FP8_E5M2":
         scale = max(abs(min_val), abs(max_val)) / 57344.0
         if scale == 0:
             scale = 1
-        quantized_vals = fp864_quantize(encoded_line/scale, mode="E5M2")
-        quant_encoded_line = quantized_vals.astype(np.float64)*scale
+        quantized_vals = fp864_quantize(encoded_line / scale, mode="E5M2")
+        quant_encoded_line = quantized_vals.astype(np.float64) * scale
     elif quant_type == "FP6_E2M3":
         scale = max(abs(min_val), abs(max_val)) / 7.5
         if scale == 0:
             scale = 1
-        quantized_vals = fp864_quantize(encoded_line/scale, mode="E2M3")
-        quant_encoded_line = quantized_vals.astype(np.float64)*scale
+        quantized_vals = fp864_quantize(encoded_line / scale, mode="E2M3")
+        quant_encoded_line = quantized_vals.astype(np.float64) * scale
     elif quant_type == "FP6_E3M2":
         scale = max(abs(min_val), abs(max_val)) / 28.0
         if scale == 0:
             scale = 1
-        quantized_vals = fp864_quantize(encoded_line/scale, mode="E3M2")
-        quant_encoded_line = quantized_vals.astype(np.float64)*scale
+        quantized_vals = fp864_quantize(encoded_line / scale, mode="E3M2")
+        quant_encoded_line = quantized_vals.astype(np.float64) * scale
     elif quant_type == "FP4_E2M1":
         scale = max(abs(min_val), abs(max_val)) / 6.0
         if scale == 0:
             scale = 1
-        quantized_vals = fp864_quantize(encoded_line/scale, mode="E2M1")
-        quant_encoded_line = quantized_vals.astype(np.float64)*scale   
+        quantized_vals = fp864_quantize(encoded_line / scale, mode="E2M1")
+        quant_encoded_line = quantized_vals.astype(np.float64) * scale
     return quant_encoded_line
 
 
@@ -390,10 +390,10 @@ def norm_dist_hv(hv_a, hv_b, hv_type="binary", quant_type=None):
         hv_dot = np.dot(hv_a, hv_b)
         norm_a = np.linalg.norm(hv_a)
         norm_b = np.linalg.norm(hv_b)
-        if (norm_a==0) or (norm_b==0):
+        if (norm_a == 0) or (norm_b == 0):
             norm_factor = 1
         else:
-            norm_factor = norm_a*norm_b
+            norm_factor = norm_a * norm_b
         dist = hv_dot / (norm_factor)
     else:
         ham_dist = np.sum(np.bitwise_xor(hv_a, hv_b))
@@ -786,7 +786,16 @@ def gen_cim(
 """
 
 
-def train_model(train_dataset, num_train, ortho_im, cim, encode_function, tqdm_mode=0, hv_type='binary', quant_type=None):
+def train_model(
+    train_dataset,
+    num_train,
+    ortho_im,
+    cim,
+    encode_function,
+    tqdm_mode=0,
+    hv_type="binary",
+    quant_type=None,
+):
     # Set TQDM
     disable_train_bar = True
     disable_per_class_bar = False
@@ -830,7 +839,9 @@ def train_model(train_dataset, num_train, ortho_im, cim, encode_function, tqdm_m
 
         # Save binarized AM
         if quant_type is not None:
-            class_hv = quantize_hv(class_hv, train_threshold, hv_type, quant_type=quant_type)
+            class_hv = quantize_hv(
+                class_hv, train_threshold, hv_type, quant_type=quant_type
+            )
         else:
             class_hv = binarize_hv(class_hv, train_threshold, hv_type)
         class_am[num_class] = class_hv
@@ -899,7 +910,9 @@ def test_model(
                 test_dataset[num_class][starting_num_test + i], ortho_im, cim
             )
             # Get prediction
-            prediction = prediction_idx(class_am, qhv, hv_type=hv_type, quant_type=quant_type)
+            prediction = prediction_idx(
+                class_am, qhv, hv_type=hv_type, quant_type=quant_type
+            )
             # Update score
             if prediction == num_class:
                 total_score += 1
@@ -1035,7 +1048,7 @@ def retrain_model(
     class_am_elem_count,
     encode_function,
     tqdm_mode=0,
-    hv_type='binary'
+    hv_type="binary",
 ):
     # Set TQDM
     disable_train_bar = True
@@ -1203,7 +1216,9 @@ def prediction_idx(assoc_mem, query_hv, hv_type="binary", quant_type=None):
     score_list = []
 
     for i in range(len(assoc_mem)):
-        score_list.append(norm_dist_hv(assoc_mem[i], query_hv, hv_type=hv_type, quant_type=quant_type))
+        score_list.append(
+            norm_dist_hv(assoc_mem[i], query_hv, hv_type=hv_type, quant_type=quant_type)
+        )
 
     predict_idx = np.argmax(score_list)
 
@@ -1215,7 +1230,9 @@ def predict_score_list(assoc_mem, query_hv, hv_type="binary", quant_type=None):
     score_list = []
 
     for i in range(len(assoc_mem)):
-        score_list.append(norm_dist_hv(assoc_mem[i], query_hv, hv_type=hv_type, quant_type=quant_type))
+        score_list.append(
+            norm_dist_hv(assoc_mem[i], query_hv, hv_type=hv_type, quant_type=quant_type)
+        )
     return score_list
 
 

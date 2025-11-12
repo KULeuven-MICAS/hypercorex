@@ -13,7 +13,6 @@ from hdc_util import (
     extract_git_dataset,
     train_model,
     test_model,
-    retrain_model,
     gen_empty_hv,
     gen_orthogonal_im,
     expand_im,
@@ -21,7 +20,7 @@ from hdc_util import (
     bind_hv,
     binarize_hv,
     gen_ca90_im_set,
-    quantize_hv
+    quantize_hv,
 )
 
 
@@ -87,7 +86,8 @@ CHAR_MAP = {
 
 
 HV_TYPE = "bipolar"
-QUANT_TYPE = "FP8_E5M2" #set quantization to false by setting this to None
+QUANT_TYPE = "FP8_E5M2"  # None means no quantization
+
 
 def extract_lang_dataset(read_file):
     # Extract file to be tested
@@ -126,7 +126,7 @@ def encode_lang(line, ortho_im, cim):
             # Permute it
             char_ngram = circ_perm_hv(char_hv, ngram)
             # Bind it nicely
-            if ngram==0:
+            if ngram == 0:
                 encoded_ngram = char_ngram
             else:
                 encoded_ngram = bind_hv(encoded_ngram, char_ngram, hv_type=HV_TYPE)
@@ -138,7 +138,9 @@ def encode_lang(line, ortho_im, cim):
     # Binarize the encoded line
     threshold = threshold_counter / 2
     if QUANT_TYPE is not None:
-        encoded_line = quantize_hv(encoded_line, threshold, hv_type=HV_TYPE, quant_type=QUANT_TYPE)
+        encoded_line = quantize_hv(
+            encoded_line, threshold, hv_type=HV_TYPE, quant_type=QUANT_TYPE
+        )
     else:
         encoded_line = binarize_hv(encoded_line, threshold, hv_type=HV_TYPE)
 
@@ -146,7 +148,7 @@ def encode_lang(line, ortho_im, cim):
 
 
 def main(hv_dim, hv_type, quant_type):
-    #Overwrite global parameters
+    # Overwrite global parameters
     global HV_DIM
     HV_DIM = hv_dim
     global HV_TYPE
@@ -157,16 +159,14 @@ def main(hv_dim, hv_type, quant_type):
     # Download and extract the training dataset
     SEED_DIM = 32
     # HV_DIM = 512*16
-    ENABLE_HV_EXPANSION = False #enabling this increases HV_dim by a ton, which gave the default high 90% accuracy, similar to when increasing HV_DIM with that factor directly
+    ENABLE_HV_EXPANSION = False
     HV_DIM_EXPANSION = 16
     NUM_TOT_IM = 1024
     NUM_PER_IM_BANK = 128
-    NGRAM = 4
     USE_CA90_IM = False
     EXTRACT_DATA = True
 
     NUM_TRAIN = 999
-    NUM_RETRAIN = NUM_TRAIN
     NUM_TEST = 999
 
     BASE_SEEDS = [
@@ -236,7 +236,7 @@ def main(hv_dim, hv_type, quant_type):
         encode_function=encode_lang,
         tqdm_mode=1,
         hv_type=HV_TYPE,
-        quant_type=QUANT_TYPE
+        quant_type=QUANT_TYPE,
     )
 
     print("Testing model...")
@@ -251,7 +251,7 @@ def main(hv_dim, hv_type, quant_type):
         tqdm_mode=1,
         print_mode=1,
         hv_type=HV_TYPE,
-        quant_type=QUANT_TYPE
+        quant_type=QUANT_TYPE,
     )
 
     return overall_accuracy
