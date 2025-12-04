@@ -1,10 +1,10 @@
 """
-    Copyright 2024 KU Leuven
-    Ryan Antonio <ryan.antonio@esat.kuleuven.be>
+Copyright 2024 KU Leuven
+Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
-    Description:
-    This contains useful functions for managing
-    the tests, script,s and generations
+Description:
+This contains useful functions for managing
+the tests, script,s and generations
 """
 
 # Importing useful tools

@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 """
-    Copyright 2024 KU Leuven
-    Ryan Antonio <ryan.antonio@esat.kuleuven.be>
-    
-    Description:
-    Use this program just to extract a few samples of the MNIST dataset
-    However, after extraction we will save it as released assets
+Copyright 2024 KU Leuven
+Ryan Antonio <ryan.antonio@esat.kuleuven.be>
+
+Description:
+Use this program just to extract a few samples of the MNIST dataset
+However, after extraction we will save it as released assets
 """
 
 import os

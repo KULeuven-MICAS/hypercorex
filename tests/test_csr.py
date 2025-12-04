@@ -1,13 +1,13 @@
 """
-  Copyright 2024 KU Leuven
-  Ryan Antonio <ryan.antonio@esat.kuleuven.be>
+Copyright 2024 KU Leuven
+Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
-  Description:
-  This tests the csr registers if they are working.
-  This is specific so tests are very specific.
-  This test exhaustively goes through each register
-  and checks if the output signals and functionality
-  are correct
+Description:
+This tests the csr registers if they are working.
+This is specific so tests are very specific.
+This test exhaustively goes through each register
+and checks if the output signals and functionality
+are correct
 """
 
 import set_parameters

@@ -1,9 +1,9 @@
 """
-  Copyright 2024 KU Leuven
-  Ryan Antonio <ryan.antonio@esat.kuleuven.be>
+Copyright 2024 KU Leuven
+Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
-  Description:
-  This tests the memory holding FIFO
+Description:
+This tests the memory holding FIFO
 """
 
 import set_parameters

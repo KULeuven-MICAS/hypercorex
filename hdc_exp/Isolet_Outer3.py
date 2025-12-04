@@ -1,14 +1,25 @@
 from isolet_recog import main
-import matplotlib.pyplot as plt
 import json
-from concurrent.futures import ProcessPoolExecutor, as_completed
-import time
 import sys
 
 hv_dims = [2048, 10000]
-hv_types = ['binary', 'bipolar']
+hv_types = ["binary", "bipolar"]
 # quant_types = [None, 'INT8', 'INT4', 'INT2', 'FP8_E4M3', 'FP8_E5M2', 'FP6_E2M3', 'FP6_E3M2', 'FP4_E2M1']
-quant_types = [None, 'INT2_alt', 'INT4_alt', 'INT8_alt', 'INT8', 'INT4', 'INT2', 'FP8_E4M3', 'FP8_E5M2', 'FP6_E2M3', 'FP6_E3M2', 'FP4_E2M1', 'FP4_E2M1_alt']
+quant_types = [
+    None,
+    "INT2_alt",
+    "INT4_alt",
+    "INT8_alt",
+    "INT8",
+    "INT4",
+    "INT2",
+    "FP8_E4M3",
+    "FP8_E5M2",
+    "FP6_E2M3",
+    "FP6_E3M2",
+    "FP4_E2M1",
+    "FP4_E2M1_alt",
+]
 
 # hv_dims = [500]
 # hv_types = ['bipolar', 'binary']
@@ -24,12 +35,14 @@ def worker(i, hv_dim, hv_type, quant_type):
 
 def outer(i):
     result_dict = {}
-    tot = len(hv_dims)*len(hv_types)*len(quant_types)
+    tot = len(hv_dims) * len(hv_types) * len(quant_types)
     count = 0
     for hv_dim in hv_dims:
         for hv_type in hv_types:
             for quant_type in quant_types:
-                result_dict[f"{hv_dim} {hv_type} {quant_type}"] = worker(i, hv_dim, hv_type, quant_type)
+                result_dict[f"{hv_dim} {hv_type} {quant_type}"] = worker(
+                    i, hv_dim, hv_type, quant_type
+                )
                 count += 1
                 print(f"Tread {i}: {round(count/tot*100,2)}%")
     with open(f"result_isolet_{i}.json", "w") as f:
@@ -78,7 +91,6 @@ if __name__ == "__main__":
 #             print(f"Experiment {f.result()} finished")
 #     end = time.time()
 #     print(f'\nThis took: {end-start:.2f} seconds')
-
 
 
 # from lang_recog import main
@@ -134,8 +146,6 @@ if __name__ == "__main__":
 #         print(f"Experiment {f.result()} finished")
 
 
-
-
 # for i in range(0, 10):
 #     tot_count = len(hv_dims)*len(hv_types)*len(quant_types)
 #     k = 0
@@ -153,6 +163,3 @@ if __name__ == "__main__":
 #     # Save to a file
 #     with open(f"hdc_exp/result_lang_{i}.json", "w") as f:
 #         json.dump(result_dict, f)
-
-
-

@@ -1,9 +1,9 @@
 """
-  Copyright 2024 KU Leuven
-  Ryan Antonio <ryan.antonio@esat.kuleuven.be>
+Copyright 2024 KU Leuven
+Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
-  Description:
-  This tests the functionality of the data slicer
+Description:
+This tests the functionality of the data slicer
 """
 
 from util import setup_and_run, gen_rand_bits, clock_and_time, check_result

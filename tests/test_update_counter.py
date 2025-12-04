@@ -1,9 +1,9 @@
 """
-  Copyright 2024 KU Leuven
-  Ryan Antonio <ryan.antonio@esat.kuleuven.be>
+Copyright 2024 KU Leuven
+Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
-  Description:
-  This tests the basic functionality of the update counter
+Description:
+This tests the basic functionality of the update counter
 """
 
 import set_parameters

@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 """
-    Copyright 2024 KU Leuven
-    Ryan Antonio <ryan.antonio@esat.kuleuven.be>
-    
-    Description:
-    Use this program to extract samples from the UCI HAR dataset
-    and save them in an uint8 format for HDC purposes.
+Copyright 2024 KU Leuven
+Ryan Antonio <ryan.antonio@esat.kuleuven.be>
+
+Description:
+Use this program to extract samples from the UCI HAR dataset
+and save them in an uint8 format for HDC purposes.
 """
 
 import os

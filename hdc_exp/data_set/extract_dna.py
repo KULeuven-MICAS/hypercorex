@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 
 """
-    Copyright 2024 KU Leuven
-    Ryan Antonio <ryan.antonio@esat.kuleuven.be>
-    
-    Description:
-    Use this program just to extract the samples from the HDNA
+Copyright 2024 KU Leuven
+Ryan Antonio <ryan.antonio@esat.kuleuven.be>
+
+Description:
+Use this program just to extract the samples from the HDNA
 """
 
 import os

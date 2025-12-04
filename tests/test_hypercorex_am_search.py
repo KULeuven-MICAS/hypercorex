@@ -1,9 +1,9 @@
 """
-  Copyright 2024 KU Leuven
-  Ryan Antonio <ryan.antonio@esat.kuleuven.be>
+Copyright 2024 KU Leuven
+Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
-  Description:
-  This tests a simple AM search using the high-dim ports
+Description:
+This tests a simple AM search using the high-dim ports
 """
 
 import set_parameters

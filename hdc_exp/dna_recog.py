@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-  Copyright 2025 KU Leuven
-  Ryan Antonio <ryan.antonio@esat.kuleuven.be>
+Copyright 2025 KU Leuven
+Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
-  Description:
-  This program implements the DNA classification
-  task using Hyperdimensional Computing (HDC).
+Description:
+This program implements the DNA classification
+task using Hyperdimensional Computing (HDC).
 """
 
 from hdc_util import (

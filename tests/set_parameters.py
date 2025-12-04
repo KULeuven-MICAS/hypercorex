@@ -1,9 +1,9 @@
 """
-  Copyright 2024 KU Leuven
-  Ryan Antonio <ryan.antonio@esat.kuleuven.be>
+Copyright 2024 KU Leuven
+Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
-  Description:
-  This contains the parameters used across all tests.
+Description:
+This contains the parameters used across all tests.
 """
 
 import math

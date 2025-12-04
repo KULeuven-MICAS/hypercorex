@@ -1,10 +1,10 @@
 """
-  Copyright 2024 KU Leuven
-  Ryan Antonio <ryan.antonio@esat.kuleuven.be>
+Copyright 2024 KU Leuven
+Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
-  Description:
-  This tests the combined item memory
-  that contains both the CiM and CA90
+Description:
+This tests the combined item memory
+that contains both the CiM and CA90
 """
 
 import random

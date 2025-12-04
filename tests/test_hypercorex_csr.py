@@ -1,9 +1,9 @@
 """
-  Copyright 2024 KU Leuven
-  Ryan Antonio <ryan.antonio@esat.kuleuven.be>
+Copyright 2024 KU Leuven
+Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
-  Description:
-  This tests the hypercorex's CSR RW functionality.
+Description:
+This tests the hypercorex's CSR RW functionality.
 """
 
 import set_parameters

@@ -1,10 +1,10 @@
 """
-  Copyright 2024 KU Leuven
-  Ryan Antonio <ryan.antonio@esat.kuleuven.be>
+Copyright 2024 KU Leuven
+Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
-  Description:
-  This tests the hypercorex's testbench memory
-  modules while compling with the hypercorex
+Description:
+This tests the hypercorex's testbench memory
+modules while compling with the hypercorex
 """
 
 import set_parameters

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-  Copyright 2025 KU Leuven
-  Ryan Antonio <ryan.antonio@esat.kuleuven.be>
+Copyright 2025 KU Leuven
+Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
-  Description:
-  This program implements the ISOLET classification
-  using Hyperdimensional Computing (HDC) techniques.
+Description:
+This program implements the ISOLET classification
+using Hyperdimensional Computing (HDC) techniques.
 """
 
 from hdc_util import (
@@ -15,7 +15,6 @@ from hdc_util import (
     convert_levels,
     train_model,
     test_model,
-    retrain_model,
     gen_empty_hv,
     gen_orthogonal_im,
     expand_im,
@@ -25,7 +24,7 @@ from hdc_util import (
     gen_ca90_im_set,
     gen_cim,
     gen_square_cim,
-    quantize_hv
+    quantize_hv,
 )
 
 DATA_URL = "https://github.com/KULeuven-MICAS/hypercorex/releases/download/ds_hdc_isolet_recog_v.0.01/isolet_recog.tar.gz"
@@ -33,7 +32,8 @@ DATA_SET_DIR = "data_set"
 DATA_DIR = f"{DATA_SET_DIR}/isolet_recog"
 
 HV_TYPE = "bipolar"
-QUANT_TYPE = "FP8_E5M2" #global definitions
+QUANT_TYPE = "FP8_E5M2"  # global definitions
+
 
 def encode_isolet(sample, ortho_im, cim):
     # Encode sample
@@ -57,7 +57,9 @@ def encode_isolet(sample, ortho_im, cim):
 
     # Binarize the encoded sample
     if QUANT_TYPE is not None:
-        encoded_sample = quantize_hv(encoded_sample, threshold, hv_type=HV_TYPE, quant_type=QUANT_TYPE)
+        encoded_sample = quantize_hv(
+            encoded_sample, threshold, hv_type=HV_TYPE, quant_type=QUANT_TYPE
+        )
     else:
         encoded_sample = binarize_hv(encoded_sample, threshold, hv_type=HV_TYPE)
 
@@ -65,7 +67,7 @@ def encode_isolet(sample, ortho_im, cim):
 
 
 def main(hv_dim, hv_type, quant_type):
-    #Overwrite global parameters
+    # Overwrite global parameters
     global HV_DIM
     HV_DIM = hv_dim
     global HV_TYPE
@@ -78,7 +80,7 @@ def main(hv_dim, hv_type, quant_type):
     HV_DIM_EXPANSION = 16
     NUM_TOT_IM = 1024
     NUM_PER_IM_BANK = 128
-    NGRAM = 4
+    # NGRAM = 4
     USE_CA90_IM = False
     USE_CA90_CIM = False
     EXTRACT_DATA = True
@@ -86,10 +88,10 @@ def main(hv_dim, hv_type, quant_type):
     VAL_LEVELS = 21
     NUM_CLASSES = 26
     NUM_TRAIN = 297
-    NUM_RETRAIN = NUM_TRAIN
+    # NUM_RETRAIN = NUM_TRAIN
     NUM_TEST = 100
 
-    NUM_FEATURES = 617
+    # NUM_FEATURES = 617
 
     CIM_BASE_SEED = 621635317
     BASE_SEEDS = [
@@ -188,7 +190,7 @@ def main(hv_dim, hv_type, quant_type):
         encode_function=encode_isolet,
         tqdm_mode=2,
         hv_type=HV_TYPE,
-        quant_type=QUANT_TYPE
+        quant_type=QUANT_TYPE,
     )
 
     print("Testing model...")
@@ -203,42 +205,43 @@ def main(hv_dim, hv_type, quant_type):
         tqdm_mode=2,
         print_mode=1,
         hv_type=HV_TYPE,
-        quant_type=QUANT_TYPE
+        quant_type=QUANT_TYPE,
     )
 
     return overall_accuracy
 
+
 if __name__ == "__main__":
-    main(hv_dim=512, hv_type='binary', quant_type=None)
+    main(hv_dim=512, hv_type="binary", quant_type=None)
 # main(hv_dim=512, hv_type='binary', quant_type=None)
 
 
-    # print("Retraining model...")
-    # (
-    #     class_am_retrained,
-    #     class_am_int_retrained,
-    #     class_am_elem_count_retrained,
-    # ) = retrain_model(
-    #     retrain_dataset=train_data,
-    #     num_retrain=NUM_RETRAIN,
-    #     ortho_im=ortho_im,
-    #     cim=cim,
-    #     class_am=class_am,
-    #     class_am_int=class_am_int,
-    #     class_am_elem_count=class_am_elem_count,
-    #     encode_function=encode_isolet,
-    #     tqdm_mode=1,
-    # )
+# print("Retraining model...")
+# (
+#     class_am_retrained,
+#     class_am_int_retrained,
+#     class_am_elem_count_retrained,
+# ) = retrain_model(
+#     retrain_dataset=train_data,
+#     num_retrain=NUM_RETRAIN,
+#     ortho_im=ortho_im,
+#     cim=cim,
+#     class_am=class_am,
+#     class_am_int=class_am_int,
+#     class_am_elem_count=class_am_elem_count,
+#     encode_function=encode_isolet,
+#     tqdm_mode=1,
+# )
 
-    # print("Testing re-trained model...")
-    # counts, scores, accuracies = test_model(
-    #     test_dataset=train_data,
-    #     ortho_im=ortho_im,
-    #     cim=cim,
-    #     class_am=class_am_retrained,
-    #     encode_function=encode_isolet,
-    #     staring_num_test=0,
-    #     num_test=NUM_TEST,
-    #     tqdm_mode=1,
-    #     print_mode=1,
-    # )
+# print("Testing re-trained model...")
+# counts, scores, accuracies = test_model(
+#     test_dataset=train_data,
+#     ortho_im=ortho_im,
+#     cim=cim,
+#     class_am=class_am_retrained,
+#     encode_function=encode_isolet,
+#     staring_num_test=0,
+#     num_test=NUM_TEST,
+#     tqdm_mode=1,
+#     print_mode=1,
+# )

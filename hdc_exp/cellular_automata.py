@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-    Copyright 2024 KU Leuven
-    Ryan Antonio <ryan.antonio@esat.kuleuven.be>
-    
-    Description:
-    This Python program investigates some properties
-    of the cellular automata
+Copyright 2024 KU Leuven
+Ryan Antonio <ryan.antonio@esat.kuleuven.be>
+
+Description:
+This Python program investigates some properties
+of the cellular automata
 """
 
 import numpy as np

@@ -1,10 +1,10 @@
 """
-  Copyright 2024 KU Leuven
-  Ryan Antonio <ryan.antonio@esat.kuleuven.be>
+Copyright 2024 KU Leuven
+Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
-  Description:
-  This tests the basic functionality
-  of the CA90 generation unit
+Description:
+This tests the basic functionality
+of the CA90 generation unit
 """
 
 import set_parameters

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-    Copyright 2024 KU Leuven
-    Ryan Antonio <ryan.antonio@esat.kuleuven.be>
-    
-    Description:
-    This Python program tests and investigates
-    the case for continuous item memories
+Copyright 2024 KU Leuven
+Ryan Antonio <ryan.antonio@esat.kuleuven.be>
+
+Description:
+This Python program tests and investigates
+the case for continuous item memories
 """
 
 from hdc_util import (

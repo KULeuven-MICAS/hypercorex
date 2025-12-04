@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-  Copyright 2024 KU Leuven
-  Ryan Antonio <ryan.antonio@esat.kuleuven.be>
+Copyright 2024 KU Leuven
+Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
-  Description:
-  This is the main compiler for the hypercorex
-  it takes in assembly fromat like texts
-  then converts them into binary files
+Description:
+This is the main compiler for the hypercorex
+it takes in assembly fromat like texts
+then converts them into binary files
 """
 
 import os

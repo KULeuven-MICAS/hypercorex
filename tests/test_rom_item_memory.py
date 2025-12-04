@@ -1,11 +1,11 @@
 """
-  Copyright 2024 KU Leuven
-  Ryan Antonio <ryan.antonio@esat.kuleuven.be>
+Copyright 2024 KU Leuven
+Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
-  Description:
-  This tests the ROM implemented iM
-  it was built from the CA90 but
-  the implementation is a decoder
+Description:
+This tests the ROM implemented iM
+it was built from the CA90 but
+the implementation is a decoder
 """
 
 import set_parameters

@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-  Copyright 2025 KU Leuven
-  Ryan Antonio <ryan.antonio@esat.kuleuven.be>
+Copyright 2025 KU Leuven
+Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
-  Description:
-  This program implements the language recognition
-  classification task using Hyperdimensional Computing (HDC).
+Description:
+This program implements the language recognition
+classification task using Hyperdimensional Computing (HDC).
 """
 
 from hdc_util import (
     extract_git_dataset,
     train_model,
     test_model,
-    retrain_model,
     gen_empty_hv,
     gen_orthogonal_im,
     expand_im,
@@ -21,7 +20,7 @@ from hdc_util import (
     bind_hv,
     binarize_hv,
     gen_ca90_im_set,
-    quantize_hv
+    quantize_hv,
 )
 
 
@@ -85,17 +84,17 @@ CHAR_MAP = {
     " ": 26,  # Space character
 }
 
-#initialize global params
+# initialize global params
 HV_TYPE = None
 QUANT_TYPE = None
 
-#Baseline?  (https://dl.acm.org/doi/pdf/10.1145/3558000 survey from 2023)
+# Baseline?  (https://dl.acm.org/doi/pdf/10.1145/3558000 survey from 2023)
 # 10.1109/AICAS48895.2020.9073871 -> 97.23% (10k dims, binary, hamming dist)
 # 10.1109/MDAT.2017.2740839 -> 95.4% (sparse 4%, 10k dims, binary, 4-gram), 96.1% (dense, 10k dims, binary, 3-gram)
 # 10.1145/2934583.2934624 -> 3-gram: 96.7% HDC (10k dims), 97.9% nearest neighbour
 #                         -> 4-gram: 97.1%, 99.2%
 #                         -> 5-gram: 95.0%, 99.8%
-#https://redwood.berkeley.edu/wp-content/uploads/2020/08/JoshiEtAl-QI2016-language-geometry-copy.pdf  -> 3-gram 97.3%, 4-gram 97.8%, 5-gram 97.3% (10k dims)
+# https://redwood.berkeley.edu/wp-content/uploads/2020/08/JoshiEtAl-QI2016-language-geometry-copy.pdf  -> 3-gram 97.3%, 4-gram 97.8%, 5-gram 97.3% (10k dims)
 
 
 def extract_lang_dataset(read_file):
@@ -135,7 +134,7 @@ def encode_lang(line, ortho_im, cim):
             # Permute it
             char_ngram = circ_perm_hv(char_hv, ngram)
             # Bind it nicely
-            if ngram==0:
+            if ngram == 0:
                 encoded_ngram = char_ngram
             else:
                 encoded_ngram = bind_hv(encoded_ngram, char_ngram, hv_type=HV_TYPE)
@@ -147,7 +146,9 @@ def encode_lang(line, ortho_im, cim):
     # Binarize the encoded line
     threshold = threshold_counter / 2
     if QUANT_TYPE is not None:
-        encoded_line = quantize_hv(encoded_line, threshold, hv_type=HV_TYPE, quant_type=QUANT_TYPE)
+        encoded_line = quantize_hv(
+            encoded_line, threshold, hv_type=HV_TYPE, quant_type=QUANT_TYPE
+        )
     else:
         encoded_line = binarize_hv(encoded_line, threshold, hv_type=HV_TYPE)
 
@@ -155,7 +156,7 @@ def encode_lang(line, ortho_im, cim):
 
 
 def main(hv_dim, hv_type, quant_type):
-    #Overwrite global parameters
+    # Overwrite global parameters
     global HV_DIM
     HV_DIM = hv_dim
     global HV_TYPE
@@ -166,16 +167,16 @@ def main(hv_dim, hv_type, quant_type):
     # Download and extract the training dataset
     SEED_DIM = 32
     # HV_DIM = 512*16
-    ENABLE_HV_EXPANSION = False #enabling this increases HV_dim by a ton, which gave the default high 90% accuracy, similar to when increasing HV_DIM with that factor directly
+    ENABLE_HV_EXPANSION = False  # enabling this increases HV_dim by a ton, which gave the default high 90% accuracy, similar to when increasing HV_DIM with that factor directly
     HV_DIM_EXPANSION = 16
     NUM_TOT_IM = 1024
     NUM_PER_IM_BANK = 128
-    NGRAM = 4
+    # NGRAM = 4
     USE_CA90_IM = False
     EXTRACT_DATA = True
 
     NUM_TRAIN = 999
-    NUM_RETRAIN = NUM_TRAIN
+    # NUM_RETRAIN = NUM_TRAIN
     NUM_TEST = 999
 
     BASE_SEEDS = [
@@ -245,7 +246,7 @@ def main(hv_dim, hv_type, quant_type):
         encode_function=encode_lang,
         tqdm_mode=2,
         hv_type=HV_TYPE,
-        quant_type=QUANT_TYPE
+        quant_type=QUANT_TYPE,
     )
 
     print("Testing model...")
@@ -260,13 +261,14 @@ def main(hv_dim, hv_type, quant_type):
         tqdm_mode=2,
         print_mode=1,
         hv_type=HV_TYPE,
-        quant_type=QUANT_TYPE
+        quant_type=QUANT_TYPE,
     )
 
     return overall_accuracy
 
+
 if __name__ == "__main__":
-    main(hv_dim=512, hv_type='bipolar', quant_type=None)
+    main(hv_dim=512, hv_type="bipolar", quant_type=None)
 
     # print("Retraining model...")
     # (

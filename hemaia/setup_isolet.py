@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-  Copyright 2025 KU Leuven
-  Ryan Antonio <ryan.antonio@esat.kuleuven.be>
+Copyright 2025 KU Leuven
+Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
-  Description:
-  This program re-implements the ISOLET but dumps
-  data for the Hemaia project
+Description:
+This program re-implements the ISOLET but dumps
+data for the Hemaia project
 """
 import sys
 import os

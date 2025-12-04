@@ -1,10 +1,10 @@
 """
-  Copyright 2024 KU Leuven
-  Ryan Antonio <ryan.antonio@esat.kuleuven.be>
+Copyright 2024 KU Leuven
+Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
-  Description:
-  This tests the basic functionality
-  of the continuous item memory (CiM)
+Description:
+This tests the basic functionality
+of the continuous item memory (CiM)
 """
 
 from hdc_exp.hdc_util import hvlist2num

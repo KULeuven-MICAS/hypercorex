@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-  Copyright 2024 KU Leuven
-  Ryan Antonio <ryan.antonio@esat.kuleuven.be>
+Copyright 2024 KU Leuven
+Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
-  Description:
-  These program demonstrates how to use the
-  character recognition example for HDC
+Description:
+These program demonstrates how to use the
+character recognition example for HDC
 """
 
 from hdc_util import (

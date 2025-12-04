@@ -1,13 +1,13 @@
 """
-  Copyright 2024 KU Leuven
-  Ryan Antonio <ryan.antonio@esat.kuleuven.be>
+Copyright 2024 KU Leuven
+Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
-  Description:
-  This tests the fully combinational
-  instruction decode unit.
+Description:
+This tests the fully combinational
+instruction decode unit.
 
-  This one is more specific so it's not fully
-  automated since it's limited by the control signals
+This one is more specific so it's not fully
+automated since it's limited by the control signals
 """
 
 import set_parameters
