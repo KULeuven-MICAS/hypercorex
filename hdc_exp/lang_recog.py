@@ -21,6 +21,7 @@ from hdc_util import (
     bind_hv,
     binarize_hv,
     gen_ca90_im_set,
+    quantize_hv
 )
 
 
@@ -84,6 +85,18 @@ CHAR_MAP = {
     " ": 26,  # Space character
 }
 
+#initialize global params
+HV_TYPE = None
+QUANT_TYPE = None
+
+#Baseline?  (https://dl.acm.org/doi/pdf/10.1145/3558000 survey from 2023)
+# 10.1109/AICAS48895.2020.9073871 -> 97.23% (10k dims, binary, hamming dist)
+# 10.1109/MDAT.2017.2740839 -> 95.4% (sparse 4%, 10k dims, binary, 4-gram), 96.1% (dense, 10k dims, binary, 3-gram)
+# 10.1145/2934583.2934624 -> 3-gram: 96.7% HDC (10k dims), 97.9% nearest neighbour
+#                         -> 4-gram: 97.1%, 99.2%
+#                         -> 5-gram: 95.0%, 99.8%
+#https://redwood.berkeley.edu/wp-content/uploads/2020/08/JoshiEtAl-QI2016-language-geometry-copy.pdf  -> 3-gram 97.3%, 4-gram 97.8%, 5-gram 97.3% (10k dims)
+
 
 def extract_lang_dataset(read_file):
     # Extract file to be tested
@@ -122,7 +135,10 @@ def encode_lang(line, ortho_im, cim):
             # Permute it
             char_ngram = circ_perm_hv(char_hv, ngram)
             # Bind it nicely
-            encoded_ngram = bind_hv(encoded_ngram, char_ngram)
+            if ngram==0:
+                encoded_ngram = char_ngram
+            else:
+                encoded_ngram = bind_hv(encoded_ngram, char_ngram, hv_type=HV_TYPE)
 
         # Bundle the ngram
         encoded_line += encoded_ngram
@@ -130,21 +146,32 @@ def encode_lang(line, ortho_im, cim):
 
     # Binarize the encoded line
     threshold = threshold_counter / 2
-    encoded_line = binarize_hv(encoded_line, threshold, "binary")
+    if QUANT_TYPE is not None:
+        encoded_line = quantize_hv(encoded_line, threshold, hv_type=HV_TYPE, quant_type=QUANT_TYPE)
+    else:
+        encoded_line = binarize_hv(encoded_line, threshold, hv_type=HV_TYPE)
 
     return encoded_line
 
 
-if __name__ == "__main__":
+def main(hv_dim, hv_type, quant_type):
+    #Overwrite global parameters
+    global HV_DIM
+    HV_DIM = hv_dim
+    global HV_TYPE
+    HV_TYPE = hv_type
+    global QUANT_TYPE
+    QUANT_TYPE = quant_type
+
     # Download and extract the training dataset
     SEED_DIM = 32
-    HV_DIM = 512
-    ENABLE_HV_EXPANSION = True
+    # HV_DIM = 512*16
+    ENABLE_HV_EXPANSION = False #enabling this increases HV_dim by a ton, which gave the default high 90% accuracy, similar to when increasing HV_DIM with that factor directly
     HV_DIM_EXPANSION = 16
     NUM_TOT_IM = 1024
     NUM_PER_IM_BANK = 128
     NGRAM = 4
-    USE_CA90_IM = True
+    USE_CA90_IM = False
     EXTRACT_DATA = True
 
     NUM_TRAIN = 999
@@ -187,7 +214,7 @@ if __name__ == "__main__":
             p_dense=0.5,
             hv_seed=0,
             permute_base=1,
-            hv_type="binary",
+            hv_type=HV_TYPE,
             im_type="random",
         )
 
@@ -216,48 +243,58 @@ if __name__ == "__main__":
         ortho_im=ortho_im,
         cim=None,
         encode_function=encode_lang,
-        tqdm_mode=1,
+        tqdm_mode=2,
+        hv_type=HV_TYPE,
+        quant_type=QUANT_TYPE
     )
 
     print("Testing model...")
-    counts, scores, accuracies = test_model(
+    counts, scores, accuracies, overall_accuracy = test_model(
         test_dataset=train_data,
         ortho_im=ortho_im,
         cim=None,
         class_am=class_am,
         encode_function=encode_lang,
-        staring_num_test=0,
+        starting_num_test=0,
         num_test=NUM_TEST,
-        tqdm_mode=1,
+        tqdm_mode=2,
         print_mode=1,
+        hv_type=HV_TYPE,
+        quant_type=QUANT_TYPE
     )
 
-    print("Retraining model...")
-    (
-        class_am_retrained,
-        class_am_int_retrained,
-        class_am_elem_count_retrained,
-    ) = retrain_model(
-        retrain_dataset=train_data,
-        num_retrain=NUM_RETRAIN,
-        ortho_im=ortho_im,
-        cim=None,
-        class_am=class_am,
-        class_am_int=class_am_int,
-        class_am_elem_count=class_am_elem_count,
-        encode_function=encode_lang,
-        tqdm_mode=1,
-    )
+    return overall_accuracy
 
-    print("Testing re-trained model...")
-    counts, scores, accuracies = test_model(
-        test_dataset=train_data,
-        ortho_im=ortho_im,
-        cim=None,
-        class_am=class_am_retrained,
-        encode_function=encode_lang,
-        staring_num_test=0,
-        num_test=NUM_TEST,
-        tqdm_mode=1,
-        print_mode=1,
-    )
+if __name__ == "__main__":
+    main(hv_dim=512, hv_type='bipolar', quant_type=None)
+
+    # print("Retraining model...")
+    # (
+    #     class_am_retrained,
+    #     class_am_int_retrained,
+    #     class_am_elem_count_retrained,
+    # ) = retrain_model(
+    #     retrain_dataset=train_data,
+    #     num_retrain=NUM_RETRAIN,
+    #     ortho_im=ortho_im,
+    #     cim=None,
+    #     class_am=class_am,
+    #     class_am_int=class_am_int,
+    #     class_am_elem_count=class_am_elem_count,
+    #     encode_function=encode_lang,
+    #     tqdm_mode=1,
+    #     hv_type=HV_TYPE
+    # )
+
+    # print("Testing re-trained model...")
+    # counts, scores, accuracies = test_model(
+    #     test_dataset=train_data,
+    #     ortho_im=ortho_im,
+    #     cim=None,
+    #     class_am=class_am_retrained,
+    #     encode_function=encode_lang,
+    #     starting_num_test=0,
+    #     num_test=NUM_TEST,
+    #     tqdm_mode=1,
+    #     print_mode=1,
+    # )

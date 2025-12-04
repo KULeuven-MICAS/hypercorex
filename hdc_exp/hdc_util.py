@@ -18,6 +18,7 @@ import tarfile
 import io
 import copy
 import math
+from FP_quantize_util import fp864_quantize
 
 
 """
@@ -250,7 +251,7 @@ def reshape_hv_list(hv_list, sub_elem_size):
 
 # Generate empty HV
 def gen_empty_hv(hv_dim):
-    return np.zeros(hv_dim, dtype=int)
+    return np.zeros(hv_dim, dtype=float)
 
 
 # Generate using random indexing style
@@ -319,17 +320,141 @@ def binarize_hv(hv_a, threshold, hv_type="binary"):
     return hv_a
 
 
+def quantize_hv(encoded_line, threshold, hv_type="binary", quant_type="INT8", class_hv=False):
+    if class_hv:
+        match quant_type:
+            case "INT8":
+                max_q_val = 127.0
+            case "INT4":
+                max_q_val = 7.0
+            case "INT2":
+                max_q_val = 1.
+            case "FP8_E4M3":
+                max_q_val = 448.0
+            case "FP8_E5M2":
+                max_q_val = 57344.0
+            case "FP6_E2M3":
+                max_q_val = 7.5
+            case "FP6_E3M2":
+                max_q_val = 28.0
+            case "FP4_E2M1":
+                max_q_val = 6.0
+            case "FP4_E2M1_alt":
+                max_q_val = 6.0
+            case "INT2_alt":
+                max_q_val = 1.5
+            case "INT4_alt":
+                max_q_val = 7.5
+            case "INT8_alt":
+                max_q_val = 127.5
+        threshold = threshold*max_q_val
+    else:
+        if hv_type == "binary":
+            encoded_line -= threshold #to use symmetric quantization, shifts range from [0,2*threshold] to [-threshold,threshold]
+
+    if hv_type == "binary":
+        min_val = -threshold
+        max_val = threshold
+        # min_val = 0 #T3
+        # max_val = 2*threshold #T3
+    else: #bipolar
+        min_val = -2*threshold
+        max_val = 2*threshold
+
+    if quant_type == "INT8":
+        scale = max(abs(min_val), abs(max_val))/127.0
+        if scale == 0:
+            scale = 1
+        quantized_vals = np.round(encoded_line / scale).clip(-127, 127).astype(np.int64)
+        quant_encoded_line = quantized_vals.astype(np.float64)*scale
+    elif quant_type == "INT4":
+        scale = max(abs(min_val), abs(max_val)) / 7.0
+        if scale == 0:
+            scale = 1
+        quantized_vals = np.round(encoded_line / scale).clip(-7.0, 7.0).astype(np.int64)
+        quant_encoded_line = quantized_vals.astype(np.float64)*scale
+    elif quant_type == "INT2":
+        scale = max(abs(min_val), abs(max_val)) / 1.0
+        if scale == 0:
+            scale = 1
+        quantized_vals = np.round(encoded_line / scale).clip(-1.0, 1.0).astype(np.int64)
+        quant_encoded_line = quantized_vals.astype(np.float64)*scale
+    elif quant_type == "FP8_E4M3":
+        scale = max(abs(min_val), abs(max_val)) / 448.0
+        if scale == 0:
+            scale = 1
+        quantized_vals = fp864_quantize(encoded_line/scale, mode="E4M3")
+        quant_encoded_line = quantized_vals.astype(np.float64)*scale
+    elif quant_type == "FP8_E5M2":
+        scale = max(abs(min_val), abs(max_val)) / 57344.0
+        if scale == 0:
+            scale = 1
+        quantized_vals = fp864_quantize(encoded_line/scale, mode="E5M2")
+        quant_encoded_line = quantized_vals.astype(np.float64)*scale
+    elif quant_type == "FP6_E2M3":
+        scale = max(abs(min_val), abs(max_val)) / 7.5
+        if scale == 0:
+            scale = 1
+        quantized_vals = fp864_quantize(encoded_line/scale, mode="E2M3")
+        quant_encoded_line = quantized_vals.astype(np.float64)*scale
+    elif quant_type == "FP6_E3M2":
+        scale = max(abs(min_val), abs(max_val)) / 28.0
+        if scale == 0:
+            scale = 1
+        quantized_vals = fp864_quantize(encoded_line/scale, mode="E3M2")
+        quant_encoded_line = quantized_vals.astype(np.float64)*scale
+    elif quant_type == "FP4_E2M1":
+        scale = max(abs(min_val), abs(max_val)) / 6.0
+        if scale == 0:
+            scale = 1
+        quantized_vals = fp864_quantize(encoded_line/scale, mode="E2M1")
+        quant_encoded_line = quantized_vals.astype(np.float64)*scale
+    elif quant_type == "INT8_alt":
+        scale = max(abs(min_val), abs(max_val)) / 127.5
+        if scale == 0:
+            scale = 1
+        levels = np.arange(-127.5, 128.0, 1.0)
+        quantized_vals = levels[np.argmin(np.abs(encoded_line[..., None]/scale - levels), axis=-1)]
+        quant_encoded_line = quantized_vals.astype(np.float64)*scale
+    elif quant_type == "INT4_alt":
+        scale = max(abs(min_val), abs(max_val)) / 7.5
+        if scale == 0:
+            scale = 1
+        levels = np.arange(-7.5, 8.0, 1.0)
+        quantized_vals = levels[np.argmin(np.abs(encoded_line[..., None]/scale - levels), axis=-1)]
+        quant_encoded_line = quantized_vals.astype(np.float64)*scale        
+    elif quant_type == "INT2_alt":
+        scale = max(abs(min_val), abs(max_val)) / 1.5
+        if scale == 0:
+            scale = 1
+        levels = np.array([-1.5, -0.5, 0.5, 1.5])
+        quantized_vals = levels[np.argmin(np.abs(encoded_line[..., None]/scale - levels), axis=-1)]
+        quant_encoded_line = quantized_vals.astype(np.float64)*scale
+    elif quant_type == "FP4_E2M1_alt":
+        scale = max(abs(min_val), abs(max_val)) / 6.0
+        if scale == 0:
+            scale = 1
+        levels = np.array([-6.0, -4.0, -3.0, -2.0, -1.5, -1.0, -0.5, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 6.0]) #no zero point
+        quantized_vals = levels[np.argmin(np.abs(encoded_line[..., None] - levels), axis=-1)]
+        quant_encoded_line = quantized_vals.astype(np.float64)*scale
+    return quant_encoded_line
+
+
 # Normalized distance calculation
 # the output range is from 0 to 1
 # where 1 is the highest similarity
-def norm_dist_hv(hv_a, hv_b, hv_type="binary"):
+def norm_dist_hv(hv_a, hv_b, hv_type="binary", quant_type=None):
     # If binary we do hamming distance,
     # else we do cosine similarity
-    if hv_type == "bipolar":
+    if (hv_type == "bipolar") or (quant_type is not None):
         hv_dot = np.dot(hv_a, hv_b)
         norm_a = np.linalg.norm(hv_a)
         norm_b = np.linalg.norm(hv_b)
-        dist = hv_dot / (norm_a * norm_b)
+        if (norm_a==0) or (norm_b==0):
+            norm_factor = 1
+        else:
+            norm_factor = norm_a*norm_b
+        dist = hv_dot / (norm_factor)
     else:
         ham_dist = np.sum(np.bitwise_xor(hv_a, hv_b))
         dist = 1 - (ham_dist / hv_a.size)
@@ -710,7 +835,7 @@ def gen_cim(
     # Iteratively generate other HVs
     for i in range(num_hv - 1):
         cim[i + 1] = rand_flip_hv(
-            cim[i], i * num_flips, (i + 1) * num_flips, hv_type="binary"
+            cim[i], i * num_flips, (i + 1) * num_flips, hv_type=hv_type
         )
 
     return cim
@@ -721,7 +846,7 @@ def gen_cim(
 """
 
 
-def train_model(train_dataset, num_train, ortho_im, cim, encode_function, tqdm_mode=0):
+def train_model(train_dataset, num_train, ortho_im, cim, encode_function, tqdm_mode=0, hv_type='binary', quant_type=None):
     # Set TQDM
     disable_train_bar = True
     disable_per_class_bar = False
@@ -764,7 +889,10 @@ def train_model(train_dataset, num_train, ortho_im, cim, encode_function, tqdm_m
         class_am_int[num_class] = class_hv
 
         # Save binarized AM
-        class_hv = binarize_hv(class_hv, train_threshold, "binary")
+        if quant_type is not None:
+            class_hv = quantize_hv(class_hv, train_threshold, hv_type, quant_type=quant_type, class_hv=True)
+        else:
+            class_hv = binarize_hv(class_hv, train_threshold, hv_type)
         class_am[num_class] = class_hv
 
         # Save threshold list
@@ -784,6 +912,8 @@ def test_model(
     num_test,
     tqdm_mode=0,
     print_mode=0,
+    hv_type="binary",
+    quant_type=None,
 ):
     # Logging modes
     disable_per_class_accuracy = False
@@ -801,6 +931,7 @@ def test_model(
 
     if print_mode == 1:
         disable_per_class_accuracy = True
+        disable_accuracy = False
     elif print_mode == 2:
         disable_per_class_accuracy = True
         disable_accuracy = True
@@ -828,7 +959,7 @@ def test_model(
                 test_dataset[num_class][starting_num_test + i], ortho_im, cim
             )
             # Get prediction
-            prediction = prediction_idx(class_am, qhv, hv_type="binary")
+            prediction = prediction_idx(class_am, qhv, hv_type=hv_type, quant_type=quant_type)
             # Update score
             if prediction == num_class:
                 total_score += 1
@@ -853,9 +984,9 @@ def test_model(
         overall_count = sum(counts)
 
         overall_accuracy = overall_score / overall_count if overall_count > 0 else 0
-        print(f"Overall Accuracy: {overall_accuracy:.2f}")
+        print(f"Overall Accuracy: {overall_accuracy:.5f}")
 
-    return counts, scores, accuracies
+    return counts, scores, accuracies, overall_accuracy
 
 
 def test_model_cuts_version(
@@ -964,6 +1095,7 @@ def retrain_model(
     class_am_elem_count,
     encode_function,
     tqdm_mode=0,
+    hv_type='binary'
 ):
     # Set TQDM
     disable_train_bar = True
@@ -996,7 +1128,7 @@ def retrain_model(
             encoded_line = encode_function(retrain_dataset[num_class][i], ortho_im, cim)
 
             # Get prediction
-            prediction = prediction_idx(class_am, encoded_line, hv_type="binary")
+            prediction = prediction_idx(class_am, encoded_line, hv_type=hv_type)
 
             # Update AM for every incorrect prediction
             if prediction != num_class:
@@ -1013,7 +1145,7 @@ def retrain_model(
         # Save binarized AM
         threshold = class_am_elem_count_copy[num_class] / 2
         class_am_copy[num_class] = binarize_hv(
-            class_am_int_copy[num_class], threshold, "binary"
+            class_am_int_copy[num_class], threshold, hv_type
         )
 
     # Print for newline
@@ -1127,11 +1259,11 @@ def predict_item(ortho_im, cim, class_am, sample, encode_function, hv_type="bina
 
 
 # Returns the predicted index
-def prediction_idx(assoc_mem, query_hv, hv_type="binary"):
+def prediction_idx(assoc_mem, query_hv, hv_type="binary", quant_type=None):
     score_list = []
 
     for i in range(len(assoc_mem)):
-        score_list.append(norm_dist_hv(assoc_mem[i], query_hv, hv_type=hv_type))
+        score_list.append(norm_dist_hv(assoc_mem[i], query_hv, hv_type=hv_type, quant_type=quant_type))
 
     predict_idx = np.argmax(score_list)
 
@@ -1139,11 +1271,11 @@ def prediction_idx(assoc_mem, query_hv, hv_type="binary"):
 
 
 # Return score list only
-def predict_score_list(assoc_mem, query_hv, hv_type="binary"):
+def predict_score_list(assoc_mem, query_hv, hv_type="binary", quant_type=None):
     score_list = []
 
     for i in range(len(assoc_mem)):
-        score_list.append(norm_dist_hv(assoc_mem[i], query_hv, hv_type=hv_type))
+        score_list.append(norm_dist_hv(assoc_mem[i], query_hv, hv_type=hv_type, quant_type=quant_type))
     return score_list
 
 
