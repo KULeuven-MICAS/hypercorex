@@ -115,9 +115,9 @@ async def bundler_unit_dut(dut):
     await clear_bundler_unit(dut)
     print_counter_output(dut)
 
-    assert (
-        dut.counter_o.value.signed_integer == 0
-    ), "Error! Bundler needs to be cleared to 0!"
+    assert dut.counter_o.value.signed_integer == 0, (
+        "Error! Bundler needs to be cleared to 0!"
+    )
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("            Testing Decrements              ")
@@ -128,9 +128,9 @@ async def bundler_unit_dut(dut):
         await decrement_inputs(dut)
         print_counter_output(dut)
 
-    assert (
-        dut.counter_o.value.signed_integer < 0
-    ), "Error! Bundler needs to be cleared to 0!"
+    assert dut.counter_o.value.signed_integer < 0, (
+        "Error! Bundler needs to be cleared to 0!"
+    )
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("       Testing Positive Saturation          ")
@@ -150,9 +150,9 @@ async def bundler_unit_dut(dut):
         await increment_inputs(dut)
         print_counter_output(dut)
 
-    assert (
-        dut.counter_o.value.signed_integer == MAX_VAL
-    ), f"Error! Bundler needs to saturate at {MAX_VAL}!"
+    assert dut.counter_o.value.signed_integer == MAX_VAL, (
+        f"Error! Bundler needs to saturate at {MAX_VAL}!"
+    )
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("       Testing Negative Saturation          ")
@@ -172,9 +172,9 @@ async def bundler_unit_dut(dut):
         await decrement_inputs(dut)
         print_counter_output(dut)
 
-    assert (
-        dut.counter_o.value.signed_integer == MIN_VAL
-    ), f"Error! Bundler needs to saturate at {MIN_VAL}!"
+    assert dut.counter_o.value.signed_integer == MIN_VAL, (
+        f"Error! Bundler needs to saturate at {MIN_VAL}!"
+    )
 
 
 # Config and run

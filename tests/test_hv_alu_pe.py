@@ -40,7 +40,7 @@ async def gen_and_test(dut, hv_dim, shift_amt, mode):
 
     # Log data
     cocotb.log.info(" ------------------------------------------ ")
-    cocotb.log.info(f" Mode: { dut.op_i.value.integer}")
+    cocotb.log.info(f" Mode: {dut.op_i.value.integer}")
     cocotb.log.info(f" Input A: {dut.A_i.value.integer}")
     cocotb.log.info(f" Input B: {dut.B_i.value.integer}")
     cocotb.log.info(f" Shift Amount: {dut.shift_amt_i.value.integer}")

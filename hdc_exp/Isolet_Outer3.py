@@ -44,7 +44,7 @@ def outer(i):
                     i, hv_dim, hv_type, quant_type
                 )
                 count += 1
-                print(f"Tread {i}: {round(count/tot*100,2)}%")
+                print(f"Tread {i}: {round(count / tot * 100, 2)}%")
     with open(f"result_isolet_{i}.json", "w") as f:
         json.dump(result_dict, f, indent=2)
 

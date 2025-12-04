@@ -8,7 +8,6 @@ Description:
 These contain useful functions for testing HDC activities
 """
 
-
 import numpy as np
 from tqdm import tqdm
 from collections import Counter
@@ -726,9 +725,9 @@ def gen_ca90_im_set(
     # Extract seed list that give
     # 50% density of a base HV
     if gen_seed:
-        assert (
-            len(base_seeds) >= num_ims
-        ), "Error! Base seed length needs to be same as num of ims."
+        assert len(base_seeds) >= num_ims, (
+            "Error! Base seed length needs to be same as num of ims."
+        )
         seed_list = base_seeds
     else:
         seed_list = ca90_extract_seeds(seed_size, num_ims, hv_dim, ca90_mode=ca90_mode)

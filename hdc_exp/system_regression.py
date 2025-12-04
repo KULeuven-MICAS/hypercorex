@@ -8,6 +8,7 @@ Description:
 These contain useful functions for generating golden values
 for regression tests.
 """
+
 # Main importations
 from hdc_util import (
     bind_hv,

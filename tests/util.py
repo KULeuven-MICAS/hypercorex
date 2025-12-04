@@ -152,9 +152,9 @@ async def clock_and_time(clock):
 def check_result(actual_val, golden_val, debug_on=False):
     if debug_on:
         cocotb.log.info(f"Golden val: {golden_val}; Actual val: {actual_val}")
-    assert (
-        golden_val == actual_val
-    ), f"Error! Golden Val: {golden_val}; Actual Val: {actual_val}"
+    assert golden_val == actual_val, (
+        f"Error! Golden Val: {golden_val}; Actual Val: {actual_val}"
+    )
     return
 
 
@@ -164,9 +164,9 @@ def check_result_array(actual_val_array, golden_val_array, debug_on=False):
             cocotb.log.info(
                 f"Golden val: {golden_val_array[i]}; Actual val: {actual_val_array[i]}"
             )
-    assert (
-        golden_val_array == actual_val_array
-    ).all(), f"Error! Golden Val: {golden_val_array}; Actual Val: {actual_val_array}"
+    assert (golden_val_array == actual_val_array).all(), (
+        f"Error! Golden Val: {golden_val_array}; Actual Val: {actual_val_array}"
+    )
     return
 
 
@@ -176,9 +176,9 @@ def check_result_list(actual_val_array, golden_val_array, debug_on=False):
             cocotb.log.info(
                 f"Golden val: {golden_val_array[i]}; Actual val: {actual_val_array[i]}"
             )
-    assert (
-        golden_val_array == actual_val_array
-    ), f"Error! Golden Val: {golden_val_array}; Actual Val: {actual_val_array}"
+    assert golden_val_array == actual_val_array, (
+        f"Error! Golden Val: {golden_val_array}; Actual Val: {actual_val_array}"
+    )
     return
 
 

@@ -44,7 +44,7 @@ fig, ax = plt.subplots(figsize=(10, 6))
 
 # Plot each of the 9 bars per group
 for i in range(n_bars):
-    ax.bar(x + i * bar_width, av_data[:, i], width=bar_width, label=f"Bar {i+1}")
+    ax.bar(x + i * bar_width, av_data[:, i], width=bar_width, label=f"Bar {i + 1}")
 
 # Labels and title
 ax.set_ylabel("Prediction Accuracy")

@@ -44,9 +44,9 @@ async def ham_dist_dut(dut):
 
         # Log
         cocotb.log.info(f"Actual val: {actual_val}; Golden val: {golden_val}")
-        assert (
-            actual_val == golden_val
-        ), f"Error! Hamming distance mismatch! A: {actual_val}; B: {golden_val}"
+        assert actual_val == golden_val, (
+            f"Error! Hamming distance mismatch! A: {actual_val}; B: {golden_val}"
+        )
 
 
 # Actual test run

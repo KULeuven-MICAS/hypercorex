@@ -531,4 +531,4 @@ if __name__ == "__main__":
     # Accuracy measurement
     acc = measure_acc(predict_set, correct_set)
 
-    print(f"Accuracy: {acc*100}")
+    print(f"Accuracy: {acc * 100}")
