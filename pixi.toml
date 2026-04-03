@@ -1,0 +1,33 @@
+[workspace]
+name = "vsax"
+version = "0.1.0"
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+# ── Conda dependencies (binary-heavy, better from conda-forge) ────────────────
+[dependencies]
+python = ">=3.11,<3.12"
+numpy = "*"
+matplotlib = "*"
+verilator = ">=5.46,<6"
+
+# ── PyPI dependencies ─────────────────────────────────────────────────────────
+[pypi-dependencies]
+cocotb       = "*"
+cocotb-test  = "*"
+pytest       = "*"
+pytest-xdist = "*"
+mako         = "*"
+jsonref      = "*"
+hjson        = "*"
+pre-commit   = "*"
+ruff         = "*"
+black        = "*"
+pyright      = "*"
+flake8       = "*"
+tqdm         = "*"
+requests     = "*"
+
+# ── Tasks ─────────────────────────────────────────────────────────────────────
+[tasks]
+smoke-test = "python -c \"import cocotb, pytest, numpy, matplotlib, mako, jsonref, hjson, ruff, black, flake8, tqdm, requests; print('Environment OK')\""
