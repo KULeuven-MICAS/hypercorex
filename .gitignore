@@ -2,3 +2,4 @@ __pycache__/
 hdc_exp/extracted_datasets/
 sim_build/
 Bender.lock
+.pixi/
