@@ -23,12 +23,10 @@ jobs:
   code-formatting:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-          
+    - name: Set up pixi
+      uses: prefix-dev/setup-pixi@v0.8.1
+
     - name: Run code formatting checks with pre-commit
-      uses: pre-commit/action@v3.0.0
+      run: pixi run pre-commit run --all-files
