@@ -90,11 +90,13 @@ QUANT_TYPE = None
 
 # Baseline?  (https://dl.acm.org/doi/pdf/10.1145/3558000 survey from 2023)
 # 10.1109/AICAS48895.2020.9073871 -> 97.23% (10k dims, binary, hamming dist)
-# 10.1109/MDAT.2017.2740839 -> 95.4% (sparse 4%, 10k dims, binary, 4-gram), 96.1% (dense, 10k dims, binary, 3-gram)
+# 10.1109/MDAT.2017.2740839 -> 95.4% (sparse 4%, 10k dims, binary, 4-gram), 96.1%
+#                                    (dense, 10k dims, binary, 3-gram)
 # 10.1145/2934583.2934624 -> 3-gram: 96.7% HDC (10k dims), 97.9% nearest neighbour
 #                         -> 4-gram: 97.1%, 99.2%
 #                         -> 5-gram: 95.0%, 99.8%
-# https://redwood.berkeley.edu/wp-content/uploads/2020/08/JoshiEtAl-QI2016-language-geometry-copy.pdf  -> 3-gram 97.3%, 4-gram 97.8%, 5-gram 97.3% (10k dims)
+# JoshiEtAl-QI2016-language-geometry-copy.pdf
+# > 3-gram 97.3%, 4-gram 97.8%, 5-gram 97.3% (10k dims)
 
 
 def extract_lang_dataset(read_file):
@@ -167,7 +169,9 @@ def main(hv_dim, hv_type, quant_type):
     # Download and extract the training dataset
     SEED_DIM = 32
     # HV_DIM = 512*16
-    ENABLE_HV_EXPANSION = False  # enabling this increases HV_dim by a ton, which gave the default high 90% accuracy, similar to when increasing HV_DIM with that factor directly
+    # enabling this increases HV_dim by a ton, which gave the default high 90%
+    # accuracy, similar to when increasing HV_DIM with that factor directly
+    ENABLE_HV_EXPANSION = False
     HV_DIM_EXPANSION = 16
     NUM_TOT_IM = 1024
     NUM_PER_IM_BANK = 128
