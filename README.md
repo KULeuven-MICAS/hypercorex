@@ -1,4 +1,4 @@
-# Hypercorex-v2 (VSAX)
+# :electron: Hypercorex-v2 (VSAX)
 
 ## :hammer_and_wrench: Under Construction
 
