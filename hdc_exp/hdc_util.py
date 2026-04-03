@@ -350,8 +350,10 @@ def quantize_hv(
                 max_q_val = 127.5
         threshold = threshold * max_q_val
     else:
+        # to use symmetric quantization, shifts
+        # range from [0,2*threshold] to [-threshold,threshold]
         if hv_type == "binary":
-            encoded_line -= threshold  # to use symmetric quantization, shifts range from [0,2*threshold] to [-threshold,threshold]
+            encoded_line -= threshold
 
     if hv_type == "binary":
         min_val = -threshold
@@ -725,9 +727,9 @@ def gen_ca90_im_set(
     # Extract seed list that give
     # 50% density of a base HV
     if gen_seed:
-        assert len(base_seeds) >= num_ims, (
-            "Error! Base seed length needs to be same as num of ims."
-        )
+        assert (
+            len(base_seeds) >= num_ims
+        ), "Error! Base seed length needs to be same as num of ims."
         seed_list = base_seeds
     else:
         seed_list = ca90_extract_seeds(seed_size, num_ims, hv_dim, ca90_mode=ca90_mode)
