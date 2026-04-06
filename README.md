@@ -10,6 +10,41 @@ This project addresses the key limitations of binary HDC, where accuracy suffers
 
 As the VSA field continues to evolve, this hardware framework is designed to be extensible across both the hardware and software domains. Throughout these expansions, the focus remains on building an efficient and scalable VSA accelerator.
 
+## Getting Started
+VSAX uses [pixi-shell](https://pixi.prefix.dev/v0.28.1/) as its environment manager. Make sure to install pixi first:
+
+```bash
+curl -fsSL https://pixi.sh/install.sh | sh
+```
+
+Clone the repo and make sure to be inside:
+
+```bash
+git clone git@github.com:KULeuven-MICAS/hypercorex.git
+```
+
+Install the pixi environment. For more details of the versions used, please check the [pixi.toml](./pixi.toml).
+
+```bash
+pixi install
+```
+
+Activate the pixi shell.
+
+```bash
+pixi shell
+```
+
+Run the smoke-test to see if it works.
+
+```bash
+pixi run smoke-test
+```
+
+
+
+
+
 ## :book: Development Checklist
 ### General House Keeping
 - [ ] Setting general pixi shell.
