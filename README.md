@@ -43,7 +43,7 @@ pixi run smoke-test
 
 ## Running Sample HW Testbenches
 
-By default, we use [cocotb-test](https://github.com/themperek/cocotb-test) built in [Verilator](https://www.veripool.org/verilator/) as our testbench since it uses Python as the backend and simulations are fast.
+By default, we use [cocotb-test](https://github.com/themperek/cocotb-test) while using [Verilator](https://www.veripool.org/verilator/) as our testbench since it uses Python as the backend and simulations are fast.
 
 You can select one of the tests from the `tests` directory. To invoke a test use:
 
