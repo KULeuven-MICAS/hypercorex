@@ -99,7 +99,7 @@ def setup_and_run(
                 compile_args.append("--trace-fst")
         timescale = None
         extra_args = None
-        
+
     else:
         waves_flag = waves
         compile_args = None
