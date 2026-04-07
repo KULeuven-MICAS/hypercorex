@@ -61,6 +61,7 @@ def setup_and_run(
     module="",
     simulator="verilator",
     waves=False,
+    waves_type="vcd",
     parameters=None,
     bender_filelist=False,
 ):
@@ -90,9 +91,17 @@ def setup_and_run(
             "--unroll-count",
             "1024",
         ]
+        if waves:
+            waves_flag = False
+            if waves_type == "vcd":
+                compile_args.append("--trace")
+            elif waves_type == "fst":
+                compile_args.append("--trace-fst")
         timescale = None
         extra_args = None
+        
     else:
+        waves_flag = waves
         compile_args = None
         timescale = "1ns/1ps"
         extra_args = ["+acc=rnb"]
@@ -107,7 +116,7 @@ def setup_and_run(
         sim_build=sim_build,
         compile_args=compile_args,
         timescale=timescale,
-        waves=waves,
+        waves=waves_flag,
         parameters=parameters,
         extra_args=extra_args,
     )
