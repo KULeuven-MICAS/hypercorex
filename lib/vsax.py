@@ -178,6 +178,8 @@ if __name__ == "__main__":
     # Example usage
     HV_DIM = 2048
     P_DENSE = 0.5
+    SIGMA = 0.5 * np.sqrt(HV_DIM) / HV_DIM
+    SIGMA3 = 4 * SIGMA
     HV_TYPE = "binary"
     NUM_ITEMS = 10
 
@@ -188,7 +190,14 @@ if __name__ == "__main__":
 
     # Get density of each hypervector
     ri_density = np.mean(random_index_set, axis=1)
-    print("RI Density:", ri_density)
+    # Check if all density are 0.5
+    if np.allclose(ri_density, 0.5, atol=SIGMA3):
+        print("Pass! RI density check")
+    else:
+        raise AssertionError(
+            "Error! RI density not \
+                             within 0.5 +/- 4*sigma"
+        )
 
     # Get pair-wise distances between the hypervectors
     distances = np.zeros((NUM_ITEMS, NUM_ITEMS))
@@ -197,4 +206,16 @@ if __name__ == "__main__":
             distances[i, j] = norm_dist_hv(
                 random_index_set[i], random_index_set[j], HV_TYPE
             )
-    print("RI pair-distances:\n", distances)
+
+    # Check non-diagonal distances
+    mask = ~np.eye(NUM_ITEMS, dtype=bool)
+    off_diag_distances = distances[mask]
+    if np.all(
+        (off_diag_distances >= 0.5 - SIGMA3) & (off_diag_distances <= 0.5 + SIGMA3)
+    ):
+        print("Pass! RI distance check")
+    else:
+        raise AssertionError(
+            "Error! RI distances not \
+                             within 0.5 +/- 4*sigma"
+        )
