@@ -178,11 +178,22 @@ if __name__ == "__main__":
     # Example usage
     HV_DIM = 2048
     P_DENSE = 0.5
-    SIGMA = 0.5 * np.sqrt(HV_DIM) / HV_DIM
-    SIGMA3 = 4 * SIGMA
-    HV_TYPE = "binary"
+    THRESHOLD = 0.1
     NUM_ITEMS = 10
 
+    # Printing the parameters
+    print("======== Parameters ========")
+    print(f"HV_DIM: {HV_DIM}")
+    print(f"P_DENSE: {P_DENSE}")
+    print(f"THRESHOLD: {THRESHOLD}")
+    print(f"NUM_ITEMS: {NUM_ITEMS}")
+
+    # ---------------------------
+    # Binary HV check
+    # ---------------------------
+    print("======== Tests ========")
+    print("======== Binary HV Tests ========")
+    HV_TYPE = "binary"
     # Generate a set of random hypervectors
     random_index_set = np.array(
         [gen_ri_hv(HV_DIM, P_DENSE, HV_TYPE) for _ in range(NUM_ITEMS)]
@@ -191,10 +202,10 @@ if __name__ == "__main__":
     # Get density of each hypervector
     ri_density = np.mean(random_index_set, axis=1)
     # Check if all density are 0.5
-    if np.allclose(ri_density, 0.5, atol=SIGMA3):
-        print("Pass! RI density check")
+    if np.allclose(ri_density, 0.5, atol=THRESHOLD):
+        print("Pass! Bin-RI density check")
     else:
-        raise AssertionError("Error! RI density not within 0.5 +/- 4*sigma")
+        raise AssertionError("Error! Bin-RI density not within 0.5 +/- THRESHOLD")
 
     # Get pair-wise distances between the hypervectors
     distances = np.zeros((NUM_ITEMS, NUM_ITEMS))
@@ -208,8 +219,45 @@ if __name__ == "__main__":
     mask = ~np.eye(NUM_ITEMS, dtype=bool)
     off_diag_distances = distances[mask]
     if np.all(
-        (off_diag_distances >= 0.5 - SIGMA3) & (off_diag_distances <= 0.5 + SIGMA3)
+        (off_diag_distances >= 0.5 - THRESHOLD)
+        & (off_diag_distances <= 0.5 + THRESHOLD)
     ):
-        print("Pass! RI distance check")
+        print("Pass! Bin-RI distance check")
     else:
-        raise AssertionError("Error! RI distances not within 0.5 +/- 4*sigma")
+        raise AssertionError("Error! Bin-RI distances not within 0.5 +/- THRESHOLD")
+
+    # ---------------------------
+    # Bipolar HV check
+    # ---------------------------
+    print("======== Bipolar HV Tests ========")
+    HV_TYPE = "bipolar"
+
+    # Generate a set of random hypervectors
+    random_index_set = np.array(
+        [gen_ri_hv(HV_DIM, P_DENSE, HV_TYPE) for _ in range(NUM_ITEMS)]
+    )
+
+    # Get density of each hypervector
+    ri_density = np.mean(random_index_set, axis=1)
+    # Check if all density are 0.5
+    if np.allclose(ri_density, 0, atol=THRESHOLD):
+        print("Pass! Bip-RI density check")
+    else:
+        raise AssertionError("Error! Bip-RI density not within 0 +/- THRESHOLD")
+
+    # Get pair-wise distances between the hypervectors
+    distances = np.zeros((NUM_ITEMS, NUM_ITEMS))
+    for i in range(NUM_ITEMS):
+        for j in range(NUM_ITEMS):
+            distances[i, j] = norm_dist_hv(
+                random_index_set[i], random_index_set[j], HV_TYPE
+            )
+    # Check non-diagonal distances
+    mask = ~np.eye(NUM_ITEMS, dtype=bool)
+    off_diag_distances = distances[mask]
+    if np.all(
+        (off_diag_distances >= 0 - THRESHOLD) & (off_diag_distances <= 0 + THRESHOLD)
+    ):
+        print("Pass! Bip-RI distance check")
+    else:
+        raise AssertionError("Error! Bip-RI distances not within 0 +/- THRESHOLD")
