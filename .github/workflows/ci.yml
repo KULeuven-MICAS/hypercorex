@@ -18,3 +18,17 @@ jobs:
 
       - name: Run smoke test
         run: pixi run smoke-test
+
+
+  lib-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up pixi
+        uses: prefix-dev/setup-pixi@v0.8.1
+
+      - name: Run library check
+        run: pixi run lib-check
