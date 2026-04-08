@@ -12,8 +12,17 @@ We also include the item memory or hypervector generation in here.
 # ---------------------------------------------------------------------------
 # Importing packages
 # ---------------------------------------------------------------------------
+import random
 import numpy as np
 from typing import Optional
+
+# ---------------------------------------------------------------------------
+# Fixed parameters
+# ---------------------------------------------------------------------------
+LFSR_MASK_32 = 0xFFFF_FFFF  # keep 32-bit arithmetic in Python ints
+LFSR_TAP_MASK = 0xB4BC_D35C  # primitive polynomial — maximal-length 32-bit LFSR
+LFSR_KNUTH_CONST = 0x9E37_79B9  # floor(2^32 / φ) — Knuth multiplicative hash
+LFSR_WARMUP_STEPS = 32  # warm-up iterations inside lfsr_item_seed
 
 # ---------------------------------------------------------------------------
 # Hypervector generation functions
@@ -21,7 +30,7 @@ from typing import Optional
 
 
 # Generating empty hypervector (all zeros)
-def gen_empty_hv(hv_dim: int) -> np.ndarray:
+def hv_gen_empty(hv_dim: int) -> np.ndarray:
     """
     Generate an empty hypervector of the specified dimension.
     Parameters:
@@ -33,7 +42,7 @@ def gen_empty_hv(hv_dim: int) -> np.ndarray:
 
 
 # Generate using random indexing style
-def gen_ri_hv(hv_dim: int, p_dense: float, hv_type: str = "binary") -> np.ndarray:
+def hv_gen_ri(hv_dim: int, p_dense: float, hv_type: str = "binary") -> np.ndarray:
     """
     Generate a hypervector using random indexing style.
     Parameters:
@@ -61,13 +70,79 @@ def gen_ri_hv(hv_dim: int, p_dense: float, hv_type: str = "binary") -> np.ndarra
     return random_list
 
 
+# This one is used for LFSR-based generation
+# First is the LFSR state generation
+def lfsr_next(state: int) -> int:
+    """
+    One step of a 32-bit Galois LFSR.
+    Parameters:
+        state (int): The current state of the LFSR.
+    Returns:
+        int: The next state of the LFSR.
+    """
+    feedback = state & 1
+    state = (state >> 1) & LFSR_MASK_32
+    if feedback:
+        state ^= LFSR_TAP_MASK
+    return state
+
+
+# For generating initial seed in LFSR
+def lfsr_item_seed(base_seed: int, idx: int) -> int:
+    """
+    Derive a unique, well-dispersed starting state for item idx.
+
+    1. Multiply idx by the Knuth constant → scatter across 32-bit space.
+    2. XOR with base_seed  → user-controlled variation.
+    3. 32 LFSR warm-up steps → thoroughly mix all seed bits.
+
+    Parameters:
+        base_seed (int): The base seed for generating the item seed.
+        idx (int): The index of the item for which to generate the seed.
+    Returns:
+        int: A unique, well-dispersed starting state for the item.
+    """
+    state = (base_seed ^ ((idx * LFSR_KNUTH_CONST) & LFSR_MASK_32)) & LFSR_MASK_32
+    for _ in range(LFSR_WARMUP_STEPS):
+        state = lfsr_next(state)
+    return state
+
+
+# Fopr generating the hypervector using LFSR
+def hv_gen_lfsr(
+    base_seed: int, idx: int, hv_dim: int, hv_type: str = "binary"
+) -> np.ndarray:
+    """
+    Generate one hypervector as a numpy array.
+
+    Clocks the LFSR hv_dim times, collecting the LSB each step into
+    a pre-allocated uint8 array.
+
+    Parameters:
+        base_seed (int): The base seed for generating the hypervector.
+        idx (int): The index of the item for which to generate the hypervector.
+        hv_dim (int): The dimension of the hypervector to be generated.
+    Returns:
+        np.ndarray: A hypervector generated using LFSR.
+    """
+    state = lfsr_item_seed(base_seed, idx)
+    bits = np.empty(hv_dim, dtype=np.int32)
+    for i in range(hv_dim):
+        # collect LSB
+        bits[i] = state & 1
+        state = lfsr_next(state)
+    if hv_type == "bipolar":
+        bits = np.where(bits == 0, -1, 1)
+    return bits
+
+
 # ---------------------------------------------------------------------------
 # Hypervector item memory generation functions
 # ---------------------------------------------------------------------------
 
 
 # Generating empty memories
-def gen_empty_mem_hv(num_hv: int, hv_dim: int) -> np.ndarray:
+def hv_gen_empty_mem(num_hv: int, hv_dim: int) -> np.ndarray:
     """
     Generate an empty hypervector memory.
     Parameters:
@@ -76,7 +151,42 @@ def gen_empty_mem_hv(num_hv: int, hv_dim: int) -> np.ndarray:
     Returns:
         np.ndarray: An empty hypervector memory.
     """
-    return np.zeros((num_hv, hv_dim), dtype=int)
+    return np.zeros((num_hv, hv_dim), dtype=np.int32)
+
+
+# Generating orthogonal item memory
+def hv_gen_orthogonal_im(
+    num_items: int = 128,
+    hv_size: int = 1024,
+    hv_type: str = "bipolar",
+    gen_type="ri",
+    gen_ri_p_dense: float = 0.5,
+    gen_lfsr_base_seed: int = 42,
+):
+    """
+    Generate an item memory with orthogonal hypervectors.
+
+    Args:
+        num_items (int): The number of items in the item memory.
+        hv_size (int): The size of each hypervector.
+        type (str): The type of hypervector.
+        Can be 'bipolar', 'binary', 'real', or 'complex'.
+
+    Returns:
+        np.ndarray: The generated item memory.
+    """
+    if gen_type == "lfsr":
+        im = np.array(
+            [
+                hv_gen_lfsr(gen_lfsr_base_seed, idx, hv_size, hv_type)
+                for idx in range(num_items)
+            ]
+        )
+    else:
+        im = np.array(
+            [hv_gen_ri(hv_size, gen_ri_p_dense, hv_type) for _ in range(num_items)]
+        )
+    return im
 
 
 # ---------------------------------------------------------------------------
@@ -85,7 +195,7 @@ def gen_empty_mem_hv(num_hv: int, hv_dim: int) -> np.ndarray:
 
 
 # Binding dense functions
-def bind_hv(hv_a: np.ndarray, hv_b: np.ndarray, hv_type: str = "binary") -> np.ndarray:
+def hv_bind(hv_a: np.ndarray, hv_b: np.ndarray, hv_type: str = "binary") -> np.ndarray:
     """
     Bind two hypervectors together.
     Parameters:
@@ -104,8 +214,9 @@ def bind_hv(hv_a: np.ndarray, hv_b: np.ndarray, hv_type: str = "binary") -> np.n
 
 
 # Circular permutations
-def circ_perm_hv(hv_a: np.ndarray, permute_amt: int) -> np.ndarray:
-    """Perform a circular permutation on the hypervector.
+def hv_circ_perm(hv_a: np.ndarray, permute_amt: int) -> np.ndarray:
+    """
+    Perform a circular permutation on the hypervector.
     Parameters:
         hv_a (np.ndarray): The input hypervector to be permuted.
         permute_amt (int): The amount by which to circularly permute the hypervector.
@@ -116,10 +227,11 @@ def circ_perm_hv(hv_a: np.ndarray, permute_amt: int) -> np.ndarray:
 
 
 # Binarize hypervector
-def binarize_hv(
+def hv_binarize(
     hv_a: np.ndarray, threshold: float, hv_type: str = "binary"
 ) -> np.ndarray:
-    """Binarize a hypervector based on a threshold.
+    """
+    Binarize a hypervector based on a threshold.
     Parameters:
         hv_a (np.ndarray): The input hypervector to be binarized.
         threshold (float): The threshold for binarization.
@@ -140,13 +252,14 @@ def binarize_hv(
 # Normalized distance calculation
 # the output range is from 0 to 1
 # where 1 is the highest similarity
-def norm_dist_hv(
+def hv_norm_dist(
     hv_a: np.ndarray,
     hv_b: np.ndarray,
     hv_type: str = "binary",
     quant_type: Optional[str] = None,
 ) -> float:
-    """Calculate the normalized distance between two hypervectors.
+    """
+    Calculate the normalized distance between two hypervectors.
     Parameters:
         hv_a (np.ndarray): The first hypervector.
         hv_b (np.ndarray): The second hypervector.
@@ -174,6 +287,106 @@ def norm_dist_hv(
     return dist
 
 
+# ---------------------------------------------------------------------------
+# Hypervector profiling functions
+# ---------------------------------------------------------------------------
+def profile_im_density(im: np.ndarray) -> float:
+    """
+    Calculate the density of a hypervector.
+    Parameters:
+        im (np.ndarray): The input hypervector.
+    Returns:
+        float: The density of the hypervector.
+    """
+    return np.mean(im)
+
+
+def profile_im_pairwise_dist(im: np.ndarray, hv_type: str = "binary") -> np.ndarray:
+    """
+    Calculate the pairwise distances between hypervectors in an item memory.
+    Parameters:
+        im (np.ndarray): The input item memory containing multiple hypervectors.
+        hv_type (str): The type of the hypervectors ("binary" or "bipolar").
+    Returns:
+        np.ndarray: A matrix of pairwise distances between the hypervectors.
+    """
+    num_items = im.shape[0]
+    distances = np.zeros((num_items, num_items))
+    for i in range(num_items):
+        for j in range(num_items):
+            distances[i, j] = hv_norm_dist(im[i], im[j], hv_type)
+    return distances
+
+
+# ---------------------------------------------------------------------------
+# Hypervector sanity checkers
+# ---------------------------------------------------------------------------
+def checker_im_density(im: np.ndarray, hv_type: str, threshold: float) -> bool:
+    """
+    Check if the density of a hypervector is within a
+    specified threshold of an expected value.
+    Parameters:
+        im (np.ndarray): The input hypervector to be checked.
+        hv_type (str): The type of the hypervector ("binary" or "bipolar").
+        threshold (float): The acceptable deviation from the expected density.
+    Returns:
+        bool: True if the density is within the threshold, False otherwise.
+    """
+    if hv_type == "binary":
+        expected_density = 0.5
+    elif hv_type == "bipolar":
+        expected_density = 0
+    else:
+        raise ValueError(f"Unsupported hypervector type: {hv_type}")
+
+    actual_density = profile_im_density(im)
+
+    if np.allclose(actual_density, expected_density, atol=threshold):
+        print(f"Pass! Density {actual_density}")
+    else:
+        raise AssertionError(
+            f"Error! Density {actual_density} \
+                             not within {expected_density} +/- {threshold}"
+        )
+    return True
+
+
+def checker_im_pairwise_dist(im: np.ndarray, hv_type: str, threshold: float) -> bool:
+    """
+    Check if the pairwise distances between hypervectors in an item memory
+    are within a specified threshold of expected values.
+    Parameters:
+        im (np.ndarray): The input item memory containing multiple hypervectors.
+        hv_type (str): The type of the hypervectors ("binary" or "bipolar").
+        threshold (float): The acceptable deviation from the expected distance.
+    Returns:
+        bool: True if all pairwise distances are within the threshold, False otherwise.
+    """
+    distances = profile_im_pairwise_dist(im, hv_type)
+    num_items = im.shape[0]
+    mask = ~np.eye(num_items, dtype=bool)
+    off_diag_distances = distances[mask]
+
+    if hv_type == "binary":
+        expected_distance = 0.5
+    elif hv_type == "bipolar":
+        expected_distance = 0
+    else:
+        raise ValueError(f"Unsupported hypervector type: {hv_type}")
+
+    if np.all(
+        (off_diag_distances >= expected_distance - threshold)
+        & (off_diag_distances <= expected_distance + threshold)
+    ):
+        print("Pass! Pairwise distance check")
+    else:
+        raise AssertionError(
+            f"Error! Pairwise distances not within \
+                             {expected_distance} +/- {threshold}"
+        )
+    return True
+
+
 if __name__ == "__main__":
     # Example usage
     HV_DIM = 2048
@@ -192,72 +405,89 @@ if __name__ == "__main__":
     # Binary HV check
     # ---------------------------
     print("======== Tests ========")
-    print("======== Binary HV Tests ========")
+    print("======== Binary RI HV Tests ========")
     HV_TYPE = "binary"
     # Generate a set of random hypervectors
-    random_index_set = np.array(
-        [gen_ri_hv(HV_DIM, P_DENSE, HV_TYPE) for _ in range(NUM_ITEMS)]
+    random_index_set = hv_gen_orthogonal_im(
+        num_items=NUM_ITEMS,
+        hv_size=HV_DIM,
+        hv_type=HV_TYPE,
+        gen_type="ri",
+        gen_ri_p_dense=P_DENSE,
     )
 
     # Get density of each hypervector
-    ri_density = np.mean(random_index_set, axis=1)
-    # Check if all density are 0.5
-    if np.allclose(ri_density, 0.5, atol=THRESHOLD):
-        print("Pass! Bin-RI density check")
-    else:
-        raise AssertionError("Error! Bin-RI density not within 0.5 +/- THRESHOLD")
+    checker_im_density(random_index_set, hv_type=HV_TYPE, threshold=THRESHOLD)
 
     # Get pair-wise distances between the hypervectors
-    distances = np.zeros((NUM_ITEMS, NUM_ITEMS))
-    for i in range(NUM_ITEMS):
-        for j in range(NUM_ITEMS):
-            distances[i, j] = norm_dist_hv(
-                random_index_set[i], random_index_set[j], HV_TYPE
-            )
+    distances = profile_im_pairwise_dist(random_index_set, hv_type=HV_TYPE)
 
     # Check non-diagonal distances
-    mask = ~np.eye(NUM_ITEMS, dtype=bool)
-    off_diag_distances = distances[mask]
-    if np.all(
-        (off_diag_distances >= 0.5 - THRESHOLD)
-        & (off_diag_distances <= 0.5 + THRESHOLD)
-    ):
-        print("Pass! Bin-RI distance check")
-    else:
-        raise AssertionError("Error! Bin-RI distances not within 0.5 +/- THRESHOLD")
+    checker_im_pairwise_dist(random_index_set, hv_type=HV_TYPE, threshold=THRESHOLD)
 
     # ---------------------------
     # Bipolar HV check
     # ---------------------------
-    print("======== Bipolar HV Tests ========")
+    print("======== Bipolar RI HV Tests ========")
     HV_TYPE = "bipolar"
 
     # Generate a set of random hypervectors
-    random_index_set = np.array(
-        [gen_ri_hv(HV_DIM, P_DENSE, HV_TYPE) for _ in range(NUM_ITEMS)]
+    random_index_set = hv_gen_orthogonal_im(
+        num_items=NUM_ITEMS,
+        hv_size=HV_DIM,
+        hv_type=HV_TYPE,
+        gen_type="ri",
+        gen_ri_p_dense=P_DENSE,
     )
 
     # Get density of each hypervector
-    ri_density = np.mean(random_index_set, axis=1)
-    # Check if all density are 0.5
-    if np.allclose(ri_density, 0, atol=THRESHOLD):
-        print("Pass! Bip-RI density check")
-    else:
-        raise AssertionError("Error! Bip-RI density not within 0 +/- THRESHOLD")
+    checker_im_density(random_index_set, hv_type=HV_TYPE, threshold=THRESHOLD)
 
     # Get pair-wise distances between the hypervectors
-    distances = np.zeros((NUM_ITEMS, NUM_ITEMS))
-    for i in range(NUM_ITEMS):
-        for j in range(NUM_ITEMS):
-            distances[i, j] = norm_dist_hv(
-                random_index_set[i], random_index_set[j], HV_TYPE
-            )
-    # Check non-diagonal distances
-    mask = ~np.eye(NUM_ITEMS, dtype=bool)
-    off_diag_distances = distances[mask]
-    if np.all(
-        (off_diag_distances >= 0 - THRESHOLD) & (off_diag_distances <= 0 + THRESHOLD)
-    ):
-        print("Pass! Bip-RI distance check")
-    else:
-        raise AssertionError("Error! Bip-RI distances not within 0 +/- THRESHOLD")
+    checker_im_pairwise_dist(random_index_set, hv_type=HV_TYPE, threshold=THRESHOLD)
+
+    # ---------------------------
+    # Binary LFSR HV check
+    # ---------------------------
+    print("======== Binary LFSR HV Tests ========")
+
+    HV_TYPE = "binary"
+    BASE_SEED = random.getrandbits(32)
+
+    # Generate a set of random hypervectors
+    lfsr_set = hv_gen_orthogonal_im(
+        num_items=NUM_ITEMS,
+        hv_size=HV_DIM,
+        hv_type=HV_TYPE,
+        gen_type="lfsr",
+        gen_lfsr_base_seed=BASE_SEED,
+    )
+
+    # Get density of each hypervector
+    checker_im_density(lfsr_set, hv_type=HV_TYPE, threshold=THRESHOLD)
+
+    # Get pair-wise distances between the hypervectors
+    checker_im_pairwise_dist(lfsr_set, hv_type=HV_TYPE, threshold=THRESHOLD)
+
+    # ---------------------------
+    # Bipolar LFSR HV check
+    # ---------------------------
+    print("======== Bipolar LFSR HV Tests ========")
+
+    HV_TYPE = "bipolar"
+    BASE_SEED = random.getrandbits(32)
+
+    # Generate a set of random hypervectors
+    lfsr_set = hv_gen_orthogonal_im(
+        num_items=NUM_ITEMS,
+        hv_size=HV_DIM,
+        hv_type=HV_TYPE,
+        gen_type="lfsr",
+        gen_lfsr_base_seed=BASE_SEED,
+    )
+
+    # Get density of each hypervector
+    checker_im_density(lfsr_set, hv_type=HV_TYPE, threshold=THRESHOLD)
+
+    # Get pair-wise distances between the hypervectors
+    checker_im_pairwise_dist(lfsr_set, hv_type=HV_TYPE, threshold=THRESHOLD)
