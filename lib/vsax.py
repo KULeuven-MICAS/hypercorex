@@ -194,10 +194,7 @@ if __name__ == "__main__":
     if np.allclose(ri_density, 0.5, atol=SIGMA3):
         print("Pass! RI density check")
     else:
-        raise AssertionError(
-            "Error! RI density not \
-                             within 0.5 +/- 4*sigma"
-        )
+        raise AssertionError("Error! RI density not within 0.5 +/- 4*sigma")
 
     # Get pair-wise distances between the hypervectors
     distances = np.zeros((NUM_ITEMS, NUM_ITEMS))
@@ -215,7 +212,4 @@ if __name__ == "__main__":
     ):
         print("Pass! RI distance check")
     else:
-        raise AssertionError(
-            "Error! RI distances not \
-                             within 0.5 +/- 4*sigma"
-        )
+        raise AssertionError("Error! RI distances not within 0.5 +/- 4*sigma")
