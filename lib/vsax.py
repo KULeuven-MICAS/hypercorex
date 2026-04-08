@@ -215,7 +215,8 @@ def hv_bind(hv_a: np.ndarray, hv_b: np.ndarray, hv_type: str = "binary") -> np.n
 
 # Circular permutations
 def hv_circ_perm(hv_a: np.ndarray, permute_amt: int) -> np.ndarray:
-    """Perform a circular permutation on the hypervector.
+    """
+    Perform a circular permutation on the hypervector.
     Parameters:
         hv_a (np.ndarray): The input hypervector to be permuted.
         permute_amt (int): The amount by which to circularly permute the hypervector.
@@ -229,7 +230,8 @@ def hv_circ_perm(hv_a: np.ndarray, permute_amt: int) -> np.ndarray:
 def hv_binarize(
     hv_a: np.ndarray, threshold: float, hv_type: str = "binary"
 ) -> np.ndarray:
-    """Binarize a hypervector based on a threshold.
+    """
+    Binarize a hypervector based on a threshold.
     Parameters:
         hv_a (np.ndarray): The input hypervector to be binarized.
         threshold (float): The threshold for binarization.
@@ -256,7 +258,8 @@ def hv_norm_dist(
     hv_type: str = "binary",
     quant_type: Optional[str] = None,
 ) -> float:
-    """Calculate the normalized distance between two hypervectors.
+    """
+    Calculate the normalized distance between two hypervectors.
     Parameters:
         hv_a (np.ndarray): The first hypervector.
         hv_b (np.ndarray): The second hypervector.
@@ -288,7 +291,8 @@ def hv_norm_dist(
 # Hypervector profiling functions
 # ---------------------------------------------------------------------------
 def profile_im_density(im: np.ndarray) -> float:
-    """Calculate the density of a hypervector.
+    """
+    Calculate the density of a hypervector.
     Parameters:
         im (np.ndarray): The input hypervector.
     Returns:
@@ -298,7 +302,8 @@ def profile_im_density(im: np.ndarray) -> float:
 
 
 def profile_im_pairwise_dist(im: np.ndarray, hv_type: str = "binary") -> np.ndarray:
-    """Calculate the pairwise distances between hypervectors in an item memory.
+    """
+    Calculate the pairwise distances between hypervectors in an item memory.
     Parameters:
         im (np.ndarray): The input item memory containing multiple hypervectors.
         hv_type (str): The type of the hypervectors ("binary" or "bipolar").
@@ -317,8 +322,9 @@ def profile_im_pairwise_dist(im: np.ndarray, hv_type: str = "binary") -> np.ndar
 # Hypervector sanity checkers
 # ---------------------------------------------------------------------------
 def checker_im_density(im: np.ndarray, hv_type: str, threshold: float) -> bool:
-    """Check if the density of a hypervector is within a
-        specified threshold of an expected value.
+    """
+    Check if the density of a hypervector is within a
+    specified threshold of an expected value.
     Parameters:
         im (np.ndarray): The input hypervector to be checked.
         hv_type (str): The type of the hypervector ("binary" or "bipolar").
@@ -346,8 +352,9 @@ def checker_im_density(im: np.ndarray, hv_type: str, threshold: float) -> bool:
 
 
 def checker_im_pairwise_dist(im: np.ndarray, hv_type: str, threshold: float) -> bool:
-    """Check if the pairwise distances between hypervectors in an item memory
-      are within a specified threshold of expected values.
+    """
+    Check if the pairwise distances between hypervectors in an item memory
+    are within a specified threshold of expected values.
     Parameters:
         im (np.ndarray): The input item memory containing multiple hypervectors.
         hv_type (str): The type of the hypervectors ("binary" or "bipolar").
