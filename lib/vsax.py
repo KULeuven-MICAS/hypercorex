@@ -24,6 +24,47 @@ LFSR_TAP_MASK = 0xB4BC_D35C  # primitive polynomial — maximal-length 32-bit LF
 LFSR_KNUTH_CONST = 0x9E37_79B9  # floor(2^32 / φ) — Knuth multiplicative hash
 LFSR_WARMUP_STEPS = 32  # warm-up iterations inside lfsr_item_seed
 
+
+# ---------------------------------------------------------------------------
+# Auxiliary functions
+# ---------------------------------------------------------------------------
+# Random flipping of bits in a hypervector
+def hv_rand_flip(
+    hv: np.ndarray, start_flips: int, end_flips: int, hv_type: str = "binary"
+) -> np.ndarray:
+    """
+    Randomly flip bits in a hypervector.
+
+    Parameters:
+        hv (np.ndarray): The hypervector to flip bits in.
+        start_flips (int): The starting index for flipping.
+        end_flips (int): The ending index for flipping.
+        hv_type (str): The type of hypervector. Can be 'bipolar'
+
+    Returns:
+        np.ndarray: The hypervector with flipped bits.
+    """
+    if hv_type == "bipolar":
+        hv[start_flips:end_flips] *= -1
+    else:
+        hv[start_flips:end_flips] ^= 1
+    return hv
+
+
+# Prediction from an existing class AM and an encoded hypervector
+def hv_prediction_idx(
+    class_am: np.ndarray, encoded_hv: np.ndarray, hv_type: str = "bipolar"
+) -> int:
+    if hv_type == "binary":
+        score = (class_am ^ encoded_hv).sum(axis=1)
+    else:
+        score = class_am @ encoded_hv
+
+    predict_idx = np.argmax(score)
+
+    return predict_idx
+
+
 # ---------------------------------------------------------------------------
 # Hypervector generation functions
 # ---------------------------------------------------------------------------
@@ -38,7 +79,7 @@ def hv_gen_empty(hv_dim: int) -> np.ndarray:
     Returns:
         np.ndarray: An empty hypervector of zeros.
     """
-    return np.zeros(hv_dim, dtype=float)
+    return np.zeros(hv_dim)
 
 
 # Generate using random indexing style
@@ -151,7 +192,7 @@ def hv_gen_empty_mem(num_hv: int, hv_dim: int) -> np.ndarray:
     Returns:
         np.ndarray: An empty hypervector memory.
     """
-    return np.zeros((num_hv, hv_dim), dtype=np.int32)
+    return np.zeros((num_hv, hv_dim))
 
 
 # Generating orthogonal item memory
@@ -166,10 +207,10 @@ def hv_gen_orthogonal_im(
     """
     Generate an item memory with orthogonal hypervectors.
 
-    Args:
+    Parameters:
         num_items (int): The number of items in the item memory.
         hv_size (int): The size of each hypervector.
-        type (str): The type of hypervector.
+        hv_type (str): The type of hypervector.
         Can be 'bipolar', 'binary', 'real', or 'complex'.
 
     Returns:
@@ -187,6 +228,47 @@ def hv_gen_orthogonal_im(
             [hv_gen_ri(hv_size, gen_ri_p_dense, hv_type) for _ in range(num_items)]
         )
     return im
+
+
+# Generating continuous item memory
+def hv_gen_continuous_im(
+    num_items=21,
+    hv_size=1024,
+    cim_max_is_ortho=True,
+    hv_type="bipolar",
+):
+    """
+    Generate a continuous item memory (CIM).
+
+    Parameters:
+        num_items (int): The number of items in the CIM.
+        hv_size (int): The size of each hypervector.
+        cim_max_is_ortho (bool): If True, the maximum distance
+                                 between hypervectors is orthogonal.
+        hv_type (str): The type of hypervector. Can be 'bipolar' or 'binary'.
+
+    Returns:
+        np.ndarray: The generated continuous item memory.
+    """
+    # First initialize some seed HV
+    # Calculate % number of flips
+    if cim_max_is_ortho:
+        num_flips = (hv_size // 2) // (num_items - 1)
+    else:
+        num_flips = hv_size // (num_items - 1)
+
+    # Initialize empty matrix
+    cim = hv_gen_empty_mem(num_items, hv_size)
+
+    # Generate first seed HV
+    cim[0] = hv_gen_ri(hv_size, p_dense=0.5, hv_type=hv_type)
+
+    # Iteratively generate other HVs
+    for i in range(num_items - 1):
+        cim[i + 1] = hv_rand_flip(
+            cim[i], i * num_flips, (i + 1) * num_flips, hv_type=hv_type
+        )
+    return cim
 
 
 # ---------------------------------------------------------------------------
@@ -255,7 +337,7 @@ def hv_binarize(
 def hv_norm_dist(
     hv_a: np.ndarray,
     hv_b: np.ndarray,
-    hv_type: str = "binary",
+    hv_type: str = "bipolar",
     quant_type: Optional[str] = None,
 ) -> float:
     """
@@ -491,3 +573,23 @@ if __name__ == "__main__":
 
     # Get pair-wise distances between the hypervectors
     checker_im_pairwise_dist(lfsr_set, hv_type=HV_TYPE, threshold=THRESHOLD)
+
+    # ---------------------------
+    # Generating CiM
+    # ---------------------------
+    print("======== CiM Tests ========")
+    HV_TYPE = "bipolar"
+    NUM_ITEMS = 21
+    # Generate a continuous item memory
+    cim_set = hv_gen_continuous_im(
+        num_items=NUM_ITEMS,
+        hv_size=HV_DIM,
+        cim_max_is_ortho=False,
+        hv_type=HV_TYPE,
+    )
+
+    # Get pair-wise distances between the hypervectors
+    cim_distances = profile_im_pairwise_dist(cim_set, hv_type=HV_TYPE)
+    # Just manual inspection to see if it is working
+    print("Pairwise distances of 1st CiM HV:")
+    print(cim_distances[0])
