@@ -7,6 +7,7 @@ This library consists classes and functions for implementing various VSA models.
 These classes are meant to be reproducible and extendable to other applications.
 """
 
+import os
 import vsax
 import vsax_util
 import numpy as np
@@ -226,8 +227,9 @@ class vsaModel:
 
 if __name__ == "__main__":
     # Simple test on the character recognition application
+    base_dir = os.path.dirname(os.path.abspath(__file__))
     char_recog_dataset = vsax_util.extract_dataset(
-        "../hdc_exp/data_set/char_recog/characters.txt"
+        os.path.join(base_dir, "../hdc_exp/data_set/char_recog/characters.txt")
     )
 
     # Post-process to get list of character inputs
