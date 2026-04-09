@@ -70,3 +70,4 @@ requests     = ">=2.31"
 [tasks]
 smoke-test = "python -c \"import cocotb, pytest, numpy, matplotlib, mako, jsonref, hjson, ruff, black, flake8, tqdm, requests; print('Environment OK')\" && verilator --version"
 lib-check = "python lib/vsax.py"
+model-check = "python lib/vsax_models.py"
