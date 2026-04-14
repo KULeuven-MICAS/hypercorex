@@ -97,6 +97,8 @@ def setup_and_run(
                 compile_args.append("--trace")
             elif waves_type == "fst":
                 compile_args.append("--trace-fst")
+        else:
+            waves_flag = False
         timescale = None
         extra_args = None
 
@@ -104,7 +106,7 @@ def setup_and_run(
         waves_flag = waves
         compile_args = None
         timescale = "1ns/1ps"
-        extra_args = ["+acc=rnb"]
+        extra_args = ["+acc"]
 
     run(
         verilog_sources=verilog_sources,
