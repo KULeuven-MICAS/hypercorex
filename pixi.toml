@@ -49,6 +49,9 @@ matplotlib = ">=3.8"
 # ── numactl is Linux-only, needs a platform-specific block ───────────────────
 libnuma    = ">=2.0"           # replaces numactl (runtime library)
 
+# ── Verilog linting ───────────────────────────────────────────────────────────
+verible = ">=0.0_3667_g88d12889,<0.0_3668"
+
 # ── PyPI dependencies ─────────────────────────────────────────────────────────
 [pypi-dependencies]
 cocotb       = "===1.8.1"
