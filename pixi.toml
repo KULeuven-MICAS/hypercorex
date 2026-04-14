@@ -71,6 +71,23 @@ requests     = ">=2.31"
 
 # ── Tasks ─────────────────────────────────────────────────────────────────────
 [tasks]
-smoke-test = "python -c \"import cocotb, pytest, numpy, matplotlib, mako, jsonref, hjson, ruff, black, flake8, tqdm, requests; print('Environment OK')\" && verilator --version"
-lib-check = "python lib/vsax.py"
-model-check = "python lib/vsax_models.py"
+
+smoke-test = """
+    python -c "\
+        import cocotb, pytest, numpy, matplotlib, \
+        mako, jsonref, hjson, ruff, black, \
+        flake8, tqdm, requests; \
+        print('Environment OK')" &&
+    verilator --version
+    """
+
+lib-check = """
+    python lib/vsax.py 
+    && python lib/vsax_models.py
+    """
+
+rtl-im-check = """
+    pytest -n $(nproc) --dist=loadfile \
+    tests/test_rom_item_memory.py \
+    tests/test_rom_lfsr_item_memory.py
+    """
