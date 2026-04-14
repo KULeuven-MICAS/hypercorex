@@ -55,6 +55,16 @@ def hv_rand_flip(
 def hv_prediction_idx(
     class_am: np.ndarray, encoded_hv: np.ndarray, hv_type: str = "bipolar"
 ) -> int:
+    """
+    Predict the index of the class that is most similar to the encoded hypervector.
+
+    Parameters:
+        class_am (np.ndarray): The class associative memory containing class hypervectors.
+        encoded_hv (np.ndarray): The encoded hypervector to be compared against the class AM.
+        hv_type (str): The type of hypervector ("binary" or "bipolar").
+    Returns:
+        int: The index of the predicted class.
+    """
     if hv_type == "binary":
         score = (class_am ^ encoded_hv).sum(axis=1)
     else:
@@ -74,6 +84,7 @@ def hv_prediction_idx(
 def hv_gen_empty(hv_dim: int) -> np.ndarray:
     """
     Generate an empty hypervector of the specified dimension.
+
     Parameters:
         hv_dim (int): The dimension of the hypervector.
     Returns:
@@ -86,6 +97,7 @@ def hv_gen_empty(hv_dim: int) -> np.ndarray:
 def hv_gen_ri(hv_dim: int, p_dense: float, hv_type: str = "binary") -> np.ndarray:
     """
     Generate a hypervector using random indexing style.
+
     Parameters:
         hv_dim (int): The dimension of the hypervector.
         p_dense (float): The density of the hypervector.
@@ -116,6 +128,7 @@ def hv_gen_ri(hv_dim: int, p_dense: float, hv_type: str = "binary") -> np.ndarra
 def lfsr_next(state: int) -> int:
     """
     One step of a 32-bit Galois LFSR.
+
     Parameters:
         state (int): The current state of the LFSR.
     Returns:
@@ -189,6 +202,7 @@ def hv_gen_lfsr(
 def hv_gen_empty_mem(num_hv: int, hv_dim: int) -> np.ndarray:
     """
     Generate an empty hypervector memory.
+
     Parameters:
         num_hv (int): The number of hypervectors.
         hv_dim (int): The dimension of each hypervector.
@@ -283,6 +297,7 @@ def hv_gen_continuous_im(
 def hv_bind(hv_a: np.ndarray, hv_b: np.ndarray, hv_type: str = "binary") -> np.ndarray:
     """
     Bind two hypervectors together.
+
     Parameters:
         hv_a (np.ndarray): The first hypervector.
         hv_b (np.ndarray): The second hypervector.
@@ -302,6 +317,7 @@ def hv_bind(hv_a: np.ndarray, hv_b: np.ndarray, hv_type: str = "binary") -> np.n
 def hv_circ_perm(hv_a: np.ndarray, permute_amt: int) -> np.ndarray:
     """
     Perform a circular permutation on the hypervector.
+
     Parameters:
         hv_a (np.ndarray): The input hypervector to be permuted.
         permute_amt (int): The amount by which to circularly permute the hypervector.
@@ -317,6 +333,7 @@ def hv_binarize(
 ) -> np.ndarray:
     """
     Binarize a hypervector based on a threshold.
+
     Parameters:
         hv_a (np.ndarray): The input hypervector to be binarized.
         threshold (float): The threshold for binarization.
@@ -345,6 +362,7 @@ def hv_norm_dist(
 ) -> float:
     """
     Calculate the normalized distance between two hypervectors.
+
     Parameters:
         hv_a (np.ndarray): The first hypervector.
         hv_b (np.ndarray): The second hypervector.
@@ -378,6 +396,7 @@ def hv_norm_dist(
 def profile_im_density(im: np.ndarray) -> float:
     """
     Calculate the density of a hypervector.
+
     Parameters:
         im (np.ndarray): The input hypervector.
     Returns:
@@ -389,6 +408,7 @@ def profile_im_density(im: np.ndarray) -> float:
 def profile_im_pairwise_dist(im: np.ndarray, hv_type: str = "binary") -> np.ndarray:
     """
     Calculate the pairwise distances between hypervectors in an item memory.
+
     Parameters:
         im (np.ndarray): The input item memory containing multiple hypervectors.
         hv_type (str): The type of the hypervectors ("binary" or "bipolar").
@@ -410,6 +430,7 @@ def checker_im_density(im: np.ndarray, hv_type: str, threshold: float) -> bool:
     """
     Check if the density of a hypervector is within a
     specified threshold of an expected value.
+
     Parameters:
         im (np.ndarray): The input hypervector to be checked.
         hv_type (str): The type of the hypervector ("binary" or "bipolar").
@@ -440,6 +461,7 @@ def checker_im_pairwise_dist(im: np.ndarray, hv_type: str, threshold: float) -> 
     """
     Check if the pairwise distances between hypervectors in an item memory
     are within a specified threshold of expected values.
+
     Parameters:
         im (np.ndarray): The input item memory containing multiple hypervectors.
         hv_type (str): The type of the hypervectors ("binary" or "bipolar").
