@@ -69,6 +69,18 @@ flake8       = ">=7.0"
 tqdm         = ">=4.0"
 requests     = ">=2.31"
 
+# ── docs dependencies ─────────────────────────────────────────────────────────
+[feature.docs.dependencies]
+sphinx = "*"
+furo   = "*"
+
+[feature.docs.pypi-dependencies]
+sphinx-autodoc-typehints = ">=2.0"
+myst-parser = ">=3.0"
+
+[environments]
+docs = ["docs"]
+
 # ── Tasks ─────────────────────────────────────────────────────────────────────
 [tasks]
 
@@ -91,3 +103,7 @@ rtl-im-check = """
     tests/test_rom_item_memory.py \
     tests/test_rom_lfsr_item_memory.py
     """
+
+# ── Docs Tasks ────────────────────────────────────────────────────────────────
+[feature.docs.tasks]
+docs-build = "make -C docs html"
