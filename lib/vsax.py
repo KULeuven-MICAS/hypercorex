@@ -59,8 +59,8 @@ def hv_prediction_idx(
     Predict the index of the class that is most similar to the encoded hypervector.
 
     Parameters:
-        class_am (np.ndarray): The class associative memory containing class hypervectors.
-        encoded_hv (np.ndarray): The encoded hypervector to be compared against the class AM.
+        class_am (np.ndarray): The class associative memory containing class HVs.
+        encoded_hv (np.ndarray): The encoded HV to be compared against the class AM.
         hv_type (str): The type of hypervector ("binary" or "bipolar").
     Returns:
         int: The index of the predicted class.
