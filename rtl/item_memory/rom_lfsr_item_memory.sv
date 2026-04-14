@@ -2,7 +2,7 @@
 // Copyright 2024 KU Leuven
 // Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 //
-// Module: 
+// Module:
 //    ROM Item Memory
 // Description:
 //    Generates all item memory hypervectors entirely within
