@@ -157,6 +157,59 @@ class vsaModel:
             self.class_am_count[class_label] = data_len
         print("Training complete!")
 
+    # Retraining function
+    def retrain_model(self, X_train):
+        """
+        Retrain the VSA model using the provided training data.
+
+        Args:
+            X_train (list): A list of training data for each class.
+        """
+        # Select if binarized AM or not
+        if self.binarize_am:
+            temp_class_am = self.class_am_bin
+        else:
+            temp_class_am = self.class_am_frozen
+
+        for class_label in range(self.num_classes):
+            data_len = len(X_train[class_label])
+
+            # Retraining with binarized AM
+            for item_num in tqdm(
+                range(data_len),
+                desc=f"Retraining class {class_label}",
+                disable=not self.tqdm_retrain_dbg,
+            ):
+                # Getting encoded HV
+                encoded_vec = self.encode(X_train[class_label][item_num])
+
+                # Predict item
+                predict_label = vsax.hv_prediction_idx(
+                    temp_class_am, encoded_vec, hv_type=self.hv_type
+                )
+
+                # If incorrect we update the AMs
+                if predict_label != class_label:
+                    # Subtract from wrong class AM
+                    self.class_am[predict_label] -= encoded_vec
+                    self.class_am_count[predict_label] -= 1
+                    # Add to correct class AM
+                    self.class_am[class_label] += encoded_vec
+                    self.class_am_count[class_label] += 1
+
+            # Automatically compute binarized output
+            threshold = self.class_am_count[class_label] / 2
+            self.class_am_bin[class_label] = vsax.hv_binarize(
+                self.class_am[class_label], threshold, self.hv_type
+            )
+
+        # For updating the frozen AM
+        for class_label in range(self.num_classes):
+            # Update frozen AM
+            self.class_am_frozen[class_label] = np.copy(self.class_am[class_label])
+
+        print("Retraining complete!")
+
     # Testing function
     def test_model(self, X_test):
         """

@@ -7,17 +7,31 @@ This library consists of utility functions like data downloading and processing.
 Also consists of plotting functions that are useful for profiling too.
 """
 
+# Importing packages
+import urllib.request
+import zipfile
+import tarfile
+import random
+import numpy as np
+from tqdm import tqdm
+from pathlib import Path
+
+# ---------------------------------------------------------------------------
+# List of data sets
+# ---------------------------------------------------------------------------
+vsax_data_url_mnist = "https://github.com/rgantonio/chronomatica/releases/download/mnist_dataset_v1.0/chronomatica_mnist_uint.tar.gz"
+
 # ---------------------------------------------------------------------------
 # File extraction functions
 # ---------------------------------------------------------------------------
 
 
 # For simple file extraction
-def extract_dataset(file_path):
+def extract_dataset(file_path: str) -> list[str]:
     """
     Extract dataset from a text file.
 
-    Parameters:
+    Args:
         file_path (str): The path to the text file containing the dataset.
     Returns:
         list: A list of strings, where each string is a line from the file.
@@ -32,3 +46,141 @@ def extract_dataset(file_path):
             dataset.append(line.strip())
 
     return dataset
+
+
+# For downloading and extracting archives
+def download_and_extract(
+    url: str,
+    out_dir: str | Path = "data",
+    filename: str | None = None,
+    delete_archive: bool = False,
+):
+    """
+    Download an archive from a URL and extract it.
+
+    Args:
+        url (str): Download URL
+        out_dir (str | Path): Output directory
+        filename (str | None): Optional override for downloaded filename
+        delete_archive (bool): Delete archive after successful extraction
+    """
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    if filename is None:
+        filename = url.split("/")[-1]
+
+    archive_path = out_dir / filename
+
+    # Download (skip if already exists)
+    if not archive_path.exists():
+        print(f"Downloading {filename}...")
+        urllib.request.urlretrieve(url, archive_path)
+    else:
+        print(f"{filename} already exists, skipping download.")
+
+    # Extract
+    print("Extracting...")
+    try:
+        if filename.endswith(".zip"):
+            with zipfile.ZipFile(archive_path, "r") as zf:
+                zf.extractall(out_dir)
+        elif filename.endswith((".tar.gz", ".tgz")):
+            with tarfile.open(archive_path, "r:gz") as tf:
+                tf.extractall(out_dir)
+        else:
+            raise ValueError(f"Unsupported archive format: {filename}")
+    except Exception as e:
+        raise RuntimeError(f"Extraction failed: {e}")
+
+    # Optional cleanup
+    if delete_archive:
+        archive_path.unlink()
+        print(f"Deleted archive: {archive_path.name}")
+
+    print("Extraction complete!")
+
+
+# For reading and loading a data
+def load_dataset(file_path: str) -> np.ndarray:
+    """
+    Load dataset from a text file.
+
+    Args:
+        file_path (str): Path to the text file
+    Returns:
+        dataset (np.ndarray): Loaded dataset as a NumPy array
+    """
+    # Initialize empty data set array
+    dataset = []
+    with open(file_path, "r") as rf:
+        for line in rf:
+            line = line.strip().split()
+            int_line = [int(x) for x in line]
+            dataset.append(int_line)
+    # Close the file
+    rf.close()
+    return np.array(dataset, dtype=np.uint8)
+
+
+# Reading of data from files for each class label
+def read_data(class_list: list, data_path: str) -> list:
+    """
+    Read data from files for each class label.
+
+    Args:
+        class_list: list of class labels
+        data_path: path to the data files
+    Returns:
+        X_data: list of NumPy arrays with data for each class label
+    """
+    X_data = []
+    for class_label in tqdm(class_list, desc="Reading data"):
+        # Training dataset
+        read_file = f"{data_path}/{class_label}.txt"
+        X_data.append(load_dataset(read_file))
+    return X_data
+
+
+def split_data(
+    X_data: list, class_list: list, split_percent: float = 0.8
+) -> tuple[list, list]:
+    """
+    Split data into two parts based on split_percent.
+
+    Args:
+        X_data: list of NumPy arrays with data for each class label
+        class_list: list of class labels
+        split_percent: percentage of data to go into first split
+    Returns:
+        X_split_data1: first split of data
+        X_split_data2: second split of data
+    """
+    # Initialize empty lists
+    X_split_data1 = []
+    X_split_data2 = []
+
+    for class_label in tqdm(class_list, desc="Splitting data"):
+        # Get item counts first
+        item_len = len(X_data[class_label])
+        split1_len = round(item_len * split_percent)
+        split2_len = item_len - split1_len
+
+        # Randomize the contents of the list first
+        random.shuffle(X_data[class_label])
+
+        # Get split 1 first
+        split1_list = []
+        for item_num in range(split1_len):
+            split1_list.append(X_data[class_label][item_num])
+
+        # Get split 2 next but starts at split1_len count
+        split2_list = []
+        for item_num in range(split1_len, split1_len + split2_len):
+            split2_list.append(X_data[class_label][item_num])
+
+        # Load into dictionaries
+        X_split_data1.append(split1_list)
+        X_split_data2.append(split2_list)
+
+    return X_split_data1, X_split_data2
