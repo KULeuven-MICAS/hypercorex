@@ -105,6 +105,16 @@ class vsaModel:
 
     # Main encoding function
     def encode(self, item_data):
+        """
+        Encode the input data into a hypervector.
+        Make sure to replace or override this section with your designated encoder.
+
+        Parameters:
+            item_data: The input data to be encoded. The format of this data will
+            depend on the specific application and should be defined in the subclass.
+        Returns:
+            np.ndarray: The encoded hypervector representation of the input data.
+        """
         print(
             "Empty encoding, please make sure to \
             override this function in the subclass."
@@ -117,6 +127,8 @@ class vsaModel:
 
         Parameters:
             X_train (list): A list of training data for each class.
+        Returns:
+            Updates the associative memory of the model based on the training data.
         """
         for class_label in range(self.num_classes):
             data_len = len(X_train[class_label])
@@ -149,6 +161,7 @@ class vsaModel:
     def test_model(self, X_test):
         """
         Test the VSA model using the provided test data.
+
         Parameters:
             X_test (list): A list of test data for each class.
         Returns:

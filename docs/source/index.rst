@@ -5,13 +5,15 @@ VSAX Vector Symbolic Architecture Accelerators documentation
    :maxdepth: 3
    :caption: Getting Started:
 
-   frontpage
+   getting_started
 
 .. toctree::
    :maxdepth: 1
    :caption: Library:
    
    lib_vsax
+   lib_vsax_models
+   lib_vsax_util
 
 Indices and tables
 ==================

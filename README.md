@@ -1,6 +1,6 @@
-# :electron: Hypercorex-v2 (VSAX)
+# Hypercorex-v2 (VSAX)
 
-## :hammer_and_wrench: Under Construction
+## Under Construction
 
 This project contains ongoing development for Hypercorex version 2. It is a VSA (vector-symbolic architecture) variant, in contrast to the original [binary HDC variant](https://github.com/KULeuven-MICAS/hypercorex/tree/hypercorex_v1).
 
@@ -85,7 +85,7 @@ You can also view waveforms but questasim dumps `vsim.wlf` waveform which you ca
 pytest tests/test_bundler_unit.py --simulator=questa -o --waves=1 log_cli=True
 ```
 
-## :book: Development Checklist
+## Development Checklist
 ### General House Keeping
 - [x] Setting general pixi shell.
 - [x] Updated pixi shell with correct cocotb and verilator versions that enable correct waveform viewing.

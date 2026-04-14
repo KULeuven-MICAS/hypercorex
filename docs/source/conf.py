@@ -1,7 +1,8 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath("../.."))  # adjust path to your project root
+sys.path.insert(0, os.path.abspath("../.."))
+sys.path.insert(0, os.path.abspath("../../lib"))
 
 project = "VSAX"
 copyright = "2026, Ryan Antonio"
