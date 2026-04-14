@@ -161,6 +161,7 @@ class vsaModel:
     def retrain_model(self, X_train):
         """
         Retrain the VSA model using the provided training data.
+
         Args:
             X_train (list): A list of training data for each class.
         """
