@@ -143,7 +143,9 @@ def lfsr_item_seed(base_seed: int, idx: int) -> int:
     Returns:
         int: A unique, well-dispersed starting state for the item.
     """
-    state = (base_seed ^ ((idx * LFSR_KNUTH_CONST) & LFSR_MASK_32)) & LFSR_MASK_32
+    state = (
+        base_seed ^ (((idx & LFSR_MASK_32) * LFSR_KNUTH_CONST) & LFSR_MASK_32)
+    ) & LFSR_MASK_32
     for _ in range(LFSR_WARMUP_STEPS):
         state = lfsr_next(state)
     return state
@@ -172,6 +174,7 @@ def hv_gen_lfsr(
         # collect LSB
         bits[i] = state & 1
         state = lfsr_next(state)
+    bits = np.flip(bits)
     if hv_type == "bipolar":
         bits = np.where(bits == 0, -1, 1)
     return bits

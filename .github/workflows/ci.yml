@@ -33,7 +33,7 @@ jobs:
       - name: Run library check
         run: pixi run lib-check
 
-  model-check:
+  rtl-im-check:
     runs-on: ubuntu-latest
 
     steps:
@@ -43,5 +43,5 @@ jobs:
       - name: Set up pixi
         uses: prefix-dev/setup-pixi@v0.8.1
 
-      - name: Run model check
-        run: pixi run model-check
+      - name: Run RTL IM check
+        run: pixi run rtl-im-check

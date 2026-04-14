@@ -163,6 +163,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2025c-hc9c84f9_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/unicodedata2-17.0.1-py311h49ec1c0_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/unzip-6.0-hb03c661_4.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/verible-0.0_3667_g88d12889-h434a139_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/verilator-5.016-h4f9daa6_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/vim-9.2.0193-py311pl5321hf616dc9_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/wayland-1.25.0-hd6090a7_0.conda
@@ -2698,6 +2699,18 @@ packages:
   - pysocks>=1.5.6,!=1.5.7,<2.0 ; extra == 'socks'
   - backports-zstd>=1.0.0 ; python_full_version < '3.14' and extra == 'zstd'
   requires_python: '>=3.9'
+- conda: https://conda.anaconda.org/conda-forge/linux-64/verible-0.0_3667_g88d12889-h434a139_0.conda
+  sha256: 1faa136a0e99e3ffd6edd71419c3844353f780dd1f3e5e6ee8910806f8a08d15
+  md5: 5086e274e5fd1ecba978eee87e3d7097
+  depends:
+  - __glibc >=2.17,<3.0.a0
+  - libgcc-ng >=12
+  - libstdcxx-ng >=12
+  license: Apache-2.0
+  license_family: Apache
+  purls: []
+  size: 3698033
+  timestamp: 1718036539248
 - conda: https://conda.anaconda.org/conda-forge/linux-64/verilator-5.016-h4f9daa6_0.conda
   sha256: 7d387026657e6cd49a2e862315d4fe53060264c692a567a8385cae082e716921
   md5: c6abf889c7e596a1d0fbebdd261b9303
