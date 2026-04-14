@@ -30,6 +30,14 @@ jobs:
           --ignore=tests/test_hypercorex_dna_recog.py \
           --ignore=tests/test_hypercorex_lang_recog.py \
           --ignore=tests/test_hypercorex_char_recog_data_slice.py \
+          --ignore=tests/test_hypercorex_dna_dim_exp.py \
+          --ignore=tests/test_hypercorex_digit_dim_exp.py \
+          --ignore=tests/test_hypercorex_isolet_recog_generic.py \
+          --ignore=tests/test_hypercorex_lang_dim_exp.py \
+          --ignore=tests/test_hypercorex_ucihar_dim_exp.py \
+          --ignore=tests/test_inst_control.py \
+          --ignore=tests/test_hypercorex_imab_bind.py \
+          --ignore=tests/test_hypercorex_isolet_recog_generic_dim_exp.py \
           --ignore=tests/test_hypercorex_reset_run.py
 
   rtl-system-tests-vlt:
