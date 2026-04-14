@@ -65,12 +65,11 @@ def hv_prediction_idx(
     Returns:
         int: The index of the predicted class.
     """
-    if hv_type == "binary":
-        score = (class_am ^ encoded_hv).sum(axis=1)
-    else:
-        score = class_am @ encoded_hv
+    score_list = []
+    for i in range(len(class_am)):
+        score_list.append(hv_norm_dist(class_am[i], encoded_hv, hv_type=hv_type))
 
-    predict_idx = np.argmax(score)
+    predict_idx = np.argmax(score_list)
 
     return predict_idx
 
