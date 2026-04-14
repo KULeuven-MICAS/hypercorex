@@ -1,7 +1,8 @@
 """
 VSAX Digit Recognition Application
 
-This application demonstrates the use of VSAX for digit recognition using the MNIST dataset.
+This application demonstrates the use of VSAX
+for digit recognition using the MNIST dataset.
 """
 
 # Parameters
@@ -20,9 +21,9 @@ sys.path.append(lib_path)
 sys.path.append(extract_path)
 
 # Importing VSAX libraries
-import vsax
-import vsax_models
-import vsax_util
+import vsax  # noqa: E402
+import vsax_models  # noqa: E402
+import vsax_util  # noqa: E402
 
 # Downloading and extracting the MNIST dataset
 vsax_util.download_and_extract(
@@ -72,6 +73,9 @@ digit_model = digitVSA(
 
 # Train the model
 digit_model.train_model(X_train_set_src)
+
+# Retrain the model
+digit_model.retrain_model(X_valid_set)
 
 # Test the model
 digit_model.test_model(X_test_set)
