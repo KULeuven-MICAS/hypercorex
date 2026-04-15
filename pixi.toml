@@ -110,6 +110,11 @@ rtl-common-check = """
     tests/test_fifo.py
     """
 
+rtl-encoder-check = """
+    pytest -n $(nproc) --dist=loadfile \
+    tests/test_multi_in_bundler_unit.py
+    """
+
 # ── Docs Tasks ────────────────────────────────────────────────────────────────
 [feature.docs.tasks]
 docs-build = "make -C docs html"
