@@ -204,8 +204,8 @@ def gen_rand_bits(dimension):
 
 
 # For generating random integer
-def gen_randint(max_val):
-    return random.randint(0, int(max_val))
+def gen_randint(min_val, max_val):
+    return random.randint(min_val, max_val)
 
 
 # For the ALU output
