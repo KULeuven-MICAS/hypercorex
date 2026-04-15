@@ -21,7 +21,7 @@
 
 module multi_in_bundler_unit #(
   parameter int unsigned CounterWidth = 8,
-  parameter int unsigned NumInputs = 4,
+  parameter int unsigned NumInputs = 4
 )(
   input  logic                           clk_i,
   input  logic                           rst_ni,
@@ -35,65 +35,83 @@ module multi_in_bundler_unit #(
   // Internal Parameters
   //---------------------------
   localparam int unsigned SmallDataWidth = 2;
+  localparam int unsigned OutAdderTreeDataWidth = SmallDataWidth + $clog2(NumInputs);
 
   //---------------------------
-  // Wires
+  // Wires and registers
   //---------------------------
-  logic saturate_low;
-  logic saturate_high;
-  logic signed [CounterWidth-1:0] counter_next;
-  logic signed [CounterWidth-1:0] counter_sum;
+  logic signed [SmallDataWidth-1:0] bit_increment   [NumInputs];
+  logic signed [SmallDataWidth-1:0] valid_increment [NumInputs];
 
-  
+  logic signed [OutAdderTreeDataWidth-1:0] adder_tree;
+  // Counter intermediate value before saturation logic is applied
+  // Therefore we need extra overflow bit
+  logic signed [CounterWidth:0] counter_intermediate;
 
   logic signed [CounterWidth-1:0] max_val;
   logic signed [CounterWidth-1:0] min_val;
 
-  // Maximum positive value for signed counter
-  assign max_val = {1'b0, {(CounterWidth-1){1'b1}}}; 
-  // Minimum negative value for signed counter
-  assign min_val = {1'b1, {(CounterWidth-1){1'b0}}}; 
+  logic any_valid;
+
+  logic signed [CounterWidth-1:0] counter_next;
 
   //---------------------------
-  // Combinational Logic
+  // Combinational logic
   //---------------------------
-
-  // Saturate low happens when counter == 10000...000
-  assign saturate_low  = (counter_o == {1'b1,{(CounterWidth-1){1'b0}}}) ? 1'b1: 1'b0;
-
-  // Saturate high happens when counter == 01111...111
-  assign saturate_high = (counter_o == {1'b0,{(CounterWidth-1){1'b1}}}) ? 1'b1: 1'b0;
-
-  // Counter next state logic
+  // Muxing for selecting appropriate increment/decrement value
   always_comb begin
-    // Default: counter_next comes from counter_o
-    counter_next = counter_o;
-    counter_sum  = counter_o;
-
-    // Accumulate contributions from each input with per-step saturation.
-    // Saturation is checked against counter_sum (not counter_o) so that
-    // clamping stays correct across multiple iterations of the loop.
     for (int i = 0; i < NumInputs; i++) begin
-      if (valid_i[i]) begin
-        if (bit_i[i]) begin
-          // +1: clamp at high saturation bound
-          counter_sum = (counter_sum == $signed({1'b0, {(CounterWidth-1){1'b1}}})) ?
-                        counter_sum : counter_sum + 1;
-        end else begin
-          // -1: clamp at low saturation bound
-          counter_sum = (counter_sum == $signed({1'b1, {(CounterWidth-1){1'b0}}})) ?
-                        counter_sum : counter_sum - 1;
-        end
-      end
+      bit_increment[i] = bit_i[i] ? 1 : -1;
     end
 
-    // Update counter_next if any valid input is high
-    if (|valid_i) begin
-      counter_next = counter_sum;
+    for (int i = 0; i < NumInputs; i++) begin
+      valid_increment[i] = valid_i[i] ? bit_increment[i] : 0;
     end
   end
 
+  // Adder tree instance
+  adder_tree #(
+    .NumInputs          ( NumInputs       ),
+    .InDataWidth        ( SmallDataWidth  )
+  ) i_adder_tree (
+    .data_i             ( valid_increment ),
+    .adder_tree_data_o  ( adder_tree      )
+  );
+
+  // Counter intermediate value is the current counter plus the adder tree output
+  assign counter_intermediate = counter_o + adder_tree;
+
+  // Maximum positive value for signed counter
+  assign max_val = {1'b0, {(CounterWidth-1){1'b1}}};
+  // Minimum negative value for signed counter
+  assign min_val = {1'b1, {(CounterWidth-1){1'b0}}};
+
+  // Check if any input is valid
+  assign any_valid = |valid_i;
+
+  // Check for saturation conditions
+  // This is technically a decoder/mux only
+  always_comb begin
+    if (clr_i) begin
+      counter_next = 0;
+    end else if (any_valid) begin
+      if (counter_intermediate > max_val) begin
+        counter_next = max_val;
+      end else if (counter_intermediate < min_val) begin
+        counter_next = min_val;
+      end else begin
+        // Take the valid bits, ignoring the overflow bit
+        counter_next = counter_intermediate[CounterWidth-1:0];
+      end
+    end else begin
+      // No valid inputs, keep the counter unchanged
+      counter_next = counter_o;
+    end
+  end
+
+  //---------------------------
   // Main counter register
+  //---------------------------
   always_ff @ (posedge clk_i or negedge rst_ni) begin
     if(!rst_ni) begin
       counter_o <= {CounterWidth{1'b0}};
