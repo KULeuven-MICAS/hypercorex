@@ -44,18 +44,22 @@ def print_counter_output(dut):
 
 # Incrementing input
 async def increment_inputs(dut):
-    for i in range(NUM_INPUTS):
-        dut.valid_i[i].value = 1
-        dut.bit_i[i].value = 1
+    input_increment = [1] * NUM_INPUTS
+    data_in = int("".join(str(b) for b in input_increment), 2)
+    dut.valid_i.value = data_in
+    dut.bit_i.value = data_in
     await clock_and_time(dut.clk_i)
     return
 
 
 # Decrementing input
 async def decrement_inputs(dut):
-    for i in range(NUM_INPUTS):
-        dut.valid_i[i].value = 1
-        dut.bit_i[i].value = 0
+    input_decrement = [0] * NUM_INPUTS
+    data_in = int("".join(str(b) for b in input_decrement), 2)
+    dut.bit_i.value = data_in
+    input_decrement = [1] * NUM_INPUTS
+    data_in = int("".join(str(b) for b in input_decrement), 2)
+    dut.valid_i.value = data_in
     await clock_and_time(dut.clk_i)
     return
 
@@ -67,8 +71,10 @@ async def randomize_inputs(dut):
     for i in range(NUM_INPUTS):
         valid_set.append(gen_randint(0, 1))
         bit_set.append(gen_randint(0, 1))
-        dut.valid_i[i].value = valid_set[i]
-        dut.bit_i[i].value = bit_set[i]
+    valid_in = int("".join(str(b) for b in valid_set), 2)
+    bit_in = int("".join(str(b) for b in bit_set), 2)
+    dut.valid_i.value = valid_in
+    dut.bit_i.value = bit_in
     # Calculate that for valid index
     # If valid and bit is 1, increment by 1
     # If valid and bit is 0, decrement by 1
@@ -86,9 +92,8 @@ async def randomize_inputs(dut):
 # Clearing inputs but
 # without time progression
 def clear_inputs_no_clock(dut):
-    for i in range(NUM_INPUTS):
-        dut.bit_i[i].value = 0
-        dut.valid_i[i].value = 0
+    dut.bit_i.value = 0
+    dut.valid_i.value = 0
     dut.clr_i.value = 0
 
 
