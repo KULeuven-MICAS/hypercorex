@@ -104,6 +104,12 @@ rtl-im-check = """
     tests/test_rom_lfsr_item_memory.py
     """
 
+rtl-common-check = """
+    pytest -n $(nproc) --dist=loadfile \
+    tests/test_adder_tree.py \
+    tests/test_fifo.py
+    """
+
 # ── Docs Tasks ────────────────────────────────────────────────────────────────
 [feature.docs.tasks]
 docs-build = "make -C docs html"
