@@ -40,7 +40,7 @@ def clear_inputs(dut):
 
 def random_inputs(dut):
     for i in range(NUM_SEL):
-        dut.im_sel_i[i].value = gen_randint(NUM_ITEM - 1)
+        dut.im_sel_i[i].value = gen_randint(0, NUM_ITEM - 1)
     return
 
 
