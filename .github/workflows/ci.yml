@@ -45,3 +45,29 @@ jobs:
 
       - name: Run RTL IM check
         run: pixi run rtl-im-check
+
+  rtl-common-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up pixi
+        uses: prefix-dev/setup-pixi@v0.8.1
+
+      - name: Run RTL Common check
+        run: pixi run rtl-common-check
+
+  rtl-encoder-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up pixi
+        uses: prefix-dev/setup-pixi@v0.8.1
+
+      - name: Run RTL Encoder check
+        run: pixi run rtl-encoder-check
