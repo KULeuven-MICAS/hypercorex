@@ -1,11 +1,13 @@
 """
-VSAX Digit Recognition Application
+VSAX Binary Digit Recognition Application
 
 This application demonstrates the use of VSAX
 for digit recognition using the MNIST dataset.
+This version does the binary ID-level encoding.
+Where we use binary MNIST images.
 """
 
-# Packages
+# Parameters
 import os
 import sys
 from pathlib import Path
@@ -13,14 +15,15 @@ from pathlib import Path
 # Global parameters
 HV_SIZE = 1024
 CLASS_LIST = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+GEN_TYPE = "lfsr"
 
 # Path directories
 curr_dir = os.path.dirname(os.path.abspath(__file__))
+model_name = Path(__file__).stem
 lib_path = curr_dir + "/../lib"
 data_path = curr_dir + "/../data"
-dataset_path = data_path + "/mnist_uint"
+dataset_path = data_path + "/mnist_bin"
 model_path = curr_dir + "/../models"
-model_name = Path(__file__).stem
 
 # Appending other paths for libraries
 sys.path.append(lib_path)
@@ -38,6 +41,7 @@ import vsax_util  # noqa: E402
 model_file = model_name + f"_d{HV_SIZE}.npz"
 model_dir = model_path + f"/{model_file}"
 
+
 # Download pre-trained model
 if load_mode:
     vsax_util.download_file(
@@ -48,8 +52,9 @@ if load_mode:
 
 # Downloading and extracting the MNIST dataset
 vsax_util.download_and_extract(
-    url=vsax_util.vsax_data_url_mnist,
+    url=vsax_util.vsax_data_url_bin_mnist,
     out_dir=data_path,
+    delete_archive=True,
 )
 
 # Read data
@@ -76,7 +81,12 @@ class digitVSA(vsax_models.vsaModel):
         # Threshold for binarization
         threshold = item_len // 2
         # Encode hypervector
-        encoded_vec = item_data @ self.ortho_im[0:item_len]
+        encoded_vec = vsax.hv_gen_empty(self.hv_size)
+        for i in range(item_len):
+            if item_data[i] == 0:
+                encoded_vec += self.ortho_im[i]
+            else:
+                encoded_vec += vsax.hv_circ_perm(self.ortho_im[i], 1)
         # Binarization
         if self.binarize_encode:
             encoded_vec = vsax.hv_binarize(encoded_vec, threshold, self.hv_type)
@@ -88,6 +98,7 @@ digit_model = digitVSA(
     model_name=model_name,
     hv_size=HV_SIZE,
     class_list=CLASS_LIST,
+    gen_type=GEN_TYPE,
 )
 
 # Disabling TQDM debug progress bars

@@ -1,5 +1,5 @@
 name: VSAX Tests
-on: 
+on:
   pull_request:
   workflow_dispatch:
   push:
@@ -71,3 +71,42 @@ jobs:
 
       - name: Run RTL Encoder check
         run: pixi run rtl-encoder-check
+
+  app-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up pixi
+        uses: prefix-dev/setup-pixi@v0.8.1
+
+      - name: Run tests in parallel
+        run: |
+          TASKS=(
+            app-test-vsax-digit-recog
+            app-test-vsax-bin-digit-recog
+          )
+          PIDS=()
+          mkdir -p logs
+
+          for TASK in "${TASKS[@]}"; do
+            pixi run $TASK > logs/$TASK.log 2>&1 &
+            PIDS+=($!)
+          done
+
+          FAILED=0
+          for PID in "${PIDS[@]}"; do
+            wait $PID || FAILED=1
+          done
+
+          if [ "$FAILED" = "1" ]; then exit 1; fi
+
+      - name: Print logs
+        if: always()
+        run: |
+          for LOG in logs/*.log; do
+            echo "=== $LOG ==="
+            cat "$LOG"
+          done
