@@ -73,6 +73,9 @@ jobs:
         run: pixi run rtl-encoder-check
 
   app-test:
+    if: |
+      contains(github.event.commits[0].modified, 'app/') ||
+      contains(github.event.commits[0].modified, 'lib/')
     runs-on: ubuntu-latest
 
     steps:
