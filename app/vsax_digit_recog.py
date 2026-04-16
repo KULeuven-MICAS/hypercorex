@@ -33,6 +33,7 @@ import vsax_util  # noqa: E402
 (
     save_mode,
     load_mode,
+    disable_tqdm,
 ) = vsax_models.vsax_general_parser()
 model_file = model_name + f"_d{HV_SIZE}.npz"
 model_dir = model_path + f"/{model_file}"
@@ -52,7 +53,7 @@ vsax_util.download_and_extract(
 )
 
 # Read data
-X_data = vsax_util.read_data(CLASS_LIST, dataset_path)
+X_data = vsax_util.read_data(CLASS_LIST, dataset_path, disable_tqdm=disable_tqdm)
 
 # Train and test split
 train_test_split = 0.6
@@ -63,6 +64,7 @@ X_train_set, X_valid_set, X_test_set = vsax_util.split_train_valid_test_set(
     class_list=CLASS_LIST,
     train_test_split=train_test_split,
     train_valid_split=train_valid_split,
+    disable_tqdm=disable_tqdm,
 )
 
 
@@ -87,6 +89,11 @@ digit_model = digitVSA(
     hv_size=HV_SIZE,
     class_list=CLASS_LIST,
 )
+
+# Disabling TQDM debug progress bars
+digit_model.tqdm_train_disable = disable_tqdm
+digit_model.tqdm_retrain_disable = disable_tqdm
+digit_model.tqdm_test_disable = disable_tqdm
 
 if load_mode:
     # Load an existing trained model
