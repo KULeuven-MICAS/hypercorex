@@ -28,16 +28,12 @@ def vsax_general_parser():
         "--save", "-s", action="store_true", help="Train and save the model"
     )
     parser.add_argument("--load", "-l", action="store_true", help="Load the model")
-    parser.add_argument(
-        "--model", "-m", type=str, help="Name of model to save/load", default="vsaModel"
-    )
-
     args = parser.parse_args()
 
     save_mode = args.save
     load_mode = args.load
-    model_name = args.model
-    return save_mode, load_mode, model_name
+
+    return save_mode, load_mode
 
 
 # ============================================================================
