@@ -1,19 +1,29 @@
 """
-VSAX Digit Recognition Application
+VSAX Binary Digit Recognition Application
 
 This application demonstrates the use of VSAX
 for digit recognition using the MNIST dataset.
+This version does the binary ID-level encoding.
+Where we use binary MNIST images.
 """
 
 # Parameters
 import os
 import sys
+from pathlib import Path
+
+# Global parameters
+HV_SIZE = 1024
+CLASS_LIST = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+GEN_TYPE = "lfsr"
 
 # Path directories
 curr_dir = os.path.dirname(os.path.abspath(__file__))
+model_name = Path(__file__).stem
 lib_path = curr_dir + "/../lib"
 data_path = curr_dir + "/../data"
 dataset_path = data_path + "/mnist_bin"
+model_path = curr_dir + "/../models"
 
 # Appending other paths for libraries
 sys.path.append(lib_path)
@@ -23,8 +33,17 @@ import vsax  # noqa: E402
 import vsax_models  # noqa: E402
 import vsax_util  # noqa: E402
 
-save_mode, load_mode, model_name = vsax_models.vsax_general_parser()
-model_dir = curr_dir + f"/../models/{model_name}.npz"
+save_mode, load_mode = vsax_models.vsax_general_parser()
+model_file = model_name + f"_d{HV_SIZE}.npz"
+model_dir = model_path + f"/{model_file}"
+
+# Download pre-trained model
+if load_mode:
+    vsax_util.download_file(
+        url=f"{vsax_util.git_trained_models_url}/{model_file}",
+        out_dir=model_path,
+        filename=model_file,
+    )
 
 # Downloading and extracting the MNIST dataset
 vsax_util.download_and_extract(
@@ -33,11 +52,8 @@ vsax_util.download_and_extract(
     delete_archive=True,
 )
 
-# Set class list
-class_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-
 # Read data
-X_data = vsax_util.read_data(class_list, dataset_path)
+X_data = vsax_util.read_data(CLASS_LIST, dataset_path)
 
 # Train and test split
 train_test_split = 0.6
@@ -45,7 +61,7 @@ train_valid_split = 0.75
 
 X_train_set, X_valid_set, X_test_set = vsax_util.split_train_valid_test_set(
     X_data=X_data,
-    class_list=class_list,
+    class_list=CLASS_LIST,
     train_test_split=train_test_split,
     train_valid_split=train_valid_split,
 )
@@ -74,9 +90,9 @@ class digitVSA(vsax_models.vsaModel):
 # Make digit class
 digit_model = digitVSA(
     model_name=model_name,
-    hv_size=1024,
-    class_list=class_list,
-    gen_type="lfsr",
+    hv_size=HV_SIZE,
+    class_list=CLASS_LIST,
+    gen_type=GEN_TYPE,
 )
 
 if load_mode:
