@@ -9,12 +9,15 @@ for digit recognition using the MNIST dataset.
 import os
 import sys
 
+# Global parameters
+hv_size = 1024
 
 # Path directories
 curr_dir = os.path.dirname(os.path.abspath(__file__))
 lib_path = curr_dir + "/../lib"
 data_path = curr_dir + "/../data"
 dataset_path = data_path + "/mnist_uint"
+model_path = curr_dir + "/../models"
 
 # Appending other paths for libraries
 sys.path.append(lib_path)
@@ -25,13 +28,21 @@ import vsax_models  # noqa: E402
 import vsax_util  # noqa: E402
 
 save_mode, load_mode, model_name = vsax_models.vsax_general_parser()
-model_dir = curr_dir + f"/../models/{model_name}.npz"
+model_file = model_name + f"_d{hv_size}.npz"
+model_dir = model_path + f"/{model_file}"
+
+# Download pre-trained model
+if load_mode:
+    vsax_util.download_file(
+        url=f"{vsax_util.git_trained_models_url}/{model_file}",
+        out_dir=model_path,
+        filename=model_file,
+    )
 
 # Downloading and extracting the MNIST dataset
 vsax_util.download_and_extract(
     url=vsax_util.vsax_data_url_mnist,
     out_dir=data_path,
-    delete_archive=True,
 )
 
 # Set class list
@@ -70,7 +81,7 @@ class digitVSA(vsax_models.vsaModel):
 # Make digit class
 digit_model = digitVSA(
     model_name=model_name,
-    hv_size=1024,
+    hv_size=hv_size,
     class_list=class_list,
 )
 
