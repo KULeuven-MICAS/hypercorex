@@ -115,8 +115,8 @@ rtl-encoder-check = """
     tests/test_multi_in_bundler_unit.py
     """
 # ── App Test Tasks─────────────────────────────────────────────────────────────
-app-test-vsax-digit-recog = "python app/vsax_digit_recog.py -l"
-app-test-vsax-bin-digit-recog = "python app/vsax_bin_digit_recog.py -l"
+app-test-vsax-digit-recog = "python app/vsax_digit_recog.py --load --dtqdm"
+app-test-vsax-bin-digit-recog = "python app/vsax_bin_digit_recog.py --load --dtqdm"
 
 # ── Docs Tasks ────────────────────────────────────────────────────────────────
 [feature.docs.tasks]
