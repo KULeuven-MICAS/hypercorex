@@ -6,6 +6,20 @@
 // Description:
 // This is a bundler set supporting
 // multiple HV inputs at a time.
+//
+// Parameters:
+// - HVDimension:  Dimension of the input hypervectors (and output counter array)
+// - NumInputs:    Number of input hypervectors to be bundled together
+// - CounterWidth: Bit width of the internal counter (and output)
+//
+// Inputs and Outputs:
+// - clk_i:       Clock input for the counter registers
+// - rst_ni:      Active-low reset for the counter registers
+// - clr_i:       Synchronous clear for the counters (resets to zero on next clock edge)
+// - hv_i:        2D array of input hypervectors (NumInputs x HVDimension) to be bundled together
+// - valid_i:     Array of valid signals (NumInputs elements) indicating which input hypervectors are valid for this cycle
+// - counter_o:   2D array of output counters (HVDimension x CounterWidth) representing the bundled result of the input hypervectors
+// - binarized_hv_o: Array of binarized output bits (HVDimension elements) obtained by thresholding the counters (e.g., sign bit
 //---------------------------
 
 module multi_in_bundler_set#(
