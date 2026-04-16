@@ -113,7 +113,8 @@ rtl-common-check = """
 rtl-encoder-check = """
     pytest -n $(nproc) --dist=loadfile \
     tests/test_multi_in_bundler_unit.py \
-    tests/test_multi_in_bundler_set.py
+    tests/test_multi_in_bundler_set.py \
+    tests/test_id_level_encoder.py 
     """
 # ── App Test Tasks─────────────────────────────────────────────────────────────
 app-test-vsax-digit-recog = "python app/vsax_digit_recog.py --load --dtqdm"
