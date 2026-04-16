@@ -6,6 +6,23 @@ on:
     branches: [main]
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      rtl: ${{ steps.filter.outputs.rtl }}
+      app: ${{ steps.filter.outputs.app }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            rtl:
+              - 'rtl/**'
+            app:
+              - 'app/**'
+              - 'lib/**'
+
   smoke-test:
     runs-on: ubuntu-latest
 
@@ -18,7 +35,6 @@ jobs:
 
       - name: Run smoke test
         run: pixi run smoke-test
-
 
   lib-check:
     runs-on: ubuntu-latest
@@ -34,6 +50,7 @@ jobs:
         run: pixi run lib-check
 
   rtl-im-check:
+    needs: changes
     runs-on: ubuntu-latest
 
     steps:
@@ -43,10 +60,16 @@ jobs:
       - name: Set up pixi
         uses: prefix-dev/setup-pixi@v0.8.1
 
+      - name: Skip notice
+        if: needs.changes.outputs.rtl == 'false'
+        run: echo "No changes in rtl, skipping."
+
       - name: Run RTL IM check
+        if: needs.changes.outputs.rtl == 'true'
         run: pixi run rtl-im-check
 
   rtl-common-check:
+    needs: changes
     runs-on: ubuntu-latest
 
     steps:
@@ -56,10 +79,16 @@ jobs:
       - name: Set up pixi
         uses: prefix-dev/setup-pixi@v0.8.1
 
+      - name: Skip notice
+        if: needs.changes.outputs.rtl == 'false'
+        run: echo "No changes in rtl, skipping."
+
       - name: Run RTL Common check
+        if: needs.changes.outputs.rtl == 'true'
         run: pixi run rtl-common-check
 
   rtl-encoder-check:
+    needs: changes
     runs-on: ubuntu-latest
 
     steps:
@@ -69,10 +98,16 @@ jobs:
       - name: Set up pixi
         uses: prefix-dev/setup-pixi@v0.8.1
 
+      - name: Skip notice
+        if: needs.changes.outputs.rtl == 'false'
+        run: echo "No changes in rtl, skipping."
+
       - name: Run RTL Encoder check
+        if: needs.changes.outputs.rtl == 'true'
         run: pixi run rtl-encoder-check
 
   app-test:
+    needs: changes
     runs-on: ubuntu-latest
 
     steps:
@@ -82,7 +117,12 @@ jobs:
       - name: Set up pixi
         uses: prefix-dev/setup-pixi@v0.8.1
 
+      - name: Skip notice
+        if: needs.changes.outputs.app == 'false'
+        run: echo "No changes in app/ or lib/, skipping."
+
       - name: Run tests in parallel
+        if: needs.changes.outputs.app == 'true'
         run: |
           TASKS=(
             app-test-vsax-digit-recog
@@ -104,7 +144,7 @@ jobs:
           if [ "$FAILED" = "1" ]; then exit 1; fi
 
       - name: Print logs
-        if: always()
+        if: always() && needs.changes.outputs.app == 'true'
         run: |
           for LOG in logs/*.log; do
             echo "=== $LOG ==="
