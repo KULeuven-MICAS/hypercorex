@@ -13,10 +13,36 @@ import vsax_util
 import numpy as np
 from tqdm import tqdm
 from typing import Optional
+import argparse
 
-# ============================================================================-------
+# ============================================================================
+# General Model Functions
+# ============================================================================
+
+
+# For general parsing
+def vsax_general_parser():
+    parser = argparse.ArgumentParser(description="VSAX Model Training and Testing")
+
+    parser.add_argument(
+        "--save", "-s", action="store_true", help="Train and save the model"
+    )
+    parser.add_argument("--load", "-l", action="store_true", help="Load the model")
+    parser.add_argument(
+        "--model", "-m", type=str, help="Name of model to save/load", default="vsaModel"
+    )
+
+    args = parser.parse_args()
+
+    save_mode = args.save
+    load_mode = args.load
+    model_name = args.model
+    return save_mode, load_mode, model_name
+
+
+# ============================================================================
 # Main VSA Model class
-# ============================================================================-------
+# ============================================================================
 
 
 class vsaModel:
@@ -24,6 +50,7 @@ class vsaModel:
     Base class for VSA models.
 
     Parameters:
+        model_name (str): The name of the model.
         hv_size (int): The size of the hypervectors.
         hv_type (str): The type of hypervector.
                        Can be 'bipolar', 'binary', 'real', or 'complex'.
@@ -35,10 +62,36 @@ class vsaModel:
         gen_type (str): The type of hypervector generation. Can be 'ri' or 'lfsr'.
         gen_ri_p_dense (float): The density of the random index hypervectors.
         gen_lfsr_base_seed (int): The base seed for the LFSR generator.
+
+    Attributes:
+        ortho_im (np.ndarray): The orthogonal item memory hypervectors.
+        cim (np.ndarray): The continuous item memory hypervectors.
+        class_am (np.ndarray): The AM for each class.
+        class_am_frozen (np.ndarray): The frozen AM for each class.
+        class_am_bin (np.ndarray): The binarized AM for each class.
+        class_am_count (np.ndarray): The count of items in each class AM.
+        test_class_score (np.ndarray): The score for each class during testing.
+        test_class_accuracy (np.ndarray): The accuracy for each class during testing.
+        model_accuracy (float): The overall accuracy of the model during testing.
+
+    Debugging Parameters:
+        tqdm_train_dbg (bool): If True, show progress bar during training.
+        tqdm_retrain_dbg (bool): If True, show progress bar during retraining.
+        tqdm_test_dbg (bool): If True, show progress bar during testing.
+
+    Methods:
+        encode(item_data): Encode the input data into a hypervector.
+        train_model(X_train): Train the VSA model using the provided training data.
+        retrain_model(X_train): Retrain the VSA model using the provided training data.
+        test_model(X_test): Test the VSA model using the provided test data.
+        print_model_stats(): Print the statistics of the VSA model.
+        save_model(save_path): Save the model parameters to a file.
+        load_model(load_path): Load the model parameters from a file.
     """
 
     def __init__(
         self,
+        model_name: str = "vsaModel",
         hv_size: int = 1024,
         hv_type: str = "bipolar",
         num_ortho_im: int = 1024,
@@ -49,6 +102,9 @@ class vsaModel:
         gen_ri_p_dense: float = 0.5,
         gen_lfsr_base_seed: int = 42,
     ):
+        # Model name
+        self.model_name = model_name
+
         # Base parameters
         self.hv_size = hv_size
         self.hv_type = hv_type
@@ -128,7 +184,7 @@ class vsaModel:
         Parameters:
             X_train (list): A list of training data for each class.
         Returns:
-            Updates the associative memory of the model based on the training data.
+            Updates the AM of the model based on the training data.
         """
         for class_label in range(self.num_classes):
             data_len = len(X_train[class_label])
@@ -270,11 +326,17 @@ class vsaModel:
         print("===================")
 
         # Print internal parameters
+        print(f"Model Name: {self.model_name}")
         print(f"HV Size: {self.hv_size}")
         print(f"HV Type: {self.hv_type}")
         print(f"Number of Orthogonal IMs: {self.num_ortho_im}")
         print(f"Number of Continuous IMs: {self.num_cim}")
         print(f"Number of Classes: {self.num_classes}")
+        print(f"Generation Type: {self.gen_type}")
+        if self.gen_type == "ri":
+            print(f"RI p_dense: {self.gen_ri_p_dense}")
+        elif self.gen_type == "lfsr":
+            print(f"LFSR Base Seed: {self.gen_lfsr_base_seed}")
 
         # Print modes
         print(f"Binarize Encode: {self.binarize_encode}")
@@ -289,6 +351,62 @@ class vsaModel:
             print(f"Class {class_label} Accuracy: {class_acc*100:.2f}%")
 
         print(f"Overall Accuracy: {self.model_accuracy*100:.2f}%")
+
+    # Function to save the model parameters
+    def save_model(self, save_path):
+        """
+        Save the model parameters to a file.
+
+        Parameters:
+            save_path (str): The path to save the model parameters.
+        """
+        np.savez(
+            save_path,
+            model_name=self.model_name,
+            hv_size=self.hv_size,
+            hv_type=self.hv_type,
+            num_ortho_im=self.num_ortho_im,
+            num_cim=self.num_cim,
+            cim_max_is_ortho=self.cim_max_is_ortho,
+            class_list=self.class_list,
+            gen_type=self.gen_type,
+            gen_ri_p_dense=self.gen_ri_p_dense,
+            gen_lfsr_base_seed=self.gen_lfsr_base_seed,
+            ortho_im=self.ortho_im,
+            cim=self.cim,
+            class_am=self.class_am,
+            class_am_frozen=self.class_am_frozen,
+            class_am_bin=self.class_am_bin,
+            class_am_count=self.class_am_count,
+        )
+        print(f"Saved model: {save_path}!")
+
+    # Function to load the model parameters
+    def load_model(self, load_path):
+        """
+        Load the model parameters from a file.
+
+        Parameters:
+            load_path (str): The path to load the model parameters from.
+        """
+        data = np.load(load_path, allow_pickle=True)
+        self.model_name = data["model_name"].item()
+        self.hv_size = data["hv_size"].item()
+        self.hv_type = data["hv_type"].item()
+        self.num_ortho_im = data["num_ortho_im"].item()
+        self.num_cim = data["num_cim"].item()
+        self.cim_max_is_ortho = data["cim_max_is_ortho"].item()
+        self.class_list = data["class_list"].tolist()
+        self.gen_type = data["gen_type"].item()
+        self.gen_ri_p_dense = data["gen_ri_p_dense"].item()
+        self.gen_lfsr_base_seed = data["gen_lfsr_base_seed"].item()
+        self.ortho_im = data["ortho_im"]
+        self.cim = data["cim"]
+        self.class_am = data["class_am"]
+        self.class_am_frozen = data["class_am_frozen"]
+        self.class_am_bin = data["class_am_bin"]
+        self.class_am_count = data["class_am_count"]
+        print(f"Loaded model: {load_path}!")
 
 
 if __name__ == "__main__":
