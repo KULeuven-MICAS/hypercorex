@@ -112,7 +112,7 @@ digit_model.test_model(X_test_set)
 digit_model.print_model_stats()
 
 # Checker if accuracy is expected
-assert digit_model.test_acc > 0.8, "Test accuracy is lower than expected."
+assert digit_model.model_accuracy > 0.8, "Test accuracy is lower than expected."
 print("✓ Test accuracy passed.")
 
 # Save model
