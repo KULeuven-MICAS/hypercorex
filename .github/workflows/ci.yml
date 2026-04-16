@@ -19,6 +19,7 @@ jobs:
           filters: |
             rtl:
               - 'rtl/**'
+              - 'tests/**'
             app:
               - 'app/**'
               - 'lib/**'
