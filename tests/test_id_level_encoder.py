@@ -26,7 +26,7 @@ sys.path.append(lib_path)
 import vsax  # noqa: E402
 
 # Global parameters
-HV_DIMENSION = 8
+HV_DIMENSION = 128
 COUNTER_WIDTH = 8
 NUM_INPUTS = 4
 HV_TYPE = "binary"
