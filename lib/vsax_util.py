@@ -20,6 +20,7 @@ from pathlib import Path
 # List of data sets
 # ---------------------------------------------------------------------------
 vsax_data_url_mnist = "https://github.com/rgantonio/chronomatica/releases/download/mnist_dataset_v1.0/chronomatica_mnist_uint.tar.gz"
+vsax_data_url_bin_mnist = "https://github.com/rgantonio/chronomatica/releases/download/mnist_dataset_v1.0/chronomatica_mnist_bin.tar.gz"
 
 # ---------------------------------------------------------------------------
 # File extraction functions
@@ -142,6 +143,7 @@ def read_data(class_list: list, data_path: str) -> list:
     return X_data
 
 
+# Splitting the data and randomizing items
 def split_data(
     X_data: list, class_list: list, split_percent: float = 0.8
 ) -> tuple[list, list]:
@@ -184,3 +186,34 @@ def split_data(
         X_split_data2.append(split2_list)
 
     return X_split_data1, X_split_data2
+
+
+# Splitting the data but in train, valid, and test sets
+def split_train_valid_test_set(
+    X_data: list,
+    class_list: list,
+    train_test_split: float = 0.6,
+    train_valid_split: float = 0.75,
+) -> tuple[list, list, list]:
+    """
+    Split data into training, validation, and test sets.
+
+    Args:
+        X_data: list of NumPy arrays with data for each class label
+        class_list: list of class labels
+        train_test_split: percentage of data to go into
+        training set (rest goes to test set)
+        train_valid_split: percentage of training set to
+        go into training set (rest goes to validation set)
+    Returns:
+        X_train_set: training set
+        X_valid_set: validation set
+        X_test_set: test set
+    """
+    X_train_set, X_test_set = split_data(
+        X_data, class_list, split_percent=train_test_split
+    )
+    X_train_set, X_valid_set = split_data(
+        X_train_set, class_list, split_percent=train_valid_split
+    )
+    return X_train_set, X_valid_set, X_test_set
