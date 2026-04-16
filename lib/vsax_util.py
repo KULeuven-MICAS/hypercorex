@@ -23,6 +23,12 @@ vsax_data_url_mnist = "https://github.com/rgantonio/chronomatica/releases/downlo
 vsax_data_url_bin_mnist = "https://github.com/rgantonio/chronomatica/releases/download/mnist_dataset_v1.0/chronomatica_mnist_bin.tar.gz"
 
 # ---------------------------------------------------------------------------
+# Main pre-trained model url
+# ---------------------------------------------------------------------------
+ver_trained_models = "v0.1.0"
+git_trained_models_url = f"https://github.com/KULeuven-MICAS/hypercorex/releases/download/vsax_trained_models_{ver_trained_models}"
+
+# ---------------------------------------------------------------------------
 # File extraction functions
 # ---------------------------------------------------------------------------
 
@@ -47,6 +53,32 @@ def extract_dataset(file_path: str) -> list[str]:
             dataset.append(line.strip())
 
     return dataset
+
+
+# For downloading only
+def download_file(url: str, out_dir: str | Path = "data", filename: str | None = None):
+    """
+    Download a file from a URL.
+
+    Args:
+        url (str): The URL to download the file from.
+        out_dir (str | Path): The directory to save the downloaded file in.
+        filename (str | None): Optional override for downloaded filename.
+    """
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    if filename is None:
+        filename = url.split("/")[-1]
+
+    file_path = out_dir / filename
+
+    # Download (skip if already exists)
+    if not file_path.exists():
+        print(f"Downloading {filename}...")
+        urllib.request.urlretrieve(url, file_path)
+    else:
+        print(f"{filename} already exists, skipping download.")
 
 
 # For downloading and extracting archives
