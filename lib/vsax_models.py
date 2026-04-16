@@ -28,12 +28,16 @@ def vsax_general_parser():
         "--save", "-s", action="store_true", help="Train and save the model"
     )
     parser.add_argument("--load", "-l", action="store_true", help="Load the model")
+    parser.add_argument(
+        "--dtqdm", "-d", action="store_true", help="Disable tqdm progress bars"
+    )
     args = parser.parse_args()
 
     save_mode = args.save
     load_mode = args.load
+    disable_tqdm = args.dtqdm
 
-    return save_mode, load_mode
+    return save_mode, load_mode, disable_tqdm
 
 
 # ============================================================================
@@ -71,9 +75,9 @@ class vsaModel:
         model_accuracy (float): The overall accuracy of the model during testing.
 
     Debugging Parameters:
-        tqdm_train_dbg (bool): If True, show progress bar during training.
-        tqdm_retrain_dbg (bool): If True, show progress bar during retraining.
-        tqdm_test_dbg (bool): If True, show progress bar during testing.
+        tqdm_train_disable (bool): If True, show progress bar during training.
+        tqdm_retrain_disable (bool): If True, show progress bar during retraining.
+        tqdm_test_disable (bool): If True, show progress bar during testing.
 
     Methods:
         encode(item_data): Encode the input data into a hypervector.
@@ -151,9 +155,9 @@ class vsaModel:
         self.model_accuracy = None
 
         # Some debugging parameters
-        self.tqdm_train_dbg = True
-        self.tqdm_retrain_dbg = True
-        self.tqdm_test_dbg = True
+        self.tqdm_train_disable = False
+        self.tqdm_retrain_disable = False
+        self.tqdm_test_disable = False
 
     # Main encoding function
     def encode(self, item_data):
@@ -182,6 +186,7 @@ class vsaModel:
         Returns:
             Updates the AM of the model based on the training data.
         """
+        print("Training model...")
         for class_label in range(self.num_classes):
             data_len = len(X_train[class_label])
 
@@ -189,7 +194,7 @@ class vsaModel:
             for item_num in tqdm(
                 range(data_len),
                 desc=f"Training class {class_label}",
-                disable=not self.tqdm_train_dbg,
+                disable=self.tqdm_train_disable,
             ):
                 # Getting encodede HV
                 encoded_vec = self.encode(X_train[class_label][item_num])
@@ -211,6 +216,7 @@ class vsaModel:
 
     # Retraining function
     def retrain_model(self, X_train):
+        print("Retraining model...")
         """
         Retrain the VSA model using the provided training data.
 
@@ -230,7 +236,7 @@ class vsaModel:
             for item_num in tqdm(
                 range(data_len),
                 desc=f"Retraining class {class_label}",
-                disable=not self.tqdm_retrain_dbg,
+                disable=self.tqdm_retrain_disable,
             ):
                 # Getting encoded HV
                 encoded_vec = self.encode(X_train[class_label][item_num])
@@ -272,6 +278,8 @@ class vsaModel:
         Returns:
             float: The overall accuracy of the model.
         """
+        print("Testing model...")
+
         correct_count = 0
         class_correct_count = 0
         total_count = 0
@@ -287,7 +295,7 @@ class vsaModel:
             for item_num in tqdm(
                 range(data_len),
                 desc=f"Testing class {class_label}",
-                disable=not self.tqdm_test_dbg,
+                disable=self.tqdm_test_disable,
             ):
                 # Getting encoded HV
                 encoded_vec = self.encode(X_test[class_label][item_num])

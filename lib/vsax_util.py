@@ -157,18 +157,19 @@ def load_dataset(file_path: str) -> np.ndarray:
 
 
 # Reading of data from files for each class label
-def read_data(class_list: list, data_path: str) -> list:
+def read_data(class_list: list, data_path: str, disable_tqdm: bool = False) -> list:
     """
     Read data from files for each class label.
 
     Args:
         class_list: list of class labels
         data_path: path to the data files
+        disable_tqdm: whether to disable tqdm progress bars
     Returns:
         X_data: list of NumPy arrays with data for each class label
     """
     X_data = []
-    for class_label in tqdm(class_list, desc="Reading data"):
+    for class_label in tqdm(class_list, desc="Reading data", disable=disable_tqdm):
         # Training dataset
         read_file = f"{data_path}/{class_label}.txt"
         X_data.append(load_dataset(read_file))
@@ -177,7 +178,10 @@ def read_data(class_list: list, data_path: str) -> list:
 
 # Splitting the data and randomizing items
 def split_data(
-    X_data: list, class_list: list, split_percent: float = 0.8
+    X_data: list,
+    class_list: list,
+    split_percent: float = 0.8,
+    disable_tqdm: bool = False,
 ) -> tuple[list, list]:
     """
     Split data into two parts based on split_percent.
@@ -194,7 +198,7 @@ def split_data(
     X_split_data1 = []
     X_split_data2 = []
 
-    for class_label in tqdm(class_list, desc="Splitting data"):
+    for class_label in tqdm(class_list, desc="Splitting data", disable=disable_tqdm):
         # Get item counts first
         item_len = len(X_data[class_label])
         split1_len = round(item_len * split_percent)
@@ -226,6 +230,7 @@ def split_train_valid_test_set(
     class_list: list,
     train_test_split: float = 0.6,
     train_valid_split: float = 0.75,
+    disable_tqdm: bool = False,
 ) -> tuple[list, list, list]:
     """
     Split data into training, validation, and test sets.
@@ -243,9 +248,12 @@ def split_train_valid_test_set(
         X_test_set: test set
     """
     X_train_set, X_test_set = split_data(
-        X_data, class_list, split_percent=train_test_split
+        X_data, class_list, split_percent=train_test_split, disable_tqdm=disable_tqdm
     )
     X_train_set, X_valid_set = split_data(
-        X_train_set, class_list, split_percent=train_valid_split
+        X_train_set,
+        class_list,
+        split_percent=train_valid_split,
+        disable_tqdm=disable_tqdm,
     )
     return X_train_set, X_valid_set, X_test_set
