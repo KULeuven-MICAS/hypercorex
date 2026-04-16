@@ -55,7 +55,7 @@ level_set = vsax.hv_gen_orthogonal_im(
 
 def hv_to_int(hv: np.ndarray) -> int:
     """Convert a binary hypervector (1D numpy array of 0s/1s) to an integer."""
-    return int(np.packbits(hv, bitorder="little").tobytes().hex(), 16)
+    return int(np.packbits(hv, bitorder="big").tobytes().hex(), 16)
 
 
 # Load input HVs of num inputs size
@@ -119,7 +119,7 @@ async def id_level_encoder_dut(dut):
         expected_bundled_hv = vsax.hv_gen_empty(HV_DIMENSION)
         for _ in range(num_loads):
             expected_bundled_hv += await load_inputs(dut)
-
+        expected_bundled_hv = expected_bundled_hv[::-1]
         # Read actual bundled HV from DUT output
         actual_bundled_hv = np.array(
             [dut.hv_encoded_o[j].value.signed_integer for j in range(HV_DIMENSION)]
