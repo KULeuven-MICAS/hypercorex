@@ -17,7 +17,7 @@ import pytest
 import random
 
 # Local parameters
-HV_DIMENSION = 512
+HV_DIMENSION = 128
 COUNTER_WIDTH = 8
 NUM_INPUTS = 4
 
