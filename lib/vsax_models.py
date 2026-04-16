@@ -360,7 +360,7 @@ class vsaModel:
         Parameters:
             save_path (str): The path to save the model parameters.
         """
-        np.savez(
+        np.savez_compressed(
             save_path,
             model_name=self.model_name,
             hv_size=self.hv_size,
