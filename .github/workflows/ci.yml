@@ -17,6 +17,8 @@ jobs:
         id: filter
         with:
           filters: |
+            rtl-im:
+              - 'rtl/item_memory/**'
             rtl-common:
               - 'rtl/common/**'
             rtl-encoder:
@@ -61,7 +63,12 @@ jobs:
       - name: Set up pixi
         uses: prefix-dev/setup-pixi@v0.8.1
 
+      - name: Skip notice
+        if: needs.changes.outputs.rtl-im == 'false'
+        run: echo "No changes in rtl/item_memory/, skipping."
+
       - name: Run RTL IM check
+        if: needs.changes.outputs.rtl-im == 'true'
         run: pixi run rtl-im-check
 
   rtl-common-check:
@@ -139,7 +146,7 @@ jobs:
           if [ "$FAILED" = "1" ]; then exit 1; fi
 
       - name: Print logs
-        if: always()
+        if: needs.changes.outputs.app == 'true'
         run: |
           for LOG in logs/*.log; do
             echo "=== $LOG ==="
