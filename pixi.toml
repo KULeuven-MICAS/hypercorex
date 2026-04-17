@@ -106,6 +106,7 @@ rtl-im-check = """
 
 rtl-common-check = """
     pytest -n $(nproc) --dist=loadfile \
+    tests/test_sram_memory.py \
     tests/test_adder_tree.py \
     tests/test_fifo.py
     """
