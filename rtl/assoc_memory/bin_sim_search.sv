@@ -2,14 +2,38 @@
 // Copyright 2024 KU Leuven
 // Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 //
-// Module: Bundler Unit
+// Module:
+// Binary similarity search unit for associative memory
 // Description:
-// Bi-directional bundler unit
-// made per-bit position but with
-// saturating counters
+// This module performs a binary similarity search between an input
+// query hypervector and a stream of class hypervectors, computing the
+// Hamming distance between them and keeping track of the class hypervector
+// with the minimum Hamming distance (i.e., most similar) to the query.
+//
+// Parameters:
+//    HVDimension : dimensionality of the hypervectors (default 512)
+//    DataWidth   : width of the output prediction in bits (default 8)
+// IO ports:
+//    clk_i       : clock input
+//    rst_ni      : active-low reset input
+//    query_hv_i  : input query hypervector (binary vector of length HVDimension)
+//    am_start_i  : signal to start the similarity search (active high)
+//    am_busy_o   : signal indicating the unit is busy performing a search
+//    am_stall_o  : signal to stall the upstream logic (high when busy and start is asserted)
+//    class_hv_i  : input class hypervector stream (binary vector of length HVDimension)
+//    class_hv_valid_i : valid signal for the class hypervector input
+//    class_hv_ready_o : ready signal for the class hypervector input (high when ready to accept)
+//    extend_enable_i : signal to enable dimensional extension (active high)
+//    extend_count_i  : number of extensions to perform (valid when extend_enable_i is high)
+//    am_num_class_i  : number of class hypervectors to compare against (input from CSR)
+//    am_predict_valid_o : signal indicating the output prediction is valid
+//    am_predict_valid_clr_i : signal to clear the valid signal for the output prediction
+//    predict_o     : output prediction (index of the most similar class hypervector)
+//    predict_valid_o : signal indicating the output prediction is valid
+//    predict_ready_i : signal indicating the downstream logic is ready to accept the prediction
 //---------------------------
 
-module assoc_mem #(
+module bin_sim_search #(
   parameter int unsigned HVDimension  = 512,
   parameter int unsigned DataWidth    = 8,
   // Don't touch!
