@@ -79,9 +79,9 @@ async def load_am_hv(dut, am_hv):
 # Returns both assoc mem and query hv
 def gen_am_and_qv(num_classes, hv_dim):
     # First generate the associative memory
-    assoc_mem = []
+    sim_search = []
     for i in range(num_classes):
-        assoc_mem.append(numbin2list(gen_rand_bits(hv_dim), hv_dim))
+        sim_search.append(numbin2list(gen_rand_bits(hv_dim), hv_dim))
 
     # Next select a random class
     random_idx = random.randrange(num_classes)
@@ -93,7 +93,7 @@ def gen_am_and_qv(num_classes, hv_dim):
     # reduces the similarity score
     temp_hv1 = numbin2list(gen_rand_bits(hv_dim), hv_dim)
     temp_hv2 = numbin2list(gen_rand_bits(hv_dim), hv_dim)
-    class_hv = assoc_mem[random_idx]
+    class_hv = sim_search[random_idx]
 
     query_hv = temp_hv1 + temp_hv2 + class_hv
 
@@ -101,7 +101,7 @@ def gen_am_and_qv(num_classes, hv_dim):
     query_hv = binarize_hv(query_hv, 1.5)
 
     # Do an am search with the query_hv
-    predict_idx = prediction_idx(assoc_mem, query_hv, "binary")
+    predict_idx = prediction_idx(sim_search, query_hv, "binary")
 
     # Bring back into an integer itself!
     # Sad workaround is to convert to str
@@ -109,16 +109,16 @@ def gen_am_and_qv(num_classes, hv_dim):
     query_hv = hvlist2num(query_hv)
 
     for i in range(num_classes):
-        assoc_mem[i] = hvlist2num(assoc_mem[i])
+        sim_search[i] = hvlist2num(sim_search[i])
 
-    return predict_idx, query_hv, assoc_mem
+    return predict_idx, query_hv, sim_search
 
 
 # Actual test routines
 
 
 @cocotb.test()
-async def assoc_mem_dut(dut):
+async def bin_sim_search_dut(dut):
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("         Testing Associative Memory         ")
     cocotb.log.info(" ------------------------------------------ ")
@@ -150,7 +150,7 @@ async def assoc_mem_dut(dut):
         clear_inputs_no_clock(dut)
 
         # Generate the golde index answer, the query hv and the assoc mem
-        golden_idx, query_hv, assoc_mem = gen_am_and_qv(
+        golden_idx, query_hv, sim_search = gen_am_and_qv(
             NUM_CLASSES, set_parameters.HV_DIM
         )
 
@@ -200,7 +200,7 @@ async def assoc_mem_dut(dut):
             check_result(csr_predict_valid, 0)
 
             # Load the associative memory
-            await load_am_hv(dut, assoc_mem[i])
+            await load_am_hv(dut, sim_search[i])
 
         # Check if predicted result is the correct HV
         # Wait 1 extra cycle
@@ -257,7 +257,7 @@ async def assoc_mem_dut(dut):
         clear_inputs_no_clock(dut)
 
         # Generate the golden index answer, the query hv and the assoc mem
-        golden_idx, query_hv, assoc_mem = gen_am_and_qv(
+        golden_idx, query_hv, sim_search = gen_am_and_qv(
             NUM_CLASSES, set_parameters.HV_DIM
         )
 
@@ -289,7 +289,7 @@ async def assoc_mem_dut(dut):
             if j > 0:
                 await relaunch_start(dut)
             for k in range(NUM_CLASSES):
-                await load_am_hv(dut, assoc_mem[k])
+                await load_am_hv(dut, sim_search[k])
 
         await clock_and_time(dut.clk_i)
         actual_idx = dut.predict_o.value.integer
@@ -332,16 +332,16 @@ async def assoc_mem_dut(dut):
         }
     ],
 )
-def test_assoc_mem(simulator, parameters, waves):
+def test_bin_sim_search(simulator, parameters, waves):
     verilog_sources = [
         "/rtl/assoc_memory/ham_dist.sv",
         "/rtl/assoc_memory/binary_compare.sv",
-        "/rtl/assoc_memory/assoc_mem.sv",
+        "/rtl/assoc_memory/bin_sim_search.sv",
     ]
 
-    toplevel = "assoc_mem"
+    toplevel = "bin_sim_search"
 
-    module = "test_assoc_mem"
+    module = "test_bin_sim_search"
 
     setup_and_run(
         verilog_sources=verilog_sources,
