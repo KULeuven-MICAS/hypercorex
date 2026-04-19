@@ -3,7 +3,17 @@ Copyright 2024 KU Leuven
 Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
 Description:
-This tests the vectorized bundler unit
+This tests the bin_sim_search unit with the latch-memory request interface.
+The memory is modelled as always-ready with 1-cycle read latency, matching
+the assumption that no write traffic is active during inference.
+
+Interface mapping to latch_memory:
+    class_hv_req_valid_o  -> r_req_valid_i
+    class_hv_req_ready_i  <- r_req_ready_o   (held high: always ready)
+    class_hv_addr_o       -> r_addr_i
+    class_hv_i            <- r_resp_data_o
+    class_hv_valid_i      <- r_resp_valid_o
+    class_hv_read_o       -> r_resp_ready_i
 """
 
 import set_parameters
@@ -19,6 +29,7 @@ from util import (
 
 import cocotb
 from cocotb.clock import Clock
+from cocotb.triggers import RisingEdge
 import sys
 import pytest
 import random
@@ -31,90 +42,99 @@ sys.path.append(hdc_util_path)
 from hdc_util import binarize_hv, prediction_idx  # noqa: E402
 
 
-# Test functions
+# ------------------------------------------------------------------
+# Input helpers
+# ------------------------------------------------------------------
 
 
-# Set inputs to 0
 def clear_inputs_no_clock(dut):
+    """Drive all inputs to their idle/default state (no clock required)."""
     dut.query_hv_i.value = 0
     dut.am_start_i.value = 0
     dut.class_hv_i.value = 0
     dut.class_hv_valid_i.value = 0
+    dut.class_hv_req_ready_i.value = 1  # memory is always ready
     dut.am_num_class_i.value = 0
     dut.am_predict_valid_clr_i.value = 0
-    dut.extend_enable_i.value = 0
-    dut.extend_count_i.value = 0
-    return
+    dut.predict_ready_i.value = 1
 
 
-# Loading of query hv
 async def load_query_hv(dut, query_hv):
+    """Present the query HV and pulse am_start_i for one cycle."""
     dut.query_hv_i.value = query_hv
     dut.am_start_i.value = 1
     await clock_and_time(dut.clk_i)
+    # After this edge: busy_reg=1, req_counter=0, addr=0, req_valid=1
     dut.am_start_i.value = 0
-    return
 
 
-# Relaunch start
-async def relaunch_start(dut):
-    dut.am_start_i.value = 1
-    await clock_and_time(dut.clk_i)
-    dut.am_start_i.value = 0
-    return
+# ------------------------------------------------------------------
+# Data generator
+# ------------------------------------------------------------------
 
 
-async def load_am_hv(dut, am_hv):
-    dut.class_hv_i.value = am_hv
-    dut.class_hv_valid_i.value = 1
-    await clock_and_time(dut.clk_i)
-    dut.class_hv_i.value = 0
-    dut.class_hv_valid_i.value = 0
-    return
-
-
-# Generate sample associative memory
-# with one of the classes having the
-# closest similarity
-# Returns both assoc mem and query hv
 def gen_am_and_qv(num_classes, hv_dim):
-    # First generate the associative memory
-    sim_search = []
-    for i in range(num_classes):
-        sim_search.append(numbin2list(gen_rand_bits(hv_dim), hv_dim))
+    """
+    Generate a random associative memory and a noisy query that maps to
+    one of the classes.  Returns (golden_idx, query_hv_int, sim_search_ints).
+    """
+    sim_search = [
+        numbin2list(gen_rand_bits(hv_dim), hv_dim) for _ in range(num_classes)
+    ]
 
-    # Next select a random class
     random_idx = random.randrange(num_classes)
 
-    # Flip random bits in the selected random index
-    # We do this with the bind function by
-    # bundling 2 other HVs to the selected class
-    # then after bundling the noise added by the 2
-    # reduces the similarity score
+    # Build a noisy query by bundling the target class with 2 random HVs
     temp_hv1 = numbin2list(gen_rand_bits(hv_dim), hv_dim)
     temp_hv2 = numbin2list(gen_rand_bits(hv_dim), hv_dim)
-    class_hv = sim_search[random_idx]
+    query_hv = binarize_hv(temp_hv1 + temp_hv2 + sim_search[random_idx], 1.5)
 
-    query_hv = temp_hv1 + temp_hv2 + class_hv
+    golden_idx = prediction_idx(sim_search, query_hv, "binary")
 
-    # Threshold is 1.5 = 3/2
-    query_hv = binarize_hv(query_hv, 1.5)
+    # Convert to integers for DUT driving
+    query_hv_int = hvlist2num(query_hv)
+    sim_search_int = [hvlist2num(sim_search[i]) for i in range(num_classes)]
 
-    # Do an am search with the query_hv
-    predict_idx = prediction_idx(sim_search, query_hv, "binary")
-
-    # Bring back into an integer itself!
-    # Sad workaround is to convert to str
-    # The convert to integer
-    query_hv = hvlist2num(query_hv)
-
-    for i in range(num_classes):
-        sim_search[i] = hvlist2num(sim_search[i])
-
-    return predict_idx, query_hv, sim_search
+    return golden_idx, query_hv_int, sim_search_int
 
 
-# Actual test routines
+# ------------------------------------------------------------------
+# Latch memory model
+#
+# Timing contract (matches latch_memory.sv when no writes are active):
+#   - class_hv_req_ready_i is held permanently high
+#   - A request accepted at rising edge N produces a response
+#     (class_hv_i / class_hv_valid_i) at rising edge N+1
+#
+# Run this as a background cocotb task; call .kill() after each test run.
+# ------------------------------------------------------------------
+
+
+async def latch_memory_model(dut, sim_search):
+    dut.class_hv_req_ready_i.value = 1
+    pending_valid = 0
+    pending_data = 0
+
+    while True:
+        await RisingEdge(dut.clk_i)
+
+        # 1. Drive the response prepared in the previous cycle
+        dut.class_hv_valid_i.value = pending_valid
+        dut.class_hv_i.value = pending_data
+
+        # 2. Sample the current outgoing request; prepare next response
+        if dut.class_hv_req_valid_o.value.integer:
+            addr = dut.class_hv_addr_o.value.integer
+            pending_valid = 1
+            pending_data = sim_search[addr]
+        else:
+            pending_valid = 0
+            pending_data = 0
+
+
+# ------------------------------------------------------------------
+# Main test
+# ------------------------------------------------------------------
 
 
 @cocotb.test()
@@ -123,206 +143,111 @@ async def bin_sim_search_dut(dut):
     cocotb.log.info("         Testing Associative Memory         ")
     cocotb.log.info(" ------------------------------------------ ")
 
-    # Initialize input values
+    # ---- Initialise ----
     clear_inputs_no_clock(dut)
     dut.rst_ni.value = 0
 
-    # Initialize clock always
     clock = Clock(dut.clk_i, 10, units="ns")
     cocotb.start_soon(clock.start(start_high=False))
 
-    # Wait one cycle for reset
     await clock_and_time(dut.clk_i)
-
     dut.rst_ni.value = 1
 
     cocotb.log.info(" ------------------------------------------ ")
     cocotb.log.info("      AM Check for Single Predictions       ")
     cocotb.log.info(" ------------------------------------------ ")
 
-    for i in range(set_parameters.TEST_RUNS):
-        # Set random number of classes more than 10
+    for run in range(set_parameters.TEST_RUNS):
         NUM_CLASSES = random.randint(10, 32)
+        cocotb.log.info(f"Run {run}: comparing {NUM_CLASSES} classes")
 
-        cocotb.log.info(f"Comparing {NUM_CLASSES} classes")
-
-        # Clear every new test run
         clear_inputs_no_clock(dut)
 
-        # Generate the golde index answer, the query hv and the assoc mem
         golden_idx, query_hv, sim_search = gen_am_and_qv(
             NUM_CLASSES, set_parameters.HV_DIM
         )
 
-        # Set this as a CSR controlled value
         dut.am_num_class_i.value = NUM_CLASSES
-
-        # Assume prediction port is always ready
         dut.predict_ready_i.value = 1
 
-        # Start of data loop
+        # ---- Pre-start: unit must be idle ----
+        check_result(dut.am_busy_o.value.integer, 0)
+        check_result(dut.class_hv_req_valid_o.value.integer, 0)
+        check_result(dut.predict_valid_o.value.integer, 0)
+        check_result(dut.am_predict_valid_o.value.integer, 0)
+
+        # ---- Start background memory model ----
+        mem_task = cocotb.start_soon(latch_memory_model(dut, sim_search))
+
+        # ---- Trigger the search ----
         await load_query_hv(dut, query_hv)
 
-        # Randomly between the number of classes checked
-        # Set the index where the stall will be asserted
-        random_stall = random.randint(0, NUM_CLASSES - 1)
+        # ---- Post-start: verify request channel is live ----
+        # After load_query_hv: busy=1, req_counter=0 (just reset), req_valid=1
+        check_result(dut.am_busy_o.value.integer, 1)
+        check_result(dut.class_hv_req_valid_o.value.integer, 1)
+        check_result(dut.class_hv_addr_o.value.integer, 0)  # first address is 0
+        check_result(
+            dut.class_hv_read_o.value.integer, 1
+        )  # ready for responses (= busy)
+        check_result(dut.predict_valid_o.value.integer, 0)
+        check_result(dut.am_predict_valid_o.value.integer, 0)
 
-        # Feed associative memory data
-        # And allow the similarity search to progress
-        for i in range(NUM_CLASSES):
-            # Check if stall does assert
-            if i == random_stall:
-                dut.am_start_i.value = 1
+        # ---- Stall check: assert am_start_i mid-search ----
+        # Wait up to NUM_CLASSES//2 cycles so we are well inside the search
+        # window (search finishes at approximately NUM_CLASSES+2 cycles).
+        stall_wait = random.randint(1, max(1, NUM_CLASSES // 2))
+        for _ in range(stall_wait):
+            await clock_and_time(dut.clk_i)
 
-                # Allow time to propagate
-                await clock_and_time(dut.clk_i)
-
-                # Check if stall signal is high
-                am_stall = dut.am_stall_o.value.integer
-                check_result(am_stall, 1)
-
-                # Clear the stall signal
-                dut.am_start_i.value = 0
-
-                # Allow time to propagate
-                await clock_and_time(dut.clk_i)
-
-                # Check if stall signal is low
-                am_stall = dut.am_stall_o.value.integer
-                check_result(am_stall, 0)
-
-            # Check if predict valid is low
-            predict_valid = dut.predict_valid_o.value.integer
-            check_result(predict_valid, 0)
-
-            # Check if CSR predict valid is low
-            csr_predict_valid = dut.am_predict_valid_o.value.integer
-            check_result(csr_predict_valid, 0)
-
-            # Load the associative memory
-            await load_am_hv(dut, sim_search[i])
-
-        # Check if predicted result is the correct HV
-        # Wait 1 extra cycle
+        # am_start_i while busy must assert am_stall_o
+        dut.am_start_i.value = 1
         await clock_and_time(dut.clk_i)
-        actual_idx = dut.predict_o.value.integer
-        check_result(actual_idx, golden_idx)
+        check_result(dut.am_stall_o.value.integer, 1)
 
-        # Check if predict valid is high
-        predict_valid = dut.predict_valid_o.value.integer
-        check_result(predict_valid, 1)
+        # Deasserting am_start_i must clear the stall
+        dut.am_start_i.value = 0
+        await clock_and_time(dut.clk_i)
+        check_result(dut.am_stall_o.value.integer, 0)
 
-        # Check if CSR predict valid is high
-        csr_predict_valid = dut.am_predict_valid_o.value.integer
-        check_result(csr_predict_valid, 1)
+        # ---- Wait for the search to finish ----
+        # busy goes low when the last response handshake fires
+        while dut.am_busy_o.value.integer == 1:
+            await clock_and_time(dut.clk_i)
 
-        # Assert clear to see if the csr valid signal is brought down
+        # One extra cycle for last_compare_reg_save to pulse and
+        # latch min_arg_idx / assert predict_valid
+        await clock_and_time(dut.clk_i)
+
+        # ---- Post-search checks ----
+        check_result(dut.predict_o.value.integer, golden_idx)
+        check_result(dut.predict_valid_o.value.integer, 1)
+        check_result(dut.am_predict_valid_o.value.integer, 1)
+        # All NUM_CLASSES requests were issued; req_valid must now be deasserted
+        check_result(dut.class_hv_req_valid_o.value.integer, 0)
+        # Not busy anymore, so response-ready is also low
+        check_result(dut.class_hv_read_o.value.integer, 0)
+
+        # ---- Clear valid and verify both valid outputs drop ----
         dut.am_predict_valid_clr_i.value = 1
-
-        # Time proagation
         await clock_and_time(dut.clk_i)
 
-        # Check if predict valid is brought down
-        predict_valid = dut.predict_valid_o.value.integer
-        check_result(predict_valid, 0)
+        check_result(dut.predict_valid_o.value.integer, 0)
+        check_result(dut.am_predict_valid_o.value.integer, 0)
 
-        # Check if CSR predict valid is high
-        csr_predict_valid = dut.am_predict_valid_o.value.integer
-        check_result(csr_predict_valid, 0)
+        # Stop the memory model before the next iteration
+        mem_task.kill()
 
-    # For trailing sims
-    for i in range(10):
-        await clock_and_time(dut.clk_i)
-
-    cocotb.log.info(" ------------------------------------------ ")
-    cocotb.log.info("     AM Check for Extended Predictions      ")
-    cocotb.log.info(" ------------------------------------------ ")
-
-    clear_inputs_no_clock(dut)
-    dut.rst_ni.value = 0
-
-    await clock_and_time(dut.clk_i)
-    dut.rst_ni.value = 1
-    await clock_and_time(dut.clk_i)
-
-    for i in range(1):
-        # Set random number of classes more than 10
-        NUM_CLASSES = random.randint(10, 32)
-        EXTEND_COUNT = random.randint(2, 16)
-
-        cocotb.log.info(f"Comparing {NUM_CLASSES} classes")
-        cocotb.log.info(f"Extending {EXTEND_COUNT} iterations")
-
-        # Clear every new test run
-        clear_inputs_no_clock(dut)
-
-        # Generate the golden index answer, the query hv and the assoc mem
-        golden_idx, query_hv, sim_search = gen_am_and_qv(
-            NUM_CLASSES, set_parameters.HV_DIM
-        )
-
-        # Set this as a CSR controlled value
-        dut.am_num_class_i.value = NUM_CLASSES
-
-        # Extended count
-        dut.extend_enable_i.value = 1
-        dut.extend_count_i.value = EXTEND_COUNT
-
-        # Assume prediction port is always ready
-        dut.predict_ready_i.value = 1
-
-        # Start of data loop
-        await load_query_hv(dut, query_hv)
-
-        # Initial check of values first
-        predict_valid = dut.predict_valid_o.value.integer
-        check_result(predict_valid, 0)
-
-        # Check if CSR predict valid is low
-        csr_predict_valid = dut.am_predict_valid_o.value.integer
-        check_result(csr_predict_valid, 0)
-
-        # Load the associative memory
-        # But do it in EXTEND_COUNT batches
-        for j in range(EXTEND_COUNT):
-            # AM starts after relaunching the am_start_i again
-            if j > 0:
-                await relaunch_start(dut)
-            for k in range(NUM_CLASSES):
-                await load_am_hv(dut, sim_search[k])
-
-        await clock_and_time(dut.clk_i)
-        actual_idx = dut.predict_o.value.integer
-        check_result(actual_idx, golden_idx)
-
-        # Check if predict valid is high
-        predict_valid = dut.predict_valid_o.value.integer
-        check_result(predict_valid, 1)
-
-        # Check if CSR predict valid is high
-        csr_predict_valid = dut.am_predict_valid_o.value.integer
-        check_result(csr_predict_valid, 1)
-
-        # Assert clear to see if the csr valid signal is brought down
-        dut.am_predict_valid_clr_i.value = 1
-
-        # Time proagation
-        await clock_and_time(dut.clk_i)
-
-        # Check if predict valid is brought down
-        predict_valid = dut.predict_valid_o.value.integer
-        check_result(predict_valid, 0)
-
-        # Check if CSR predict valid is high
-        csr_predict_valid = dut.am_predict_valid_o.value.integer
-        check_result(csr_predict_valid, 0)
-
-    # For trailing sims
-    for i in range(10):
+    # Trailing idle cycles
+    for _ in range(10):
         await clock_and_time(dut.clk_i)
 
 
+# ------------------------------------------------------------------
 # Config and run
+# ------------------------------------------------------------------
+
+
 @pytest.mark.parametrize(
     "parameters",
     [
@@ -340,7 +265,6 @@ def test_bin_sim_search(simulator, parameters, waves):
     ]
 
     toplevel = "bin_sim_search"
-
     module = "test_bin_sim_search"
 
     setup_and_run(
