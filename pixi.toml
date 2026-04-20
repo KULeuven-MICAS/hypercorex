@@ -121,7 +121,8 @@ rtl-encoder-check = """
 
 rtl-assocmem-check = """
     pytest -n $(nproc) --dist=loadfile \
-    tests/test_bin_sim_search.py
+    tests/test_bin_sim_search.py \
+    tests/test_assoc_mem_top.py
     """
 # ── App Test Tasks─────────────────────────────────────────────────────────────
 app-test-vsax-digit-recog = "python app/vsax_digit_recog.py --load --dtqdm"
