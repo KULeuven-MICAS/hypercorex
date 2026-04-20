@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 # Global parameters
-HV_SIZE = 1024
+HV_SIZE = 512
 CLASS_LIST = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 GEN_TYPE = "lfsr"
 
