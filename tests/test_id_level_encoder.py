@@ -73,7 +73,7 @@ async def load_inputs(dut):
         # Get XOR of them as expected output
         xor_hv = vsax.hv_bind(id_hv, level_hv)
         # Convert back to bipolar
-        bundled_hv += xor_hv * 2 - 1
+        bundled_hv += (-2 * xor_hv) + 1
     dut.valid_i.value = (1 << NUM_INPUTS) - 1
     await clock_and_time(dut.clk_i)
     dut.valid_i.value = 0
