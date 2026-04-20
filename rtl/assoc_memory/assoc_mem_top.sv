@@ -83,7 +83,7 @@ module assoc_mem_top #(
   // (drive into the MUX)
   //---------------------------
   logic                   class_hv_req_valid;
-  logic [  AddrWidth-1:0] class_hv_addr;
+  logic [  DataWidth-1:0] class_hv_addr;
   logic                   class_hv_resp_ready;
 
   //---------------------------

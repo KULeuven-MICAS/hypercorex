@@ -61,7 +61,7 @@ module multi_in_bundler_unit #(
   // Muxing for selecting appropriate increment/decrement value
   always_comb begin
     for (int i = 0; i < NumInputs; i++) begin
-      bit_increment[i] = bit_i[i] ? 1 : -1;
+      bit_increment[i] = bit_i[i] ? -1 : +1;
     end
 
     for (int i = 0; i < NumInputs; i++) begin
