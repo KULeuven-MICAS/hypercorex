@@ -118,6 +118,11 @@ rtl-encoder-check = """
     tests/test_multi_in_bundler_set.py \
     tests/test_id_level_encoder.py 
     """
+
+rtl-assocmem-check = """
+    pytest -n $(nproc) --dist=loadfile \
+    tests/test_bin_sim_search.py
+    """
 # ── App Test Tasks─────────────────────────────────────────────────────────────
 app-test-vsax-digit-recog = "python app/vsax_digit_recog.py --load --dtqdm"
 app-test-vsax-bin-digit-recog = "python app/vsax_bin_digit_recog.py --load --dtqdm"

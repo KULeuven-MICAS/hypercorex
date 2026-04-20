@@ -107,6 +107,25 @@ jobs:
         if: needs.changes.outputs.rtl == 'true'
         run: pixi run rtl-encoder-check
 
+  rtl-assocmem-check:
+    needs: changes
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up pixi
+        uses: prefix-dev/setup-pixi@v0.8.1
+
+      - name: Skip notice
+        if: needs.changes.outputs.rtl == 'false'
+        run: echo "No changes in rtl, skipping."
+
+      - name: Run RTL Associative Memory check
+        if: needs.changes.outputs.rtl == 'true'
+        run: pixi run rtl-assocmem-check
+
   app-test:
     needs: changes
     runs-on: ubuntu-latest
