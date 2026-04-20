@@ -144,30 +144,6 @@ jobs:
       - name: Run tests in parallel
         if: needs.changes.outputs.app == 'true'
         run: |
-          TASKS=(
-            app-test-vsax-digit-recog
-            app-test-vsax-bin-digit-recog
-            app-test-vsax-bin-idlvl-digit-recog
-          )
-          PIDS=()
-          mkdir -p logs
-
-          for TASK in "${TASKS[@]}"; do
-            pixi run $TASK > logs/$TASK.log 2>&1 &
-            PIDS+=($!)
-          done
-
-          FAILED=0
-          for PID in "${PIDS[@]}"; do
-            wait $PID || FAILED=1
-          done
-
-          if [ "$FAILED" = "1" ]; then exit 1; fi
-
-      - name: Print logs
-        if: always() && needs.changes.outputs.app == 'true'
-        run: |
-          for LOG in logs/*.log; do
-            echo "=== $LOG ==="
-            cat "$LOG"
-          done
+          pixi run app-test-vsax-digit-recog &&
+          pixi run app-test-vsax-bin-digit-recog &&
+          pixi run app-test-vsax-bin-idlvl-digit-recog &&
