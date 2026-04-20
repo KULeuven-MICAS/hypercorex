@@ -6,12 +6,56 @@
 // Description:
 // Top-level wrapper for the ID-level encoder and the query hypervector register.
 //
+// Parameters:
+// - HVDimension:        Dimensionality of the hypervectors used in the system
+// - CsrRegWidth:        Bit width of the control and status registers (e.g. for number of classes in the AM)
+// - SeedIm:            Seed for the item memory LFSR (linear feedback shift register)
+// - ParallelInputsIm:   Number of parallel input ports to the item memory (must be even, as half are for ID and half for level)
+// - NumTotIm:           Total number of hypervectors stored in the item memory
+// - ParallelInputsEnc:  Number of parallel input ports to the encoder (must be half of ParallelInputsIm, as the encoder takes both ID and level hypervectors)
+// - CounterWidthEnc:    Bit width of the internal counter in the encoder (and thus the output of the encoder)
+//
+// Inputs and Outputs:
+// Clocks and reset:
+// - clk_i:             Clock input for the entire system
+// - rst_ni:            Active-low reset for the entire system
+// Item memory ports:
+// - im_rd_i:           Array of input addresses to read from the item memory (ParallelInputsIm elements, each of ImSelWidth bits)
+// Encoder ports:
+// - enc_valid_i:       Array of valid signals for the encoder inputs (ParallelInputsEnc elements)
+// - enc_clr_i:         Synchronous clear signal for the encoder (resets the encoder's internal state on the next clock edge)
+// Query hypervector register ports:
+// - qhv_wen_i:         Write enable for the query hypervector register (when high, the output of the encoder is latched into the QHV register on the next clock edge)
+// - qhv_clr_i:         Synchronous clear for the query hypervector register (resets the QHV register on the next clock edge)
+// - qhv_am_load_i:     Signal to load the QHV into the associative memory for searching (used to indicate that the QHV is ready for a search)
+// Associative memory ports:
+// Write side (latch_memory):
+// - w_valid_i:         Valid signal for writing to the associative memory (latch_memory)
+// - w_ready_o:         Ready signal from the associative memory indicating it can accept a write (latch_memory)
+// - w_en_i:            Write enable for the associative memory (latch_memory)
+// - w_addr_i:          Address for writing to the associative memory (latch_memory)
+// - w_data_i:          Data for writing to the associative memory (latch_memory, should be HVDimension bits wide)
+// External read port:
+// - external_read_sel_i: Select signal for the external read port of the associative memory (when high, the external read port is active instead of the search port)
+// - ext_r_req_valid_i: Valid signal for the external read request to the associative memory
+// - ext_r_req_ready_o: Ready signal from the associative memory indicating it can accept an external read request
+// - ext_r_addr_i:      Address for the external read request to the associative memory
+// - ext_r_resp_valid_o: Valid signal from the associative memory indicating that the external read response is valid
+// - ext_r_resp_ready_i: Ready signal from the external reader indicating it can accept the external read response
+// - ext_r_resp_data_o: Data from the associative memory in response to the external read request (should be HVDimension bits wide)
+// Search control (bin_sim_search):
+// - am_start_i:         Signal to start a search in the associative memory (bin_sim_search)
+// - am_num_class_i:     Number of classes to consider in the associative memory search (bin_sim_search)
+// - predict_o:          Output of the associative memory search, indicating the predicted class
+// - predict_valid_o:    Valid signal indicating that the prediction output is valid
+// - predict_ready_i:    Ready signal from the consumer of the prediction indicating it can accept
 //---------------------------
 
 
 module vsax_id_level_top #(
   // General parameters
   parameter int unsigned HVDimension        = 512,
+  parameter int unsigned CsrRegWidth        = 8,
   // Item memory specific
   parameter int unsigned SeedIm             = 32'hDEAD_BEEF,
   parameter int unsigned ParallelInputsIm   = 2,
@@ -21,11 +65,9 @@ module vsax_id_level_top #(
   parameter int unsigned CounterWidthEnc    = 8,
   // Assoc memory specific
   parameter int unsigned NumClassAm         = 32,
-  parameter int unsigned DataWidthAm        = 8,
   // Don't touch!
   parameter int unsigned ImSelWidth         = $clog2(NumTotIm),
   parameter int unsigned AddrWidthAm        = $clog2(NumClassAm)
-
 )(
   // Clocks and reset
   input  logic                          clk_i,
@@ -56,8 +98,8 @@ module vsax_id_level_top #(
   output logic [HVDimension-1:0]        ext_r_resp_data_o,
   // Search control (bin_sim_search)
   input  logic                          am_start_i,
-  input  logic [       AddrWidthAm-1:0] am_num_class_i,
-  output logic [       DataWidthAm-1:0] predict_o,
+  input  logic [       CsrRegWidth-1:0] am_num_class_i,
+  output logic [       CsrRegWidth-1:0] predict_o,
   output logic                          predict_valid_o,
   input  logic                          predict_ready_i
 );
@@ -147,7 +189,7 @@ module vsax_id_level_top #(
   assoc_mem_top #(
     .HVDimension            ( HVDimension            ),
     .NumClass               ( NumClassAm             ),
-    .DataWidth              ( DataWidthAm            ),
+    .DataWidth              ( CsrRegWidth            )
   ) i_assoc_mem_top (
     // Clocks and reset
     .clk_i                  ( clk_i                  ),
