@@ -44,22 +44,24 @@ def print_counter_output(dut):
 
 # Incrementing input
 async def increment_inputs(dut):
-    input_increment = [1] * NUM_INPUTS
+    input_increment = [0] * NUM_INPUTS
     data_in = int("".join(str(b) for b in input_increment), 2)
-    dut.valid_i.value = data_in
     dut.bit_i.value = data_in
+    valid_in = [1] * NUM_INPUTS
+    valid_in = int("".join(str(b) for b in valid_in), 2)
+    dut.valid_i.value = valid_in
     await clock_and_time(dut.clk_i)
     return
 
 
 # Decrementing input
 async def decrement_inputs(dut):
-    input_decrement = [0] * NUM_INPUTS
-    data_in = int("".join(str(b) for b in input_decrement), 2)
-    dut.bit_i.value = data_in
     input_decrement = [1] * NUM_INPUTS
     data_in = int("".join(str(b) for b in input_decrement), 2)
-    dut.valid_i.value = data_in
+    dut.bit_i.value = data_in
+    valid_in = [1] * NUM_INPUTS
+    valid_in = int("".join(str(b) for b in valid_in), 2)
+    dut.valid_i.value = valid_in
     await clock_and_time(dut.clk_i)
     return
 
@@ -82,9 +84,9 @@ async def randomize_inputs(dut):
     for i in range(NUM_INPUTS):
         if valid_set[i] == 1:
             if bit_set[i] == 1:
-                total_value += 1
-            else:
                 total_value -= 1
+            else:
+                total_value += 1
     await clock_and_time(dut.clk_i)
     return total_value
 
