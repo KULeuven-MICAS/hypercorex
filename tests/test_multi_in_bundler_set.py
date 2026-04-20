@@ -58,10 +58,9 @@ async def increment_all(dut):
     Drive all HV inputs to all-ones with all-valid —
     increments every counter by NumInputs.
     """
-    all_ones = (1 << HV_DIMENSION) - 1
     all_valid = (1 << NUM_INPUTS) - 1
     for i in range(NUM_INPUTS):
-        dut.hv_i[i].value = all_ones
+        dut.hv_i[i].value = 0
     dut.valid_i.value = all_valid
     await clock_and_time(dut.clk_i)
 
@@ -69,9 +68,10 @@ async def increment_all(dut):
 async def decrement_all(dut):
     """Drive all HV inputs to all-zeros with all-valid —
     decrements every counter by NumInputs."""
+    all_ones = (1 << HV_DIMENSION) - 1
     all_valid = (1 << NUM_INPUTS) - 1
     for i in range(NUM_INPUTS):
-        dut.hv_i[i].value = 0
+        dut.hv_i[i].value = all_ones
     dut.valid_i.value = all_valid
     await clock_and_time(dut.clk_i)
 
@@ -91,7 +91,7 @@ async def randomize_inputs(dut):
         for i in range(NUM_INPUTS):
             if (valid_val >> i) & 1:
                 bit = (hv_vals[i] >> j) & 1
-                deltas[j] += 1 if bit else -1
+                deltas[j] += -1 if bit else 1
 
     await clock_and_time(dut.clk_i)
     return deltas
