@@ -147,6 +147,7 @@ jobs:
           TASKS=(
             app-test-vsax-digit-recog
             app-test-vsax-bin-digit-recog
+            app-test-vsax-bin-idlvl-digit-recog
           )
           PIDS=()
           mkdir -p logs
