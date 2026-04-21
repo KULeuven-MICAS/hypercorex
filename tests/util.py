@@ -88,6 +88,8 @@ def setup_and_run(
             "-Wno-PINMISSING",
             "--no-timing",
             "--trace-structs",
+            "--build-jobs",
+            "$(nproc)",
             "--unroll-count",
             "1024",
         ]
