@@ -128,6 +128,7 @@ rtl-assocmem-check = """
 app-test-vsax-digit-recog = "python app/vsax_digit_recog.py --load --dtqdm"
 app-test-vsax-bin-digit-recog = "python app/vsax_bin_digit_recog.py --load --dtqdm"
 app-test-vsax-bin-idlvl-digit-recog = "python app/vsax_bin_idlvl_digit_recog.py --load --dtqdm"
+app-test-vsax-bin-dna-recog = "python app/vsax_bin_dna_recog.py --load --dtqdm"
 
 # ── Docs Tasks ────────────────────────────────────────────────────────────────
 [feature.docs.tasks]
