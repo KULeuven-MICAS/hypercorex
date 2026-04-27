@@ -21,11 +21,12 @@ from pathlib import Path
 # ---------------------------------------------------------------------------
 vsax_data_url_mnist = "https://github.com/rgantonio/chronomatica/releases/download/mnist_dataset_v1.0/chronomatica_mnist_uint.tar.gz"
 vsax_data_url_bin_mnist = "https://github.com/rgantonio/chronomatica/releases/download/mnist_dataset_v1.0/chronomatica_mnist_bin.tar.gz"
+vsax_data_url_bin_dna = "https://github.com/rgantonio/chronomatica/releases/download/dna_dataset_v1.0/chronomatica_dna.tar.gz"
 
 # ---------------------------------------------------------------------------
 # Main pre-trained model url
 # ---------------------------------------------------------------------------
-ver_trained_models = "v0.1.1"
+ver_trained_models = "v0.1.2"
 git_trained_models_url = f"https://github.com/KULeuven-MICAS/hypercorex/releases/download/vsax_trained_models_{ver_trained_models}"
 
 # ---------------------------------------------------------------------------
