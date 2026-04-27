@@ -147,3 +147,4 @@ jobs:
           pixi run app-test-vsax-digit-recog
           pixi run app-test-vsax-bin-digit-recog
           pixi run app-test-vsax-bin-idlvl-digit-recog
+          pixi run app-test-vsax-bin-dna-recog
