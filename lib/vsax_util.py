@@ -22,6 +22,7 @@ from pathlib import Path
 vsax_data_url_mnist = "https://github.com/rgantonio/chronomatica/releases/download/mnist_dataset_v1.0/chronomatica_mnist_uint.tar.gz"
 vsax_data_url_bin_mnist = "https://github.com/rgantonio/chronomatica/releases/download/mnist_dataset_v1.0/chronomatica_mnist_bin.tar.gz"
 vsax_data_url_bin_dna = "https://github.com/rgantonio/chronomatica/releases/download/dna_dataset_v1.0/chronomatica_dna.tar.gz"
+vsax_data_url_bin_isolet = "https://github.com/rgantonio/chronomatica/releases/download/isolet_dataset_v1.0/chronomatica_isolet.tar.gz"
 
 # ---------------------------------------------------------------------------
 # Main pre-trained model url
@@ -258,3 +259,25 @@ def split_train_valid_test_set(
         disable_tqdm=disable_tqdm,
     )
     return X_train_set, X_valid_set, X_test_set
+
+
+# ---------------------------------------------------------------------------
+# Other utility functions
+# ---------------------------------------------------------------------------
+
+
+def convert_levels(dataset: np.ndarray, dst_levels: int) -> np.ndarray:
+    """
+    Quantize a uint8 array (0–255) to a specified number of levels (0 to dst_levels-1).
+
+    Args:
+        dataset (np.ndarray): Input array with uint8 values in range [0, 255].
+        dst_levels (int): Number of output
+                            quantization levels (e.g. 22 gives range 0–21).
+    Returns:
+        np.ndarray: Quantized array with values in range [0, dst_levels - 1].
+    """
+    for i in range(len(dataset)):
+        dataset[i] = np.round(dataset[i] / 255.0 * (dst_levels - 1)).astype(int)
+
+    return dataset
