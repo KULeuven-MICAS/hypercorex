@@ -7,6 +7,8 @@ for the ISOLET recognition task.
 
 # Parameters
 import sys
+import os
+from pathlib import Path
 
 # Global parameters
 HV_SIZE = 512
@@ -15,10 +17,8 @@ GEN_TYPE = "lfsr"
 NUM_CIM = 21
 
 # Path directories
-# curr_dir = os.path.dirname(os.path.abspath(__file__))
-curr_dir = "/users/micas/rantonio/no_backup/kul_main/hypercorex/app"
-# model_name = Path(__file__).stem
-model_name = "vsax_bin_isolet_recog"
+curr_dir = os.path.dirname(os.path.abspath(__file__))
+model_name = Path(__file__).stem
 lib_path = curr_dir + "/../lib"
 data_path = curr_dir + "/../data"
 dataset_path = data_path + "/isolet"
