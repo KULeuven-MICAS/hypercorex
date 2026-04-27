@@ -11,8 +11,8 @@ import sys
 from pathlib import Path
 
 # Global parameters
-HV_SIZE = 2048
-CLASS_LIST = [0, 1, 2]
+HV_SIZE = 512
+CLASS_LIST = list(range(3))
 GEN_TYPE = "lfsr"
 
 # Path directories
@@ -98,6 +98,9 @@ dna_model = dnaVSA(
     gen_type=GEN_TYPE,
 )
 
+# Binarize AM
+dna_model.binarize_am = True
+
 # Disabling TQDM debug progress bars
 dna_model.tqdm_train_disable = disable_tqdm
 dna_model.tqdm_retrain_disable = disable_tqdm
@@ -120,7 +123,7 @@ dna_model.test_model(X_test_set)
 dna_model.print_model_stats()
 
 # Checker if accuracy is expected
-assert dna_model.model_accuracy > 0.8, "Test accuracy is lower than expected."
+assert dna_model.model_accuracy > 0.75, "Test accuracy is lower than expected."
 print("✓ Test accuracy passed.")
 
 # Save model
