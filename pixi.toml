@@ -94,8 +94,7 @@ smoke-test = """
     """
 
 lib-check = """
-    python lib/vsax.py 
-    && python lib/vsax_models.py
+    python lib/vsax.py && python lib/vsax_models.py
     """
 
 rtl-im-check = """
