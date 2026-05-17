@@ -23,11 +23,12 @@ vsax_data_url_mnist = "https://github.com/rgantonio/chronomatica/releases/downlo
 vsax_data_url_bin_mnist = "https://github.com/rgantonio/chronomatica/releases/download/mnist_dataset_v1.0/chronomatica_mnist_bin.tar.gz"
 vsax_data_url_bin_dna = "https://github.com/rgantonio/chronomatica/releases/download/dna_dataset_v1.0/chronomatica_dna.tar.gz"
 vsax_data_url_bin_isolet = "https://github.com/rgantonio/chronomatica/releases/download/isolet_dataset_v1.0/chronomatica_isolet.tar.gz"
+vsax_data_url_bin_lang = "https://github.com/rgantonio/chronomatica/releases/download/lang_dataset_v1.0/chronomatica_lang_uint.tar.gz"
 
 # ---------------------------------------------------------------------------
 # Main pre-trained model url
 # ---------------------------------------------------------------------------
-ver_trained_models = "v0.1.2"
+ver_trained_models = "v0.1.3"
 git_trained_models_url = f"https://github.com/KULeuven-MICAS/hypercorex/releases/download/vsax_trained_models_{ver_trained_models}"
 
 # ---------------------------------------------------------------------------
@@ -137,12 +138,15 @@ def download_and_extract(
 
 
 # For reading and loading a data
-def load_dataset(file_path: str) -> np.ndarray:
+def load_dataset(
+    file_path: str, convert_int: bool = True, disable_split: bool = False
+) -> np.ndarray:
     """
     Load dataset from a text file.
 
     Args:
         file_path (str): Path to the text file
+        convert_int (bool): Whether to convert data to integers
     Returns:
         dataset (np.ndarray): Loaded dataset as a NumPy array
     """
@@ -150,22 +154,43 @@ def load_dataset(file_path: str) -> np.ndarray:
     dataset = []
     with open(file_path, "r") as rf:
         for line in rf:
-            line = line.strip().split()
-            int_line = [int(x) for x in line]
-            dataset.append(int_line)
+            if not disable_split:
+                line = line.strip().split()
+            else:
+                line = line.strip()
+
+            if convert_int:
+                int_line = [int(x) for x in line]
+                dataset.append(int_line)
+            else:
+                dataset.append(line)
     # Close the file
     rf.close()
-    return np.array(dataset, dtype=np.uint8)
+
+    # Return proper array
+    if convert_int:
+        return np.array(dataset)
+    else:
+        return dataset
 
 
 # Reading of data from files for each class label
-def read_data(class_list: list, data_path: str, disable_tqdm: bool = False) -> list:
+def read_data(
+    class_list: list,
+    data_path: str,
+    convert_int: bool = True,
+    disable_split: bool = False,
+    disable_tqdm: bool = False,
+) -> list:
     """
     Read data from files for each class label.
 
     Args:
         class_list: list of class labels
         data_path: path to the data files
+        convert_int: whether to convert data to integers
+        disable_split: whether to disable splitting of
+                       lines into lists (e.g. for language data)
         disable_tqdm: whether to disable tqdm progress bars
     Returns:
         X_data: list of NumPy arrays with data for each class label
@@ -174,7 +199,11 @@ def read_data(class_list: list, data_path: str, disable_tqdm: bool = False) -> l
     for class_label in tqdm(class_list, desc="Reading data", disable=disable_tqdm):
         # Training dataset
         read_file = f"{data_path}/{class_label}.txt"
-        X_data.append(load_dataset(read_file))
+        X_data.append(
+            load_dataset(
+                read_file, convert_int=convert_int, disable_split=disable_split
+            )
+        )
     return X_data
 
 
