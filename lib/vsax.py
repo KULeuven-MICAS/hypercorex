@@ -192,6 +192,44 @@ def hv_gen_lfsr(
     return bits
 
 
+# For generating CA90 hypervectors
+def hv_ca90_step(state: np.ndarray) -> np.ndarray:
+    """
+    Perform one step of the CA90 cellular automaton.
+
+    Parameters:
+        state (np.ndarray): The current state of the CA90.
+
+    Returns:
+        np.ndarray: The next state of the CA90.
+    """
+    return np.roll(state, 1) ^ np.roll(state, -1)
+
+
+def hv_ca90_expand_seed(seed: np.ndarray, D: int) -> tuple:
+    """
+    Expand a seed hypervector using the CA90 cellular
+    automaton until it reaches dimension D.
+
+    Parameters:
+        seed (np.ndarray): The seed hypervector.
+        D (int): The desired dimension of the expanded hypervector.
+
+    Returns:
+        tuple: A tuple containing the expanded hypervector
+        and a list of all intermediate layers.
+    """
+    assert D >= len(seed), "D must be >= seed width N"
+    current = seed.copy()
+    layers = [current.copy()]
+    while len(current) < D:
+        current = np.concatenate([hv_ca90_step(current), current])
+        layers.append(current.copy())
+    hv0 = current[:D].copy()
+    layers[-1] = hv0.copy()
+    return hv0, layers
+
+
 # ---------------------------------------------------------------------------
 # Hypervector item memory generation functions
 # ---------------------------------------------------------------------------
@@ -219,6 +257,7 @@ def hv_gen_orthogonal_im(
     gen_type="ri",
     gen_ri_p_dense: float = 0.5,
     gen_lfsr_base_seed: int = 42,
+    gen_ca90_seed_size: int = 512,
 ):
     """
     Generate an item memory with orthogonal hypervectors.
@@ -238,6 +277,12 @@ def hv_gen_orthogonal_im(
                 hv_gen_lfsr(gen_lfsr_base_seed, idx, hv_size, hv_type)
                 for idx in range(num_items)
             ]
+        )
+
+    elif gen_type == "ca90":
+        im = np.zeros((num_items, hv_size))
+        im[0], _ = hv_ca90_expand_seed(
+            hv_gen_ri(gen_ca90_seed_size, gen_ri_p_dense, hv_type), hv_size
         )
     else:
         im = np.array(
