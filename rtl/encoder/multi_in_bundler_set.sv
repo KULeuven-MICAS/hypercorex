@@ -29,17 +29,17 @@ module multi_in_bundler_set#(
 )(
   input  logic                           clk_i,
   input  logic                           rst_ni,
-  input  logic        [ HVDimension-1:0] hv_i [NumInputs],
-  input  logic        [   NumInputs-1:0] valid_i,
+  input  logic        [NumInputs-1:0][ HVDimension-1:0] hv_i ,
+  input  logic        [NumInputs-1:0] valid_i,
   input  logic                           clr_i,
-  output logic signed [CounterWidth-1:0] counter_o [HVDimension],
+  output logic signed [HVDimension-1:0][CounterWidth-1:0] counter_o ,
   output logic        [ HVDimension-1:0] binarized_hv_o
 );
 
   //---------------------------
   // Remapping input hypervector
   //---------------------------
-  logic [NumInputs-1:0] remapped_hv [HVDimension];
+  logic [HVDimension-1:0][NumInputs-1:0] remapped_hv;
 
   always_comb begin
     for (int i = 0; i < NumInputs; i++) begin
