@@ -10,6 +10,9 @@ This project addresses the key limitations of binary HDC, where accuracy suffers
 
 As the VSA field continues to evolve, this hardware framework is designed to be extensible across both the hardware and software domains. Throughout these expansions, the focus remains on building an efficient and scalable VSA accelerator.
 
+# HW-SW Design and Programs
+This repository has both HW and SW implementations of various applications. For HW tests, there are two ways of simulating the hardware, one is through the cocotb testing and the other is through vanilla RTL simulations supported by questasim. The cocotb tests are meant for open-source testing while the vanilla RTL simulation (with Verilog testbenches) was meant for system tests applicable for backend synthesis.
+
 ## Initial Pixi Shell Setup
 VSAX uses [pixi-shell](https://pixi.prefix.dev/v0.28.1/) as its environment manager. Make sure to install pixi first:
 
@@ -71,7 +74,7 @@ gtkwave tests/sim_build/bundler_unit/dump.vcd
 
 Make sure you have [gtkwave](https://github.com/gtkwave/gtkwave) installed. 
 
-## Running with Commercial Tools
+## Running HW Tests with Commercial Tools
 
 VSAX currently supports the use of questasim, so make sure to have the proper questasim installation. Make sure you are inside the pixi environment. To invoke questasim simply add the `--simulator=questa` argument:
 
@@ -84,6 +87,33 @@ You can also view waveforms but questasim dumps `vsim.wlf` waveform which you ca
 ```bash
 pytest tests/test_bundler_unit.py --simulator=questa -o --waves=1 log_cli=True
 ```
+
+## Running with Vanilla Verilog Testbenches
+
+There are a few system tests which we use vanilla Verilog testbenches simulated on Questasim. These are meant for more legacy means of testing and testbenches that are friendly for doing backend. All relevant source files needed for proper builds are stored in the `questa` directory.
+
+To make a build simply invoke:
+
+```bash
+make build-vsim VSIM_MODULE=vsax_id_level_top
+```
+
+The `VSIM_MODULE` argument simply targets the top-level testbench required for it. Note that you need to ensure that the testbench top and the top-level DUT need to have the same name. Only the testbench top has a prepend of `tb_`.
+
+Use this when necessary for backend synthesis only.
+
+## Running SW Applications
+
+The SW programs are located inside the `app` directory. These programs rely on pre-built functions, classes, and other setups inside the `lib` directory.
+To run a program simply invoke:
+
+```bash
+python app/vsax_bin_digit_recog.py
+```
+
+Each program by default, runs training, retraining, and testing runs on pre-processed data which are generated and stored in the `data` directory.
+
+More information can be found in [here](app/README.md) file.
 
 ## Development Checklist
 ### General House Keeping

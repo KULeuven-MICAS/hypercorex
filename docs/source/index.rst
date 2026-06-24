@@ -9,6 +9,12 @@ VSAX Vector Symbolic Architecture Accelerators documentation
 
 .. toctree::
    :maxdepth: 1
+   :caption: SW Applications:
+
+   apps
+
+.. toctree::
+   :maxdepth: 1
    :caption: Library:
    
    lib_vsax
