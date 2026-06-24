@@ -29,10 +29,18 @@ module multi_in_bundler_set#(
 )(
   input  logic                           clk_i,
   input  logic                           rst_ni,
+`ifdef TARGET_VERILATOR
+  input  logic        [ HVDimension-1:0] hv_i [NumInputs],
+`else
   input  logic        [NumInputs-1:0][ HVDimension-1:0] hv_i ,
+`endif
   input  logic        [NumInputs-1:0] valid_i,
   input  logic                           clr_i,
-  output logic signed [HVDimension-1:0][CounterWidth-1:0] counter_o ,
+`ifdef TARGET_VERILATOR
+  output logic signed [CounterWidth-1:0] counter_o [HVDimension],
+`else
+  output logic signed [HVDimension-1:0][CounterWidth-1:0] counter_o,
+`endif
   output logic        [ HVDimension-1:0] binarized_hv_o
 );
 
