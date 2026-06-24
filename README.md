@@ -113,7 +113,7 @@ python app/vsax_bin_digit_recog.py
 
 Each program by default, runs training, retraining, and testing runs on pre-processed data which are generated and stored in the `data` directory.
 
-More information can be found in the `app/README.md` file.
+More information can be found in [here](app/README.md) file.
 
 ## Development Checklist
 ### General House Keeping
