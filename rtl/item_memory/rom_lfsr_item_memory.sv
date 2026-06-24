@@ -32,7 +32,7 @@ module rom_lfsr_item_memory #(
   output logic [HVDimension-1:0] im_rdata_o [NumPorts]
 `else
   input  logic [NumPorts-1:0][ ImSelWidth-1:0] im_sel_i,
-  output logic [NumPorts-1:0][HVDimension-1:0] im_rdata_o 
+  output logic [NumPorts-1:0][HVDimension-1:0] im_rdata_o
 `endif
 );
 
