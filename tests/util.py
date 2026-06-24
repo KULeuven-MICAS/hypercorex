@@ -102,7 +102,7 @@ def setup_and_run(
         else:
             waves_flag = False
         timescale = None
-        extra_args = None
+        extra_args = ["-DTARGET_VERILATOR"]
 
     else:
         waves_flag = waves
