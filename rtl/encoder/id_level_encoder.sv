@@ -39,17 +39,28 @@ module id_level_encoder #(
   input  logic                           clr_i,
   // Inputs
   input  logic        [   NumInputs-1:0] valid_i,
-  input  logic        [ HVDimension-1:0] hv_id_i          [NumInputs],
-  input  logic        [ HVDimension-1:0] hv_level_i       [NumInputs],
+`ifdef TARGET_VERILATOR
+  input  logic        [ HVDimension-1:0] hv_id_i [NumInputs],
+  input  logic        [ HVDimension-1:0] hv_level_i [NumInputs],
   // Outputs
-  output logic signed [CounterWidth-1:0] hv_encoded_o     [HVDimension],
+  output logic signed  [CounterWidth-1:0] hv_encoded_o [HVDimension],
+`else
+  input  logic        [NumInputs-1:0][ HVDimension-1:0] hv_id_i,
+  input  logic        [NumInputs-1:0][ HVDimension-1:0] hv_level_i,
+  // Outputs
+  output logic signed  [HVDimension-1:0][CounterWidth-1:0] hv_encoded_o,
+`endif
   output logic        [ HVDimension-1:0] hv_bin_encoded_o
 );
 
   //---------------------------
   // Wires
   //---------------------------
-  logic [HVDimension-1:0] hv_xored [NumInputs];
+`ifdef TARGET_VERILATOR
+  logic [ HVDimension-1:0] hv_xored [NumInputs];
+`else
+  logic [NumInputs-1:0][HVDimension-1:0] hv_xored;
+`endif
 
   //---------------------------
   // ID-level encoding logic

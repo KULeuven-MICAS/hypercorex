@@ -57,14 +57,14 @@ module vsax_id_level_top #(
   parameter int unsigned HVDimension        = 512,
   parameter int unsigned CsrRegWidth        = 8,
   // Item memory specific
-  parameter int unsigned SeedIm             = 32'hDEAD_BEEF,
+  parameter int unsigned SeedIm             = 32'd42,
   parameter int unsigned ParallelInputsIm   = 2,
   parameter int unsigned NumTotIm           = 1024,
   // Encoder specific
   parameter int unsigned ParallelInputsEnc  = ParallelInputsIm/2,
   parameter int unsigned CounterWidthEnc    = 8,
   // Assoc memory specific
-  parameter int unsigned NumClassAm         = 32,
+  parameter int unsigned NumClassAm         = 10,
   // Don't touch!
   parameter int unsigned ImSelWidth         = $clog2(NumTotIm),
   parameter int unsigned AddrWidthAm        = $clog2(NumClassAm)
@@ -73,7 +73,7 @@ module vsax_id_level_top #(
   input  logic                          clk_i,
   input  logic                          rst_ni,
   // Item-memory iports
-  input  logic [       ImSelWidth-1:0]  im_rd_i [ParallelInputsIm],
+  input  logic [ParallelInputsIm-1:0][ImSelWidth-1:0]  im_rd_i ,
   // Encoding ports
   input  logic [ParallelInputsEnc-1:0]  enc_valid_i,
   input  logic                          enc_clr_i,
@@ -108,9 +108,9 @@ module vsax_id_level_top #(
   //---------------------------
   // Wires and Logic
   //---------------------------
-  logic [HVDimension-1:0] im_rdata  [ ParallelInputsIm];
-  logic [HVDimension-1:0] hv_id     [ParallelInputsEnc];
-  logic [HVDimension-1:0] hv_level  [ParallelInputsEnc];
+  logic [ ParallelInputsIm-1:0][HVDimension-1:0] im_rdata;
+  logic [ParallelInputsEnc-1:0][HVDimension-1:0] hv_id;
+  logic [ParallelInputsEnc-1:0][HVDimension-1:0] hv_level;
   logic [HVDimension-1:0] hv_bin_encoded;
   logic [HVDimension-1:0] qhv;
   logic am_busy;
