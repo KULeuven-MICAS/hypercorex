@@ -27,10 +27,13 @@ module rom_lfsr_item_memory #(
   // Don't touch
   parameter  int unsigned ImSelWidth  = $clog2(NumTotIm)
 )(
-  // Inputs
+`ifdef TARGET_VERILATOR
+  input  logic [ ImSelWidth-1:0] im_sel_i [NumPorts],
+  output logic [HVDimension-1:0] im_rdata_o [NumPorts]
+`else
   input  logic [NumPorts-1:0][ ImSelWidth-1:0] im_sel_i,
-  // Outputs
   output logic [NumPorts-1:0][HVDimension-1:0] im_rdata_o 
+`endif
 );
 
   // ===============================================================================
