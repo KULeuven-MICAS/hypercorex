@@ -36,7 +36,7 @@ Numbers never change and are never reused. An amended entry gets an "Amended by 
 
 ## 3. The cycle for one PR
 
-1. **Name it.** A planning session starts by picking the PR name, e.g. `s0-clean-slate`. The same name is used for the branch (off `v2`) and for the GitHub PR (into `v2`).
+1. **Name it.** A planning session starts by picking the PR name, e.g. `s0-clean-slate`. The same name is used for the branch (off `main`) and for the GitHub PR (into `main`).
 2. **Plan in claude.ai.** The PR starts as a discussion. Ryan says what he wants, and claude.ai answers with the design questions it raises, each with two or three options and a recommendation, checked against DECISIONS.
 3. **Write the context docs.** Once we agree, claude.ai writes:
    - `docs/PR.md`, from the template in section 6;
@@ -86,7 +86,7 @@ Small, code-heavy planning, where the details depend on the existing code, can h
 PR.md starts with a sync header:
 
 ```
-PR: <name>          Branch: <name> (from v2 at <commit>)
+PR: <name>          Branch: <name> (from main at <commit>)
 Next free D: <n>    Next free open item: <m>
 Last planned: <date>, claude.ai    Last updated: <date>, <claude.ai | Claude Code>
 ```

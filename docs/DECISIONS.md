@@ -2,13 +2,13 @@
 
 Numbered decisions that hold across PRs. Numbers never change and are never reused. Rules for writing entries are in `docs/WORKFLOW.md`, section 2.
 
-**Next free: D24**
+**Next free: D25**
 
 ## Index by area
 
 | Area | Decisions |
 |---|---|
-| scope | D1, D2, D3, D4, D16, D18, D20, D23 |
+| scope | D1, D2, D3, D4, D16, D18, D20, D23, D24 |
 | env | D5, D6, D21 |
 | sw | D8, D9, D10, D11, D12, D13, D14, D15 |
 | hw | — |
@@ -22,7 +22,7 @@ The top level has `sw/` (all software) and `hw/` (all hardware). `sw/` never imp
 
 ### D2 · scope · Fresh start on a rewrite branch
 The SW is rewritten from scratch on a branch off `main` and merged back when the SW flow runs end to end. The old state is kept by the tag `discontinue-old-hypercorex`; v1 lives on branch `hypercorex_v1`.
-Amended by D20 (branch name and PR flow).
+Amended by D20 (branch name and PR flow). Amended by D24 (no rewrite branch: each PR merges into `main`).
 
 ### D3 · scope · HW parked at the root
 `rtl/`, `tests/`, `questa/`, `Bender.yml`, `Makefile` and `conftest.py` stay at the root, untouched, until H0 moves them under `hw/`. This keeps the SW rewrite from mixing with HW changes.
@@ -83,11 +83,8 @@ Old-app baselines and golden fixtures are produced from a checkout of the tag `d
 Closes the fixture part of open item 5. Detail is in HOUSEKEEPING, "Formats".
 
 ### D20 · scope · Branch and PR flow
-- `v2` is branched off `main` at `96b8e9e` and is the integration branch.
-- Each PR has a name that is used for its branch (off `v2`) and for its GitHub PR (into `v2`).
-- `main` stays untouched until S7.4.
-
-This gives each piece of work one review place and one merge commit. Closes open item 7. Amends D2.
+Said: a separate integration branch takes every PR, and `main` changes only at the SW close. Closed open item 7 and amended D2.
+Replaced by D24.
 
 ### D21 · env · Minimal environment until needed
 - S0 sets up only the `default` env: Python 3.12, numpy 2, pytest, ruff and pre-commit.
@@ -109,3 +106,9 @@ This keeps long-lived state apart from one PR's plan. Amends D17. Detail is in W
 - Claude Code starts each PR with a sync check in plan mode, then works one step at a time in the working tree and never commits or pushes. Ryan reviews, tests and commits each step.
 
 This keeps every change of plan and every code change visible to Ryan. Detail is in WORKFLOW.
+
+### D24 · scope · One-level PR flow into `main`
+- Each PR has a name that is used for its branch (off `main`) and for its GitHub PR (into `main`), merged or squash-merged.
+- `main` holds the rewrite in progress from the first merged PR on. The old state stays at the tag `discontinue-old-hypercorex`.
+
+One level of branches is simpler, and the tag already keeps the old code. Replaces D20. Amends D2.

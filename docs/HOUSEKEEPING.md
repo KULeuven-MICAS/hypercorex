@@ -7,7 +7,7 @@ Rules for code, docs, formats, files and tests. The workflow itself is in `docs/
 - Claude Code never commits or pushes. Ryan commits each step after checking it (D23).
 - Commit messages: `<step ID>: <what changed>`, e.g. `S0.4: minimal pixi environment`.
 - PR title: the PR name, e.g. `s0-clean-slate`. PR description: the final text of `docs/PR.md`.
-- Branches: `v2` is the integration branch. A PR branch carries the PR name and comes off `v2` (D20).
+- Branches: a PR branch carries the PR name, comes off `main` and merges or squash-merges back into `main` (D24).
 
 ## Python style
 

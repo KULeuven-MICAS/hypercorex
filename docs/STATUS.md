@@ -1,11 +1,11 @@
 # Status
 
-Overall progress of the Hypercorex v2 rewrite. The current PR's detail is in `docs/PR.md`.
+Overall progress of the Hypercorex rewrite. The current PR's detail is in `docs/PR.md`.
 
 ## Where the code lives
 
-- `main` is at `96b8e9e`, the old v2 state and the same commit as the tag `discontinue-old-hypercorex`. It stays untouched until S7.4 (D20).
-- `v2` is the rewrite integration branch, off `main` at `96b8e9e`. Every PR goes into `v2`.
+- The old state is the tag `discontinue-old-hypercorex` at `96b8e9e`. `main` is still at that commit until `s0-clean-slate` merges.
+- Each PR branch comes off `main` and merges or squash-merges back into `main` (D24), so `main` holds the rewrite in progress.
 - v1 lives on branch `hypercorex_v1`.
 - **Current PR:** `s0-clean-slate`.
 
@@ -20,7 +20,7 @@ Overall progress of the Hypercorex v2 rewrite. The current PR's detail is in `do
 | S4 | Data and the six apps | — | todo |
 | S5 | UCI-HAR | — | todo |
 | S6 | Exploration: sweeps, profiling, plots | — | todo |
-| S7 | SW close: interfaces frozen, CI back on, docs site, merge to `main` | — | todo |
+| S7 | SW close: interfaces frozen, CI back on, docs site | — | todo |
 | H0 | HW planning: a discussion that writes the HW section and the H milestones; `hw` env; parked HW check (D21) | — | todo |
 | Later | intN, FHRR, cache-like iM, golden-vector export for HW (placed at H0) | — | — |
 | Later | GPU support for the SW flow (note only) | — | — |
@@ -42,7 +42,7 @@ This is the roadmap. A PR's own steps live in its PR.md; when a PR closes, its r
 | S0.5 | Delete the D4 and D21 lists | Only the kept and parked files remain | s0-clean-slate | todo |
 | S0.6 | `sw/` skeleton, test/lint/fmt tasks, `.gitignore`, pre-commit | `pixi run test` and `pixi run lint` pass | s0-clean-slate | todo |
 | S0.7 | Golden fixtures from the tag (D19) | Fixture tests pass; regeneration is byte-identical | s0-clean-slate | todo |
-| S0.8 | README and `hw/README.md` placeholder | Files describe v2 and point to the docs | s0-clean-slate | todo |
+| S0.8 | README and `hw/README.md` placeholder | Files describe the rewrite and point to the docs | s0-clean-slate | todo |
 | S0.9 | Close the PR | STATUS updated, PR.md done | s0-clean-slate | todo |
 | S0.10 | Old-app baselines: the six apps and the char self-test, run from the tag with external seeds (D19) | Baselines table below filled; open item 4 closed | s0-baselines | todo |
 
@@ -106,11 +106,10 @@ This is the roadmap. A PR's own steps live in its PR.md; when a PR closes, its r
 | S7.1 | Freeze the interfaces in ARCHITECTURE and the formats in HOUSEKEEPING | S6 | Docs match the code | todo |
 | S7.2 | Minimal CI back on: lint and sw tests | S7.1 | CI green | todo |
 | S7.3 | `docs` env and Sphinx docs for the package (D21) | S7.1 | Docs build | todo |
-| S7.4 | Merge `v2` into `main` | S7.2 | — | todo |
 
 ## Done PRs
 
-| PR | Merged into `v2` at | Tasks | Decisions |
+| PR | Merged into `main` at | Tasks | Decisions |
 |---|---|---|---|
 | — | — | — | — |
 

@@ -4,7 +4,7 @@ What each component does and its interface. This file describes the current stat
 
 ## Purpose
 
-Hypercorex v2 is a clean, plug-and-play core for non-binary HDC/VSA.
+Hypercorex is a clean, plug-and-play core for non-binary HDC/VSA.
 - The SW comes first and is the golden reference. The HW is rebuilt against it afterwards, from H0.
 - The SW keeps the idea of the old `app/` + `lib/`: one reusable model with item memories, a per-app encoder, associative-memory search, and switches.
 - Later, the same Config drives both SW exploration and the HW build, with swappable iM, encoder and AM variants.
@@ -109,9 +109,9 @@ Dataset sources:
 
 ## HW (parked until H0)
 
-The HW files stay at the root, untouched (D3). There is no `hw` env on `v2` until H0 (D21), so the parked tests run from a checkout of the tag.
+The HW files stay at the root, untouched (D3). There is no `hw` env until H0 (D21), so the parked tests run from a checkout of the tag.
 
-After S0, many parked cocotb tests can't run on `v2` even with an env, because their golden values come from deleted code:
+After S0, many parked cocotb tests can't run on `main` even with an env, because their golden values come from deleted code:
 - 24 files import `hdc_exp`;
 - 12 import the old assembler in `sw/`;
 - 6 read `hemaia/`;

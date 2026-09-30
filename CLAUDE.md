@@ -2,8 +2,9 @@
 
 Hypercorex is an HDC/VSA accelerator. `sw/` is the Python model and the golden
 reference; the RTL is checked against it bit for bit. The SW is being rewritten from
-scratch on branch `v2`. The HW is parked at the repo root (`rtl/`, `tests/`, `questa/`,
-`Bender.yml`, `Makefile`, `conftest.py`) until milestone H0.
+scratch, one PR at a time into `main` (D24); the old code stays at the tag
+`discontinue-old-hypercorex`. The HW is parked at the repo root (`rtl/`, `tests/`,
+`questa/`, `Bender.yml`, `Makefile`, `conftest.py`) until milestone H0.
 
 ## Read first, in this order
 1. `docs/WORKFLOW.md`: how planning (claude.ai) and execution (Claude Code) work together.
@@ -31,7 +32,7 @@ scratch on branch `v2`. The HW is parked at the repo root (`rtl/`, `tests/`, `qu
 - `pixi run smoke`: print the Python and numpy versions.
 - `pixi run test`: sw tests. `pixi run lint`: ruff check and format check on `sw/`. `pixi run fmt`: format `sw/`.
 - Per-block tasks (`pixi run test-hv`, `test-im`, …) are added as the blocks appear.
-- There is no `hw` env on `v2` until H0. The parked HW runs from a checkout of the tag
+- There is no `hw` env until H0. The parked HW runs from a checkout of the tag
   `discontinue-old-hypercorex`.
 
 ## Conventions

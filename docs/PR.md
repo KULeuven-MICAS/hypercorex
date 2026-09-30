@@ -1,9 +1,9 @@
 # s0-clean-slate
 
 ```
-PR: s0-clean-slate          Branch: s0-clean-slate (from 96b8e9e)
-Next free D: 24             Next free open item: 10
-Last planned: 2026-09-30, claude.ai    Last updated: 2026-09-30, claude.ai
+PR: s0-clean-slate          Branch: s0-clean-slate (from main at 96b8e9e)
+Next free D: 25             Next free open item: 10
+Last planned: 2026-09-30, claude.ai    Last updated: 2026-09-30, Claude Code
 ```
 
 ## Goal
@@ -12,7 +12,7 @@ Turn the old tree into a clean base for the SW rewrite, with the docs set in pla
 
 ## Context
 
-- `v2` starts at `96b8e9e`. That commit equals the tag `discontinue-old-hypercorex`, so all old code stays reachable at the tag.
+- `s0-clean-slate` comes off `main` at `96b8e9e` and merges back into `main` (D24). That commit equals the tag `discontinue-old-hypercorex`, so all old code stays reachable at the tag.
 - The old SW is `lib/` (vsax library), `app/` (six apps), `hdc_exp/` (experiments and helpers), `hemaia/` (trained AMs and test samples for HW tests) and `sw/` (the v1 assembler).
 - The HW is parked at the root and must not change (D3).
 - The old `pixi.toml` builds a large env (verilator, cocotb, compilers) through `activate.sh`. This PR replaces it with a SW-only env (D21).
@@ -21,7 +21,7 @@ Turn the old tree into a clean base for the SW rewrite, with the docs set in pla
 ## Decisions
 
 - D19 — Old baselines and golden fixtures come from a checkout of the tag, so deletion doesn't wait. The fixture format is in HOUSEKEEPING, "Formats".
-- D20 — `v2` is the integration branch; one named branch and one PR per piece of work into `v2`; `main` untouched until S7.4.
+- D24 — One named branch per PR, off `main` and merged or squash-merged into `main`. Replaces D20. Decided at S0.2.
 - D21 — Only the `default` env exists until needed. The `hw` env comes at H0 and `docs` at S7. The old Sphinx setup is deleted now.
 - D22 — Doc roles: STATUS covers the whole project, DECISIONS holds rules across PRs, PR.md holds the current PR only.
 - D23 — Plan in claude.ai, execute in Claude Code, one step at a time in the working tree. Claude Code never commits.
@@ -69,7 +69,7 @@ Turn the old tree into a clean base for the SW rewrite, with the docs set in pla
 
 ## Assumptions to verify against the code
 
-- **A1.** Branch `v2` is at `96b8e9e`, and `s0-clean-slate` is `v2` plus one commit holding these docs.
+- **A1.** Branch `s0-clean-slate` is `main` at `96b8e9e` plus one commit holding these docs.
 - **A2.** The platform Ryan runs pixi on. It is `linux-64` in the plan; add `osx-arm64` or others if needed.
 - **A3.** `pixi exec --spec "python=3.11" --spec "numpy=1.26" --spec tqdm --spec matplotlib --spec requests -- python …` runs a script in a temporary env. Fallback: a throwaway venv with `pip install "numpy<2" tqdm matplotlib requests`.
 - **A4.** At the tag, `hdc_exp/hdc_util.py` imports `matplotlib`, `requests`, `tqdm` and the local `FP_quantize_util` at module level, which is why A3 needs those packages. claude.ai checked this at the tag.
@@ -84,7 +84,7 @@ Turn the old tree into a clean base for the SW rewrite, with the docs set in pla
 Stop after each step for Ryan to check and commit.
 
 **S0.1 — Context docs.** Ryan adds and commits the docs set: `CLAUDE.md`, `docs/WORKFLOW.md`, `ARCHITECTURE.md`, `DECISIONS.md`, `STATUS.md`, `HOUSEKEEPING.md` and `PR.md`.
-- Check: `git diff --stat v2` lists only these 7 files.
+- Check: `git diff --stat main` lists only these 7 files.
 
 **S0.2 — Sync check** (plan mode, no edits except this file's Status). Follow WORKFLOW section 3, step 5, and report on A1–A9.
 
@@ -99,7 +99,7 @@ Stop after each step for Ryan to check and commit.
 
 **S0.5 — Delete old SW (D4, D21).** Delete `lib/`, `app/`, `hdc_exp/`, `hemaia/`, `sw/`, `util/`, `requirements.txt`, `docs/Makefile`, `docs/source/` and `docs/README.md`.
 - Check: `git ls-files | cut -d/ -f1 | sort -u | tr '\n' ' '` prints `.github .gitignore .pre-commit-config.yaml Bender.yml CLAUDE.md LICENSE Makefile README.md conftest.py docs pixi.lock pixi.toml questa rtl tests`.
-- Check: `git diff --stat v2 -- rtl tests questa Bender.yml Makefile conftest.py LICENSE` prints nothing.
+- Check: `git diff --stat main -- rtl tests questa Bender.yml Makefile conftest.py LICENSE` prints nothing.
 
 **S0.6 — `sw/` skeleton.**
 - Add:
@@ -148,7 +148,7 @@ Stop after each step for Ryan to check and commit.
 - Check: rerunning the script into a temp dir and running `cmp` against both `.npz` files prints nothing.
 
 **S0.8 — README and `hw/` placeholder.**
-- Rewrite `README.md`: what Hypercorex is; that the SW is being rewritten on `v2`; quick start (`pixi install`, `pixi run test`); pointers to `docs/`, the tag and `hypercorex_v1`; license.
+- Rewrite `README.md`: what Hypercorex is; that the SW is being rewritten one PR at a time into `main`; quick start (`pixi install`, `pixi run test`); pointers to `docs/`, the tag and `hypercorex_v1`; license.
 - Add `hw/README.md`: the HW moves here at H0; until then it is parked at the root; see ARCHITECTURE, "HW".
 - Check: `git ls-files | cut -d/ -f1 | sort -u` now also lists `hw` and `sw`.
 
@@ -160,12 +160,47 @@ Stop after each step for Ryan to check and commit.
 ## Definition of done
 
 - From a clean clone of the branch, `pixi install`, `pixi run smoke`, `pixi run test` (≥ 11 passed) and `pixi run lint` (clean) all succeed.
-- `git diff --stat v2 -- rtl tests questa Bender.yml Makefile conftest.py LICENSE` prints nothing.
+- `git diff --stat main -- rtl tests questa Bender.yml Makefile conftest.py LICENSE` prints nothing.
 - The top-level listing is exactly the `.github .gitignore .pre-commit-config.yaml Bender.yml CLAUDE.md LICENSE Makefile README.md conftest.py docs hw pixi.lock pixi.toml questa rtl sw tests`.
 - Regenerating the fixtures gives byte-identical files.
-- STATUS shows S0.1–S0.9 as done, DECISIONS holds D1–D23 with next free D24, and this Status section is complete.
+- STATUS shows S0.1–S0.9 as done, DECISIONS holds D1–D24 with next free D25, and this Status section is complete.
 
 ## Status / Open questions
 
-- S0.1: done once Ryan commits this file.
-- Next: S0.2, the sync check.
+- **S0.1: done.** Commit `3e7c62a` on `s0-clean-slate`. `git diff --stat main` lists exactly the 7 docs.
+- **S0.2: done** (sync check, 2026-09-30, Claude Code). The check itself edited only this section. The D24 doc edits below followed at Ryan's request.
+  - **Sync header.** "Next free D: 24" matches DECISIONS. "Next free open item: 10" matches STATUS (items 1–6, 8, 9; item 7 was closed by D20). The branch line matches the repo (`main` at `96b8e9e`). After D24, the header reads "from main at 96b8e9e" and "Next free D: 25".
+  - **A1: confirmed.** `s0-clean-slate` is `main` at `96b8e9e` plus the docs commit `3e7c62a`.
+  - **A2: confirmed.** This machine is `x86_64`, so `linux-64` is right.
+  - **A3: confirmed.** `pixi exec --spec "python=3.11" --spec "numpy=1.26" --spec tqdm --spec matplotlib --spec requests -- python …` runs with Python 3.11.16 and numpy 1.26.4 (pixi 0.46.0). A first try hung when two pixi runs overlapped. Run alone, it takes about 50 s cold and 4 s cached.
+  - **A4: confirmed.** At the tag, `hdc_exp/hdc_util.py:11-20` imports `numpy`, `tqdm`, `collections`, `matplotlib.pyplot`, `requests`, `tarfile`, `io`, `copy`, `math` and `from FP_quantize_util import fp864_quantize` at module level. `FP_quantize_util.py` imports only numpy, so the fixture script must put `hdc_exp/` on `sys.path`.
+  - **A5: confirmed.** At the tag, `tests/set_parameters.py:9` is its only import (`math`), and `ORTHO_IM_SEEDS` (`:67-76`) holds 8 seeds.
+  - **A6: confirmed.** In a scratch copy of the planned layout, whose root `conftest.py` raises an error when loaded, `pixi run test` reports `rootdir: sw`, `configfile: pyproject.toml` and `1 passed`. The root conftest is never loaded.
+  - **A7: confirmed.** In the same copy, `ruff check sw --show-settings` reports `Settings path: sw/pyproject.toml` with `line_length = 88` and target 3.12. A probe file using `typing.List` gets UP006 and UP035.
+  - **A8: confirmed.** `pixi install` of the planned `pixi.toml` and `sw/pyproject.toml` succeeds with no extra config. `hypercorex` imports from `sw/src/hypercorex/`, the metadata version is `0.0.0`, and `direct_url.json` has `"editable": true`. `pixi run smoke` prints `3.12.14 2.5.3`, and `pixi run lint` prints `All checks passed!` and `2 files already formatted`.
+  - **A9: confirmed.** `git ls-tree --name-only 96b8e9e` gives exactly the planned list.
+  - **S0.7 values checked early.** These come from the old code at the tag, through A3:
+    - `lfsr (0x2a, 512, 1024)` mean is `0.5000152587890625`.
+    - For seed 0, row 0 is all zeros and the first two start states are `[0, 3652664798]`.
+    - `hw_d512_n1024` mean is `0.48775482177734375`.
+    - The `iter_d512` row means match.
+    - `hw_d512_n1024[k*128] == hier_d512[k]` holds for all 8 seeds.
+    - `hw_d256_n512` has shape (512, 256).
+    - `characters.txt` has 26 lines of 35 characters.
+  - **S0.7 details for the script.**
+    - `gen_ca90_im_set` returns `(seed_list, ortho_im, conf_mat)`, so the iM is element 1.
+    - The old arrays come back as int32 (LFSR) and int64 (CA90). Both must be cast to uint8 (D19).
+  - **Other checks.**
+    - The three workflows have 118, 35 and 27 live lines now.
+    - Nothing in the parked HW references `util/`, `activate.sh` or `requirements.txt`, so S0.4 and S0.5 don't break its files.
+    - The old `.pixi/` env in the working tree is gitignored and gets replaced at S0.4.
+- **D24 (decided at S0.2 by Ryan).** One-level PR flow: each PR branch comes off `main` and merges or squash-merges into `main`. It replaces D20 and amends D2. Edited to match:
+  - DECISIONS: D2, D20, D24, the index and next free D25;
+  - STATUS: "Where the code lives", S7 and the Done-PRs header;
+  - HOUSEKEEPING, "Commits and PRs";
+  - WORKFLOW section 3.1 and the section 5 header;
+  - CLAUDE.md;
+  - ARCHITECTURE, "HW";
+  - in this file: the header, Context, Decisions, the S0.1 and S0.5 checks, S0.8 and the Definition of done.
+- **For the next planning round:** upload the updated DECISIONS, STATUS, WORKFLOW, HOUSEKEEPING, CLAUDE.md and this file, so claude.ai plans from D24.
+- **Next: S0.3**, CI off.
