@@ -26,7 +26,7 @@ Turn the old tree into a clean base for the SW rewrite, with the docs set in pla
 - D22 — Doc roles: STATUS covers the whole project, DECISIONS holds rules across PRs, PR.md holds the current PR only.
 - D23 — Plan in claude.ai, execute in Claude Code, one step at a time in the working tree. Claude Code never commits.
 - D25 — Minimal CI from S0: one workflow runs `pixi run test` and `pixi run lint`; the old workflows are deleted. Replaces D7. Decided after S0.9 (S0.10).
-- D26 — PR.md exists only during a PR: the branch's last commit deletes it, after its text becomes the GitHub PR description. No PR.md on `main` means no PR is in progress. Amends D22. Decided after S0.10.
+- D26 — PR.md exists only during a PR: the branch's last commit deletes it. At close, a short `## PR summary` section becomes the GitHub PR description. No PR.md on `main` means no PR is in progress. Amends D22. Decided after S0.10.
 - PR-local — Pre-commit hooks exclude the parked HW paths, so a hook can never touch them (D3).
 - PR-local — Fixture set. It covers the one parked RTL LFSR test config, the app config, odd-dim and edge seeds, and the CA90 configs the parked RTL test uses. RI and CiM get no fixtures: RI can't match a new `Generator` stream, and the old CiM is buggy (HOUSEKEEPING, "Lessons").
   - `lfsr_im.npz`: seeds/dims/items (0x2a, 128, 32), (0x2a, 512, 1024), (0x0, 100, 16), (0xffffffff, 100, 16), (0x1234abcd, 100, 16), plus the LFSR start state per item.
@@ -157,7 +157,8 @@ Stop after each step for Ryan to check and commit.
 - Set S0.1–S0.9 to done in STATUS and add the Done-PR row (Ryan fills in the merge commit).
 - Fill in this file's Status.
 - Set the sync header's "Last updated".
-- Last, after CI is green on the PR (S0.10) and Ryan has uploaded this file and pasted it into the GitHub PR description: delete `docs/PR.md` and set STATUS's "Current PR" to none, in the branch's final commit before the merge (D26).
+- Write the `## PR summary` section at the end of this file.
+- Last, after CI is green on the PR (S0.10) and Ryan has uploaded this file and pasted the PR summary as the GitHub PR description: delete `docs/PR.md` and set STATUS's "Current PR" to none, in the branch's final commit before the merge (D26).
 
 **S0.10 — Minimal CI (D25).** Added after S0.9, at Ryan's request.
 - Replace `.github/workflows/ci.yml` with one job on `ubuntu-latest`: `actions/checkout@v7`, `prefix-dev/setup-pixi@v0.10.2` with `pixi-version: v0.46.0`, which installs from the lock with `--locked` and caches the env, then `pixi run test` and `pixi run lint`. It triggers on pull requests, pushes to `main`, and `workflow_dispatch`.
@@ -296,8 +297,54 @@ Stop after each step for Ryan to check and commit.
   - README: the `docs/PR.md` link is replaced by a plain mention, because it would be broken on `main`;
   - in this file: the header, Decisions, S0.9's last action and the Definition of done.
 - **Closing order for this PR:**
-  1. Ryan opens the PR, with this file as the description.
+  1. Ryan opens the PR, with the `## PR summary` below as the description.
   2. CI goes green, and S0.10 becomes `done` in STATUS.
   3. Ryan uploads the final docs to the Project.
   4. The last commit deletes this file and sets "Current PR" to none.
   5. Ryan merges.
+
+## PR summary
+
+Turns the old tree into a clean base for the Hypercorex SW rewrite: the planning docs,
+a minimal pixi environment, the old SW removed, a tested `sw/` package with golden
+fixtures from the old code, and a minimal CI. All old code stays reachable at the tag
+`discontinue-old-hypercorex` (`96b8e9e`).
+
+**What changed**
+- **Docs:** `CLAUDE.md` and `docs/` (WORKFLOW, ARCHITECTURE, DECISIONS, STATUS,
+  HOUSEKEEPING) set up how the rewrite is planned and run. `README.md` is rewritten, and
+  `hw/README.md` is a placeholder until H0.
+- **Environment:** `pixi.toml` cut down to Python 3.12, numpy 2, pytest, ruff and
+  pre-commit, with the tasks `smoke`, `test`, `lint` and `fmt`. New `pixi.lock`;
+  `activate.sh` removed.
+- **Removed:** `lib/`, `app/`, `hdc_exp/`, `hemaia/`, the v1 assembler in `sw/`, `util/`,
+  `requirements.txt` and the old Sphinx docs (83 files).
+- **Package:** `sw/` holds the `hypercorex` package (0.0.0, hatchling, src layout, ruff
+  config) with smoke tests.
+- **Golden fixtures:** `sw/tests/fixtures/` holds `lfsr_im.npz` and `ca90_im.npz`, made
+  from the tag with Python 3.11 and numpy 1.26, plus `characters.txt`.
+  `make_fixtures.py` regenerates them byte for byte, and 11 tests check them.
+- **CI and hooks:** one workflow runs `pixi run test` and `pixi run lint` on PRs and
+  pushes to `main`; the old workflows are deleted. Pre-commit runs YAML/TOML/whitespace
+  checks and lint, and never touches the parked HW.
+- **Unchanged:** the parked HW (`rtl/`, `tests/`, `questa/`, `Bender.yml`, `Makefile`,
+  `conftest.py`) and `LICENSE`.
+
+**Decisions**
+- D19: old baselines and fixtures come from the tag.
+- D21: only the `default` env until needed.
+- D22: doc roles.
+- D23: plan in claude.ai, execute in Claude Code.
+- D24: one branch per PR, off `main` and merged into `main`. Replaces D20.
+- D25: minimal CI from S0. Replaces D7.
+- D26: PR.md exists only during a PR.
+
+**Checks** (fresh clone of the branch)
+- `pixi install` succeeds and `pixi run smoke` prints `3.12.14 2.5.3`.
+- `pixi run test` gives `13 passed`, and `pixi run lint` is clean.
+- `git diff --stat main -- rtl tests questa Bender.yml Makefile conftest.py LICENSE`
+  prints nothing.
+- Regenerating the fixtures gives byte-identical files.
+- CI: green on this PR.
+
+**Next:** `s0-baselines` (S0.11), the old-app baselines run from the tag.
