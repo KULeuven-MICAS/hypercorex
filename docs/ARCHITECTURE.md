@@ -27,7 +27,7 @@ hypercorex/
 ├── README.md  LICENSE  CLAUDE.md
 ├── pixi.toml  pixi.lock                     # default env only (D21)
 ├── .gitignore  .pre-commit-config.yaml
-├── .github/workflows/                       # commented out until S7 (D7)
+├── .github/workflows/ci.yml                # sw tests and lint (D25)
 ├── docs/                                    # WORKFLOW, ARCHITECTURE, DECISIONS, STATUS, HOUSEKEEPING, PR
 ├── sw/
 │   ├── pyproject.toml                       # `hypercorex` package: src layout, hatchling, ruff, pytest

@@ -2,7 +2,7 @@
 
 Numbered decisions that hold across PRs. Numbers never change and are never reused. Rules for writing entries are in `docs/WORKFLOW.md`, section 2.
 
-**Next free: D25**
+**Next free: D26**
 
 ## Index by area
 
@@ -12,7 +12,7 @@ Numbered decisions that hold across PRs. Numbers never change and are never reus
 | env | D5, D6, D21 |
 | sw | D8, D9, D10, D11, D12, D13, D14, D15 |
 | hw | — |
-| test | D7, D19 |
+| test | D7, D19, D25 |
 | docs | D17, D22 |
 
 ## Entries
@@ -39,7 +39,8 @@ Amended by D21 (only `default` exists until the others are needed).
 numpy only, on CPU, for now. GPU support is a later milestone.
 
 ### D7 · test · CI off until S7
-All CI workflows stay commented out until S7, because the old ones test code the rewrite deletes.
+Said: all CI workflows stay commented out until S7, because the old ones test code the rewrite deletes.
+Replaced by D25.
 
 ### D8 · sw · One Config
 One `Config` dataclass holds every switch. It is saved with the model, parsed from the CLI, and it is the unit of a sweep.
@@ -112,3 +113,11 @@ This keeps every change of plan and every code change visible to Ryan. Detail is
 - `main` holds the rewrite in progress from the first merged PR on. The old state stays at the tag `discontinue-old-hypercorex`.
 
 One level of branches is simpler, and the tag already keeps the old code. Replaces D20. Amends D2.
+
+### D25 · test · Minimal CI from S0
+- One workflow, `.github/workflows/ci.yml`, runs `pixi run test` (including the golden fixtures) and `pixi run lint`. It runs on pull requests, on pushes to `main`, and by hand.
+- It installs from `pixi.lock` with `--locked`, with pixi pinned to the version used locally.
+- The old workflows are deleted, not kept commented out; they stay at the tag.
+- Later milestones add jobs when they need them, e.g. the docs build at S7.3.
+
+A working CI from the start guards every PR into `main` (D24). Replaces D7.

@@ -2,7 +2,7 @@
 
 ```
 PR: s0-clean-slate          Branch: s0-clean-slate (from main at 96b8e9e)
-Next free D: 25             Next free open item: 10
+Next free D: 26             Next free open item: 10
 Last planned: 2026-09-30, claude.ai    Last updated: 2026-09-30, Claude Code
 ```
 
@@ -16,7 +16,7 @@ Turn the old tree into a clean base for the SW rewrite, with the docs set in pla
 - The old SW is `lib/` (vsax library), `app/` (six apps), `hdc_exp/` (experiments and helpers), `hemaia/` (trained AMs and test samples for HW tests) and `sw/` (the v1 assembler).
 - The HW is parked at the root and must not change (D3).
 - The old `pixi.toml` builds a large env (verilator, cocotb, compilers) through `activate.sh`. This PR replaces it with a SW-only env (D21).
-- Old-app baselines are **not** part of this PR. They come in the next PR, `s0-baselines` (S0.10).
+- Old-app baselines are **not** part of this PR. They come in the next PR, `s0-baselines` (S0.11).
 
 ## Decisions
 
@@ -25,7 +25,7 @@ Turn the old tree into a clean base for the SW rewrite, with the docs set in pla
 - D21 — Only the `default` env exists until needed. The `hw` env comes at H0 and `docs` at S7. The old Sphinx setup is deleted now.
 - D22 — Doc roles: STATUS covers the whole project, DECISIONS holds rules across PRs, PR.md holds the current PR only.
 - D23 — Plan in claude.ai, execute in Claude Code, one step at a time in the working tree. Claude Code never commits.
-- PR-local — CI files are commented out, not deleted, so S7.2 can start from them.
+- D25 — Minimal CI from S0: one workflow runs `pixi run test` and `pixi run lint`; the old workflows are deleted. Replaces D7. Decided after S0.9 (S0.10).
 - PR-local — Pre-commit hooks exclude the parked HW paths, so a hook can never touch them (D3).
 - PR-local — Fixture set. It covers the one parked RTL LFSR test config, the app config, odd-dim and edge seeds, and the CA90 configs the parked RTL test uses. RI and CiM get no fixtures: RI can't match a new `Generator` stream, and the old CiM is buggy (HOUSEKEEPING, "Lessons").
   - `lfsr_im.npz`: seeds/dims/items (0x2a, 128, 32), (0x2a, 512, 1024), (0x0, 100, 16), (0xffffffff, 100, 16), (0x1234abcd, 100, 16), plus the LFSR start state per item.
@@ -157,13 +157,19 @@ Stop after each step for Ryan to check and commit.
 - Fill in this file's Status.
 - Set the sync header's "Last updated".
 
+**S0.10 — Minimal CI (D25).** Added after S0.9, at Ryan's request.
+- Replace `.github/workflows/ci.yml` with one job on `ubuntu-latest`: `actions/checkout@v7`, `prefix-dev/setup-pixi@v0.10.2` with `pixi-version: v0.46.0`, which installs from the lock with `--locked` and caches the env, then `pixi run test` and `pixi run lint`. It triggers on pull requests, pushes to `main`, and `workflow_dispatch`.
+- Delete `.github/workflows/docs.yml` and `lint.yml`.
+- Check: `pixi install --locked`, `pixi run test` and `pixi run lint` pass locally; `actionlint` and `check-yaml` pass on `ci.yml`; CI is green on the PR into `main`.
+
 ## Definition of done
 
 - From a clean clone of the branch, `pixi install`, `pixi run smoke`, `pixi run test` (≥ 11 passed) and `pixi run lint` (clean) all succeed.
 - `git diff --stat main -- rtl tests questa Bender.yml Makefile conftest.py LICENSE` prints nothing.
 - The top-level listing is exactly the `.github .gitignore .pre-commit-config.yaml Bender.yml CLAUDE.md LICENSE Makefile README.md conftest.py docs hw pixi.lock pixi.toml questa rtl sw tests`.
 - Regenerating the fixtures gives byte-identical files.
-- STATUS shows S0.1–S0.9 as done, DECISIONS holds D1–D24 with next free D25, and this Status section is complete.
+- CI is green on the PR into `main`.
+- STATUS shows S0.1–S0.10 as done, DECISIONS holds D1–D25 with next free D26, and this Status section is complete.
 
 ## Status / Open questions
 
@@ -207,7 +213,7 @@ Stop after each step for Ryan to check and commit.
 - **S0.3: done.**
   - Every non-blank line of `ci.yml`, `docs.yml` and `lint.yml` is prefixed with `# `, blank lines are unchanged, and each file starts with `# Disabled until S7 (D7).`
   - Check: `grep -v -e '^\s*#' -e '^\s*$' .github/workflows/*.yml` prints nothing.
-  - To restore at S7.2: drop line 1, then run `sed 's/^# //'`. This gives back each original file byte for byte, checked with `cmp` against `HEAD`.
+  - Superseded by S0.10 (D25), which replaces `ci.yml` and deletes the other two.
   - To watch after the push: an all-comment workflow file parses as empty YAML, and GitHub's Actions tab may list it as invalid. Nothing runs either way.
 - **S0.4: done.**
   - `pixi.toml` is replaced with the S0.4 part of the constraint. `pixi.lock` and `activate.sh` are deleted.
@@ -259,17 +265,23 @@ Stop after each step for Ryan to check and commit.
     - Regenerating into a temp dir and running `cmp` on both `.npz` files prints nothing.
     - The pre-commit hooks pass on every new file.
 - **S0.9: done.**
-  - STATUS: S0.1–S0.9 are set to done, and the Done-PR row is added. Ryan fills in the merge commit. S0 stays `wip` until `s0-baselines` (S0.10).
+  - STATUS: S0.1–S0.9 are set to done, and the Done-PR row is added. Ryan fills in the merge commit. S0 stays `wip` until `s0-baselines` (S0.11).
   - The sync header's "Last updated" is `2026-09-30, Claude Code`.
 - **Definition of done: met.** Checked on a fresh clone of `s0-clean-slate` at `7ce7f2e`, in a scratch directory:
   - `pixi install` succeeds and leaves `pixi.lock` unchanged. `pixi run smoke` prints `3.12.14 2.5.3`, `pixi run test` gives `13 passed`, and `pixi run lint` gives `All checks passed!` and `6 files already formatted`. Ruff 0.16 also checks `sw/tests/fixtures/README.md`, which is why the count is 6.
   - `git diff --stat main -- rtl tests questa Bender.yml Makefile conftest.py LICENSE` prints nothing.
   - The top-level listing, with `LC_ALL=C` sorting, is exactly the list in the Definition of done.
   - Regenerating the fixtures from `../hypercorex-old` gives byte-identical `.npz` files: `cmp` prints nothing.
-  - STATUS shows S0.1–S0.9 as done. DECISIONS holds D1–D24, next free D25.
+  - STATUS showed S0.1–S0.9 as done. DECISIONS held D1–D24, next free D25. S0.10 was added after this check.
 - **For the next planning round (`s0-baselines`):**
-  - Upload CLAUDE.md, DECISIONS, STATUS, WORKFLOW, HOUSEKEEPING, ARCHITECTURE and this file. D24 (the one-level flow into `main`) and the free-form commit messages are new since the plan.
-  - `../hypercorex-old` (a worktree at the tag) and the A3 `pixi exec` command both work, so S0.10 can run the old apps the same way.
+  - Upload CLAUDE.md, DECISIONS, STATUS, WORKFLOW, HOUSEKEEPING, ARCHITECTURE and this file. D24 (the one-level flow into `main`), D25 (minimal CI, replacing D7), the free-form commit messages and the renumbering of the old-app baselines from S0.10 to S0.11 are new since the plan.
+  - `../hypercorex-old` (a worktree at the tag) and the A3 `pixi exec` command both work, so S0.11 can run the old apps the same way.
   - Check commands that sort file names should use `LC_ALL=C sort`, so the order doesn't depend on locale.
-  - After the first push, check whether GitHub lists the commented-out workflows as invalid (S0.3).
   - `pre-commit install` is Ryan's choice. The hooks are set up but not installed.
+- **S0.10: done locally, waiting for CI.** Added after S0.9 at Ryan's request, with D25 replacing D7.
+  - `.github/workflows/ci.yml` now holds one `sw` job: checkout, `setup-pixi` (pixi v0.46.0, locked install, cache), `pixi run test` and `pixi run lint`. It triggers on pull requests, pushes to `main` and by hand. `docs.yml` and `lint.yml` are deleted; the old versions stay at the tag.
+  - The old-app baselines task is renumbered from S0.10 to S0.11 in STATUS, in this file's Context, and in open item 4 and S1.6. S7.2 ("minimal CI back on") is removed from STATUS, and "CI back on" is removed from S7's scope. ARCHITECTURE's layout shows `ci.yml` (D25).
+  - Checks:
+    - `pixi install --locked` succeeds, `pixi run test` gives `13 passed`, and `pixi run lint` gives `All checks passed!` and `6 files already formatted`.
+    - `check-yaml` passes on `ci.yml`, and so does `actionlint` (run through `pixi exec`).
+  - Still to confirm: CI is green on the PR into `main`. STATUS keeps S0.10 as `wip` until then.
