@@ -7,7 +7,7 @@ Overall progress of the Hypercorex rewrite. While a PR is in progress, its detai
 - The old state is the tag `discontinue-old-hypercorex` at `96b8e9e`. `main` is still at that commit until `s0-clean-slate` merges.
 - Each PR branch comes off `main` and merges or squash-merges back into `main` (D24), so `main` holds the rewrite in progress.
 - v1 lives on branch `hypercorex_v1`.
-- **Current PR:** `s0-clean-slate`.
+- **Current PR:** `None`.
 
 ## Milestones
 
