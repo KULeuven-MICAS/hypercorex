@@ -35,15 +35,15 @@ This is the roadmap. A PR's own steps live in its PR.md; when a PR closes, its r
 
 | ID | Scope | Acceptance | PR | Status |
 |---|---|---|---|---|
-| S0.1 | Context docs (this set) | Committed as the first commit of `s0-clean-slate` | s0-clean-slate | wip |
-| S0.2 | Sync check | Report in PR.md Status | s0-clean-slate | todo |
-| S0.3 | Comment out all CI workflows (D7) | Nothing runs on push or PR | s0-clean-slate | todo |
-| S0.4 | Minimal `pixi.toml` and new `pixi.lock` (D21) | `pixi run smoke` prints Python 3.12.x and numpy 2.x | s0-clean-slate | todo |
-| S0.5 | Delete the D4 and D21 lists | Only the kept and parked files remain | s0-clean-slate | todo |
-| S0.6 | `sw/` skeleton, test/lint/fmt tasks, `.gitignore`, pre-commit | `pixi run test` and `pixi run lint` pass | s0-clean-slate | todo |
-| S0.7 | Golden fixtures from the tag (D19) | Fixture tests pass; regeneration is byte-identical | s0-clean-slate | todo |
-| S0.8 | README and `hw/README.md` placeholder | Files describe the rewrite and point to the docs | s0-clean-slate | todo |
-| S0.9 | Close the PR | STATUS updated, PR.md done | s0-clean-slate | todo |
+| S0.1 | Context docs (this set) | Committed as the first commit of `s0-clean-slate` | s0-clean-slate | done |
+| S0.2 | Sync check | Report in PR.md Status | s0-clean-slate | done |
+| S0.3 | Comment out all CI workflows (D7) | Nothing runs on push or PR | s0-clean-slate | done |
+| S0.4 | Minimal `pixi.toml` and new `pixi.lock` (D21) | `pixi run smoke` prints Python 3.12.x and numpy 2.x | s0-clean-slate | done |
+| S0.5 | Delete the D4 and D21 lists | Only the kept and parked files remain | s0-clean-slate | done |
+| S0.6 | `sw/` skeleton, test/lint/fmt tasks, `.gitignore`, pre-commit | `pixi run test` and `pixi run lint` pass | s0-clean-slate | done |
+| S0.7 | Golden fixtures from the tag (D19) | Fixture tests pass; regeneration is byte-identical | s0-clean-slate | done |
+| S0.8 | README and `hw/README.md` placeholder | Files describe the rewrite and point to the docs | s0-clean-slate | done |
+| S0.9 | Close the PR | STATUS updated, PR.md done | s0-clean-slate | done |
 | S0.10 | Old-app baselines: the six apps and the char self-test, run from the tag with external seeds (D19) | Baselines table below filled; open item 4 closed | s0-baselines | todo |
 
 ### S1 — Vertical slice (char recognition)
@@ -111,7 +111,7 @@ This is the roadmap. A PR's own steps live in its PR.md; when a PR closes, its r
 
 | PR | Merged into `main` at | Tasks | Decisions |
 |---|---|---|---|
-| — | — | — | — |
+| `s0-clean-slate` | _(Ryan fills in the merge commit)_ | S0.1–S0.9 | D19, D21, D22, D23, D24 (D20 was replaced by D24) |
 
 ## Baselines
 

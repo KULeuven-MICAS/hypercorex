@@ -258,4 +258,18 @@ Stop after each step for Ryan to check and commit.
     - `pixi run lint` gives `All checks passed!` and `5 files already formatted`.
     - Regenerating into a temp dir and running `cmp` on both `.npz` files prints nothing.
     - The pre-commit hooks pass on every new file.
-- **Next: S0.9**, close.
+- **S0.9: done.**
+  - STATUS: S0.1–S0.9 are set to done, and the Done-PR row is added. Ryan fills in the merge commit. S0 stays `wip` until `s0-baselines` (S0.10).
+  - The sync header's "Last updated" is `2026-09-30, Claude Code`.
+- **Definition of done: met.** Checked on a fresh clone of `s0-clean-slate` at `7ce7f2e`, in a scratch directory:
+  - `pixi install` succeeds and leaves `pixi.lock` unchanged. `pixi run smoke` prints `3.12.14 2.5.3`, `pixi run test` gives `13 passed`, and `pixi run lint` gives `All checks passed!` and `6 files already formatted`. Ruff 0.16 also checks `sw/tests/fixtures/README.md`, which is why the count is 6.
+  - `git diff --stat main -- rtl tests questa Bender.yml Makefile conftest.py LICENSE` prints nothing.
+  - The top-level listing, with `LC_ALL=C` sorting, is exactly the list in the Definition of done.
+  - Regenerating the fixtures from `../hypercorex-old` gives byte-identical `.npz` files: `cmp` prints nothing.
+  - STATUS shows S0.1–S0.9 as done. DECISIONS holds D1–D24, next free D25.
+- **For the next planning round (`s0-baselines`):**
+  - Upload CLAUDE.md, DECISIONS, STATUS, WORKFLOW, HOUSEKEEPING, ARCHITECTURE and this file. D24 (the one-level flow into `main`) and the free-form commit messages are new since the plan.
+  - `../hypercorex-old` (a worktree at the tag) and the A3 `pixi exec` command both work, so S0.10 can run the old apps the same way.
+  - Check commands that sort file names should use `LC_ALL=C sort`, so the order doesn't depend on locale.
+  - After the first push, check whether GitHub lists the commented-out workflows as invalid (S0.3).
+  - `pre-commit install` is Ryan's choice. The hooks are set up but not installed.
