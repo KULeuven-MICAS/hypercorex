@@ -202,5 +202,6 @@ Stop after each step for Ryan to check and commit.
   - CLAUDE.md;
   - ARCHITECTURE, "HW";
   - in this file: the header, Context, Decisions, the S0.1 and S0.5 checks, S0.8 and the Definition of done.
+- **Commit messages are free-form (Ryan, after S0.2).** HOUSEKEEPING, "Commits and PRs", no longer asks for `<step ID>: …`. Steps are tracked in this Status, and a squash merge puts only the PR title on `main`.
 - **For the next planning round:** upload the updated DECISIONS, STATUS, WORKFLOW, HOUSEKEEPING, CLAUDE.md and this file, so claude.ai plans from D24.
 - **Next: S0.3**, CI off.
