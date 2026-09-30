@@ -239,4 +239,10 @@ Stop after each step for Ryan to check and commit.
     - On `conftest.py` and `Makefile`, the hooks skip ("no files to check").
     - `pre-commit install` is left to Ryan.
   - Known: `.github/workflows/docs.yml` and `lint.yml` have trailing whitespace and no final newline, and `README.md` has trailing whitespace. These come from the originals. The hooks fire only when these files are staged, and `README.md` is rewritten in S0.8.
-- **Next: S0.7**, the golden fixtures.
+- **S0.7: not done yet.** Ryan chose to do S0.8 first. The two are independent.
+- **S0.8: done.**
+  - `README.md` is rewritten: what Hypercorex is, its status (the SW rewritten one PR at a time into `main`, the HW parked), quick start (`pixi install`, `smoke`, `test`, `lint`, `fmt`), the repo layout, pointers to `docs/`, the tag, `hypercorex_v1`, and the license (Apache 2.0). The old README's cocotb, Questa and app instructions describe the deleted setup and still exist at the tag.
+  - Added `hw/README.md`: the HW moves here at H0, it is parked at the root until then, and it points to ARCHITECTURE, "HW".
+  - Check: with the changes staged, `git ls-files | cut -d/ -f1 | LC_ALL=C sort -u` prints `.github .gitignore .pre-commit-config.yaml Bender.yml CLAUDE.md LICENSE Makefile README.md conftest.py docs hw pixi.lock pixi.toml questa rtl sw tests`, which is the Definition of done's list.
+  - The pre-commit hooks pass on both files, and every relative link resolves.
+- **Next: S0.7**, the golden fixtures. Then S0.9, close.
