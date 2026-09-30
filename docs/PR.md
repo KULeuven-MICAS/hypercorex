@@ -204,4 +204,9 @@ Stop after each step for Ryan to check and commit.
   - in this file: the header, Context, Decisions, the S0.1 and S0.5 checks, S0.8 and the Definition of done.
 - **Commit messages are free-form (Ryan, after S0.2).** HOUSEKEEPING, "Commits and PRs", no longer asks for `<step ID>: …`. Steps are tracked in this Status, and a squash merge puts only the PR title on `main`.
 - **For the next planning round:** upload the updated DECISIONS, STATUS, WORKFLOW, HOUSEKEEPING, CLAUDE.md and this file, so claude.ai plans from D24.
-- **Next: S0.3**, CI off.
+- **S0.3: done.**
+  - Every non-blank line of `ci.yml`, `docs.yml` and `lint.yml` is prefixed with `# `, blank lines are unchanged, and each file starts with `# Disabled until S7 (D7).`
+  - Check: `grep -v -e '^\s*#' -e '^\s*$' .github/workflows/*.yml` prints nothing.
+  - To restore at S7.2: drop line 1, then run `sed 's/^# //'`. This gives back each original file byte for byte, checked with `cmp` against `HEAD`.
+  - To watch after the push: an all-comment workflow file parses as empty YAML, and GitHub's Actions tab may list it as invalid. Nothing runs either way.
+- **Next: S0.4**, minimal pixi.

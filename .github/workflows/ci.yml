@@ -1,152 +1,153 @@
-name: VSAX Tests
-on:
-  pull_request:
-  workflow_dispatch:
-  push:
-    branches: [main]
+# Disabled until S7 (D7).
+# name: VSAX Tests
+# on:
+#   pull_request:
+#   workflow_dispatch:
+#   push:
+#     branches: [main]
 
-jobs:
-  changes:
-    runs-on: ubuntu-latest
-    outputs:
-      rtl: ${{ steps.filter.outputs.rtl }}
-      app: ${{ steps.filter.outputs.app }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v2
-        id: filter
-        with:
-          filters: |
-            rtl:
-              - 'rtl/**'
-              - 'tests/**'
-            app:
-              - 'app/**'
-              - 'lib/**'
+# jobs:
+#   changes:
+#     runs-on: ubuntu-latest
+#     outputs:
+#       rtl: ${{ steps.filter.outputs.rtl }}
+#       app: ${{ steps.filter.outputs.app }}
+#     steps:
+#       - uses: actions/checkout@v4
+#       - uses: dorny/paths-filter@v2
+#         id: filter
+#         with:
+#           filters: |
+#             rtl:
+#               - 'rtl/**'
+#               - 'tests/**'
+#             app:
+#               - 'app/**'
+#               - 'lib/**'
 
-  smoke-test:
-    runs-on: ubuntu-latest
+#   smoke-test:
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
 
-      - name: Set up pixi
-        uses: prefix-dev/setup-pixi@v0.8.1
+#       - name: Set up pixi
+#         uses: prefix-dev/setup-pixi@v0.8.1
 
-      - name: Run smoke test
-        run: pixi run smoke-test
+#       - name: Run smoke test
+#         run: pixi run smoke-test
 
-  lib-check:
-    runs-on: ubuntu-latest
+#   lib-check:
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
 
-      - name: Set up pixi
-        uses: prefix-dev/setup-pixi@v0.8.1
+#       - name: Set up pixi
+#         uses: prefix-dev/setup-pixi@v0.8.1
 
-      - name: Run library check
-        run: pixi run lib-check
+#       - name: Run library check
+#         run: pixi run lib-check
 
-  rtl-im-check:
-    needs: changes
-    runs-on: ubuntu-latest
+#   rtl-im-check:
+#     needs: changes
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
 
-      - name: Set up pixi
-        uses: prefix-dev/setup-pixi@v0.8.1
+#       - name: Set up pixi
+#         uses: prefix-dev/setup-pixi@v0.8.1
 
-      - name: Skip notice
-        if: needs.changes.outputs.rtl == 'false'
-        run: echo "No changes in rtl, skipping."
+#       - name: Skip notice
+#         if: needs.changes.outputs.rtl == 'false'
+#         run: echo "No changes in rtl, skipping."
 
-      - name: Run RTL IM check
-        if: needs.changes.outputs.rtl == 'true'
-        run: pixi run rtl-im-check
+#       - name: Run RTL IM check
+#         if: needs.changes.outputs.rtl == 'true'
+#         run: pixi run rtl-im-check
 
-  rtl-common-check:
-    needs: changes
-    runs-on: ubuntu-latest
+#   rtl-common-check:
+#     needs: changes
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
 
-      - name: Set up pixi
-        uses: prefix-dev/setup-pixi@v0.8.1
+#       - name: Set up pixi
+#         uses: prefix-dev/setup-pixi@v0.8.1
 
-      - name: Skip notice
-        if: needs.changes.outputs.rtl == 'false'
-        run: echo "No changes in rtl, skipping."
+#       - name: Skip notice
+#         if: needs.changes.outputs.rtl == 'false'
+#         run: echo "No changes in rtl, skipping."
 
-      - name: Run RTL Common check
-        if: needs.changes.outputs.rtl == 'true'
-        run: pixi run rtl-common-check
+#       - name: Run RTL Common check
+#         if: needs.changes.outputs.rtl == 'true'
+#         run: pixi run rtl-common-check
 
-  rtl-encoder-check:
-    needs: changes
-    runs-on: ubuntu-latest
+#   rtl-encoder-check:
+#     needs: changes
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
 
-      - name: Set up pixi
-        uses: prefix-dev/setup-pixi@v0.8.1
+#       - name: Set up pixi
+#         uses: prefix-dev/setup-pixi@v0.8.1
 
-      - name: Skip notice
-        if: needs.changes.outputs.rtl == 'false'
-        run: echo "No changes in rtl, skipping."
+#       - name: Skip notice
+#         if: needs.changes.outputs.rtl == 'false'
+#         run: echo "No changes in rtl, skipping."
 
-      - name: Run RTL Encoder check
-        if: needs.changes.outputs.rtl == 'true'
-        run: pixi run rtl-encoder-check
+#       - name: Run RTL Encoder check
+#         if: needs.changes.outputs.rtl == 'true'
+#         run: pixi run rtl-encoder-check
 
-  rtl-assocmem-check:
-    needs: changes
-    runs-on: ubuntu-latest
+#   rtl-assocmem-check:
+#     needs: changes
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
 
-      - name: Set up pixi
-        uses: prefix-dev/setup-pixi@v0.8.1
+#       - name: Set up pixi
+#         uses: prefix-dev/setup-pixi@v0.8.1
 
-      - name: Skip notice
-        if: needs.changes.outputs.rtl == 'false'
-        run: echo "No changes in rtl, skipping."
+#       - name: Skip notice
+#         if: needs.changes.outputs.rtl == 'false'
+#         run: echo "No changes in rtl, skipping."
 
-      - name: Run RTL Associative Memory check
-        if: needs.changes.outputs.rtl == 'true'
-        run: pixi run rtl-assocmem-check
+#       - name: Run RTL Associative Memory check
+#         if: needs.changes.outputs.rtl == 'true'
+#         run: pixi run rtl-assocmem-check
 
-  app-test:
-    needs: changes
-    runs-on: ubuntu-latest
+#   app-test:
+#     needs: changes
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
 
-      - name: Set up pixi
-        uses: prefix-dev/setup-pixi@v0.8.1
+#       - name: Set up pixi
+#         uses: prefix-dev/setup-pixi@v0.8.1
 
-      - name: Skip notice
-        if: needs.changes.outputs.app == 'false'
-        run: echo "No changes in app/ or lib/, skipping."
+#       - name: Skip notice
+#         if: needs.changes.outputs.app == 'false'
+#         run: echo "No changes in app/ or lib/, skipping."
 
-      - name: Run tests in parallel
-        if: needs.changes.outputs.app == 'true'
-        run: |
-          pixi run app-test-vsax-digit-recog
-          pixi run app-test-vsax-bin-digit-recog
-          pixi run app-test-vsax-bin-idlvl-digit-recog
-          pixi run app-test-vsax-bin-dna-recog
-          pixi run app-test-vsax-bin-isolet-recog
-          pixi run app-test-vsax-bin-lang-recog
+#       - name: Run tests in parallel
+#         if: needs.changes.outputs.app == 'true'
+#         run: |
+#           pixi run app-test-vsax-digit-recog
+#           pixi run app-test-vsax-bin-digit-recog
+#           pixi run app-test-vsax-bin-idlvl-digit-recog
+#           pixi run app-test-vsax-bin-dna-recog
+#           pixi run app-test-vsax-bin-isolet-recog
+#           pixi run app-test-vsax-bin-lang-recog
