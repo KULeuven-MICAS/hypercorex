@@ -1,6 +1,6 @@
 # Status
 
-Overall progress of the Hypercorex rewrite. The current PR's detail is in `docs/PR.md`.
+Overall progress of the Hypercorex rewrite. While a PR is in progress, its detail is in `docs/PR.md`; between PRs there is no PR.md (D26).
 
 ## Where the code lives
 

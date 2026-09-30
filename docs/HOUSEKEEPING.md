@@ -6,7 +6,7 @@ Rules for code, docs, formats, files and tests. The workflow itself is in `docs/
 
 - Claude Code never commits or pushes. Ryan commits each step after checking it (D23).
 - Commit messages on a PR branch are free-form: several commits per step, fixes and typos are all fine. PR.md's Status is the record of the steps, and a squash merge puts only the PR title on `main`.
-- PR title: the PR name, e.g. `s0-clean-slate`. PR description: the final text of `docs/PR.md`.
+- PR title: the PR name, e.g. `s0-clean-slate`. PR description: the final text of `docs/PR.md`, which the branch's last commit then deletes (D26).
 - Branches: a PR branch carries the PR name, comes off `main` and merges or squash-merges back into `main` (D24).
 
 ## Python style

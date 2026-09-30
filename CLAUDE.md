@@ -9,6 +9,8 @@ scratch, one PR at a time into `main` (D24); the old code stays at the tag
 ## Read first, in this order
 1. `docs/WORKFLOW.md`: how planning (claude.ai) and execution (Claude Code) work together.
 2. `docs/PR.md`: the current PR. Start with its sync header and Status / Open questions.
+   It exists only while a PR is in progress (D26). If it's missing, stop and ask what to
+   work on.
 3. `docs/DECISIONS.md`: check every change against it. Never go against a decision
    quietly; propose a new one with the next free number.
 4. `docs/STATUS.md`, `docs/ARCHITECTURE.md`, `docs/HOUSEKEEPING.md` as the step needs.

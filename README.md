@@ -58,7 +58,8 @@ pixi run lint    # ruff check and format check on sw/
 - [`docs/DECISIONS.md`](docs/DECISIONS.md): numbered decisions and their reasons.
 - [`docs/HOUSEKEEPING.md`](docs/HOUSEKEEPING.md): code style, formats and file locations.
 - [`docs/WORKFLOW.md`](docs/WORKFLOW.md): how the work is planned and carried out.
-- [`docs/PR.md`](docs/PR.md): the current pull request.
+- `docs/PR.md`: the plan of the pull request in progress. It exists only on a PR's
+  branch and is deleted before the merge.
 
 ## Earlier versions
 

@@ -2,7 +2,7 @@
 
 ```
 PR: s0-clean-slate          Branch: s0-clean-slate (from main at 96b8e9e)
-Next free D: 26             Next free open item: 10
+Next free D: 27             Next free open item: 10
 Last planned: 2026-09-30, claude.ai    Last updated: 2026-09-30, Claude Code
 ```
 
@@ -26,6 +26,7 @@ Turn the old tree into a clean base for the SW rewrite, with the docs set in pla
 - D22 — Doc roles: STATUS covers the whole project, DECISIONS holds rules across PRs, PR.md holds the current PR only.
 - D23 — Plan in claude.ai, execute in Claude Code, one step at a time in the working tree. Claude Code never commits.
 - D25 — Minimal CI from S0: one workflow runs `pixi run test` and `pixi run lint`; the old workflows are deleted. Replaces D7. Decided after S0.9 (S0.10).
+- D26 — PR.md exists only during a PR: the branch's last commit deletes it, after its text becomes the GitHub PR description. No PR.md on `main` means no PR is in progress. Amends D22. Decided after S0.10.
 - PR-local — Pre-commit hooks exclude the parked HW paths, so a hook can never touch them (D3).
 - PR-local — Fixture set. It covers the one parked RTL LFSR test config, the app config, odd-dim and edge seeds, and the CA90 configs the parked RTL test uses. RI and CiM get no fixtures: RI can't match a new `Generator` stream, and the old CiM is buggy (HOUSEKEEPING, "Lessons").
   - `lfsr_im.npz`: seeds/dims/items (0x2a, 128, 32), (0x2a, 512, 1024), (0x0, 100, 16), (0xffffffff, 100, 16), (0x1234abcd, 100, 16), plus the LFSR start state per item.
@@ -156,6 +157,7 @@ Stop after each step for Ryan to check and commit.
 - Set S0.1–S0.9 to done in STATUS and add the Done-PR row (Ryan fills in the merge commit).
 - Fill in this file's Status.
 - Set the sync header's "Last updated".
+- Last, after CI is green on the PR (S0.10) and Ryan has uploaded this file and pasted it into the GitHub PR description: delete `docs/PR.md` and set STATUS's "Current PR" to none, in the branch's final commit before the merge (D26).
 
 **S0.10 — Minimal CI (D25).** Added after S0.9, at Ryan's request.
 - Replace `.github/workflows/ci.yml` with one job on `ubuntu-latest`: `actions/checkout@v7`, `prefix-dev/setup-pixi@v0.10.2` with `pixi-version: v0.46.0`, which installs from the lock with `--locked` and caches the env, then `pixi run test` and `pixi run lint`. It triggers on pull requests, pushes to `main`, and `workflow_dispatch`.
@@ -169,7 +171,7 @@ Stop after each step for Ryan to check and commit.
 - The top-level listing is exactly the `.github .gitignore .pre-commit-config.yaml Bender.yml CLAUDE.md LICENSE Makefile README.md conftest.py docs hw pixi.lock pixi.toml questa rtl sw tests`.
 - Regenerating the fixtures gives byte-identical files.
 - CI is green on the PR into `main`.
-- STATUS shows S0.1–S0.10 as done, DECISIONS holds D1–D25 with next free D26, and this Status section is complete.
+- STATUS shows S0.1–S0.10 as done, DECISIONS holds D1–D26 with next free D27, and this Status section is complete. Then PR.md is deleted as the last commit (D26).
 
 ## Status / Open questions
 
@@ -274,7 +276,7 @@ Stop after each step for Ryan to check and commit.
   - Regenerating the fixtures from `../hypercorex-old` gives byte-identical `.npz` files: `cmp` prints nothing.
   - STATUS showed S0.1–S0.9 as done. DECISIONS held D1–D24, next free D25. S0.10 was added after this check.
 - **For the next planning round (`s0-baselines`):**
-  - Upload CLAUDE.md, DECISIONS, STATUS, WORKFLOW, HOUSEKEEPING, ARCHITECTURE and this file. D24 (the one-level flow into `main`), D25 (minimal CI, replacing D7), the free-form commit messages and the renumbering of the old-app baselines from S0.10 to S0.11 are new since the plan.
+  - Upload CLAUDE.md, DECISIONS, STATUS, WORKFLOW, HOUSEKEEPING, ARCHITECTURE and this file. D24 (the one-level flow into `main`), D25 (minimal CI, replacing D7), D26 (PR.md deleted at close), the free-form commit messages and the renumbering of the old-app baselines from S0.10 to S0.11 are new since the plan.
   - `../hypercorex-old` (a worktree at the tag) and the A3 `pixi exec` command both work, so S0.11 can run the old apps the same way.
   - Check commands that sort file names should use `LC_ALL=C sort`, so the order doesn't depend on locale.
   - `pre-commit install` is Ryan's choice. The hooks are set up but not installed.
@@ -285,3 +287,17 @@ Stop after each step for Ryan to check and commit.
     - `pixi install --locked` succeeds, `pixi run test` gives `13 passed`, and `pixi run lint` gives `All checks passed!` and `6 files already formatted`.
     - `check-yaml` passes on `ci.yml`, and so does `actionlint` (run through `pixi exec`).
   - Still to confirm: CI is green on the PR into `main`. STATUS keeps S0.10 as `wip` until then.
+- **D26 (decided by Ryan after S0.10).** PR.md exists only during a PR. Edited to match:
+  - DECISIONS: D22 and D26, the index and next free D27;
+  - WORKFLOW: section 2's table and section 3, step 7 (the close order);
+  - CLAUDE.md, "Read first": if there's no PR.md, stop and ask;
+  - HOUSEKEEPING, "Commits and PRs";
+  - STATUS's intro;
+  - README: the `docs/PR.md` link is replaced by a plain mention, because it would be broken on `main`;
+  - in this file: the header, Decisions, S0.9's last action and the Definition of done.
+- **Closing order for this PR:**
+  1. Ryan opens the PR, with this file as the description.
+  2. CI goes green, and S0.10 becomes `done` in STATUS.
+  3. Ryan uploads the final docs to the Project.
+  4. The last commit deletes this file and sets "Current PR" to none.
+  5. Ryan merges.

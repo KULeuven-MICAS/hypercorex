@@ -2,7 +2,7 @@
 
 Numbered decisions that hold across PRs. Numbers never change and are never reused. Rules for writing entries are in `docs/WORKFLOW.md`, section 2.
 
-**Next free: D26**
+**Next free: D27**
 
 ## Index by area
 
@@ -13,7 +13,7 @@ Numbered decisions that hold across PRs. Numbers never change and are never reus
 | sw | D8, D9, D10, D11, D12, D13, D14, D15 |
 | hw | — |
 | test | D7, D19, D25 |
-| docs | D17, D22 |
+| docs | D17, D22, D26 |
 
 ## Entries
 
@@ -101,6 +101,7 @@ The docs set is `CLAUDE.md`, `docs/WORKFLOW.md`, `docs/ARCHITECTURE.md`, `docs/D
 - PR.md holds only the current PR and becomes its GitHub PR description.
 
 This keeps long-lived state apart from one PR's plan. Amends D17. Detail is in WORKFLOW.
+Amended by D26 (PR.md is deleted at close).
 
 ### D23 · scope · Plan in claude.ai, execute in Claude Code
 - Planning happens in a claude.ai Project and execution in Claude Code. The two are linked only by repo files, which Ryan moves by hand.
@@ -121,3 +122,10 @@ One level of branches is simpler, and the tag already keeps the old code. Replac
 - Later milestones add jobs when they need them, e.g. the docs build at S7.3.
 
 A working CI from the start guards every PR into `main` (D24). Replaces D7.
+
+### D26 · docs · PR.md exists only during a PR
+- `docs/PR.md` is written when a PR is planned, as the first commit of its branch, and deleted by the branch's last commit, after its text has become the GitHub PR description and has been uploaded to the Project.
+- `main` has no PR.md between PRs. No PR.md means no PR is in progress: Claude Code stops and asks what to work on.
+- The record of a closed PR is its GitHub description and `git log -- docs/PR.md`.
+
+This keeps `main` free of a stale plan and makes "no current PR" visible. Amends D22. Detail is in WORKFLOW, section 3.

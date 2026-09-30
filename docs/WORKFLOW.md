@@ -19,7 +19,7 @@ How planning and execution work together in this repo. Both sides follow this fi
 | `docs/DECISIONS.md` | Numbered decisions that hold across PRs | both; numbers come from the file | whole project |
 | `docs/ARCHITECTURE.md` | Components and their interfaces as they are now, plus the planned ones marked as planned | Claude Code, with each change | current state; no history |
 | `docs/HOUSEKEEPING.md` | Rules: code and doc style, formats, naming, where files go, tests, commits | both | whole project |
-| `docs/PR.md` | The current PR only: goal, steps, definition of done, status | claude.ai writes it; Claude Code writes back | one PR |
+| `docs/PR.md` | The current PR only: goal, steps, definition of done, status | claude.ai writes it; Claude Code writes back | one PR; deleted at close (D26) |
 
 **Decisions.** One entry per decision:
 - what was decided and why, in one to three sentences;
@@ -59,10 +59,10 @@ Numbers never change and are never reused. An amended entry gets an "Amended by 
 
    Ryan inspects, tests, may change things himself, and commits. Claude Code continues from the tree as Ryan left it; his edits win.
 7. **Close.** When the Definition of done holds:
-   - Claude Code updates STATUS: tasks, the done-PR row, baselines and open items.
-   - PR.md's text becomes the GitHub PR description.
-   - Ryan uploads the updated docs to the Project.
-   - The next PR's planning replaces PR.md.
+   - Claude Code updates STATUS (tasks, the done-PR row, baselines and open items) and completes PR.md's Status.
+   - Ryan uploads the updated docs, PR.md included, to the Project, and uses PR.md's text as the GitHub PR description.
+   - The branch's last commit deletes `docs/PR.md` and sets STATUS's "Current PR" to none (D26). Ryan then merges.
+   - Between PRs, `main` has no PR.md. If Claude Code starts without one, no PR is in progress: it stops and asks what to work on. The next PR's planning writes a new PR.md.
 8. **Replan.** When Ryan uploads an updated PR.md, claude.ai reads its Status / Open questions first and continues from there.
 
 Small, code-heavy planning, where the details depend on the existing code, can happen directly in Claude Code's plan mode. Its outcome still lands in PR.md, and any decision still lands in DECISIONS.
