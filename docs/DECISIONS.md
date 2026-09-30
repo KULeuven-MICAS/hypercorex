@@ -124,8 +124,9 @@ One level of branches is simpler, and the tag already keeps the old code. Replac
 A working CI from the start guards every PR into `main` (D24). Replaces D7.
 
 ### D26 · docs · PR.md exists only during a PR
-- `docs/PR.md` is written when a PR is planned, as the first commit of its branch, and deleted by the branch's last commit, after its text has become the GitHub PR description and has been uploaded to the Project.
+- `docs/PR.md` is written when a PR is planned, as the first commit of its branch, and deleted by the branch's last commit, after it has been uploaded to the Project.
+- At close, Claude Code adds a short `## PR summary` section: what changed, the decisions, the checks and what comes next. That summary, not the full file, is the GitHub PR description.
 - `main` has no PR.md between PRs. No PR.md means no PR is in progress: Claude Code stops and asks what to work on.
-- The record of a closed PR is its GitHub description and `git log -- docs/PR.md`.
+- The record of a closed PR is its GitHub description (the summary) and `git log -- docs/PR.md` (the full plan and Status).
 
 This keeps `main` free of a stale plan and makes "no current PR" visible. Amends D22. Detail is in WORKFLOW, section 3.

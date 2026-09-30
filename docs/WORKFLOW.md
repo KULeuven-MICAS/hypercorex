@@ -59,8 +59,8 @@ Numbers never change and are never reused. An amended entry gets an "Amended by 
 
    Ryan inspects, tests, may change things himself, and commits. Claude Code continues from the tree as Ryan left it; his edits win.
 7. **Close.** When the Definition of done holds:
-   - Claude Code updates STATUS (tasks, the done-PR row, baselines and open items) and completes PR.md's Status.
-   - Ryan uploads the updated docs, PR.md included, to the Project, and uses PR.md's text as the GitHub PR description.
+   - Claude Code updates STATUS (tasks, the done-PR row, baselines and open items), completes PR.md's Status, and writes PR.md's `## PR summary` section (template in section 6).
+   - Ryan uploads the updated docs, PR.md included, to the Project, and pastes the PR summary as the GitHub PR description.
    - The branch's last commit deletes `docs/PR.md` and sets STATUS's "Current PR" to none (D26). Ryan then merges.
    - Between PRs, `main` has no PR.md. If Claude Code starts without one, no PR is in progress: it stops and asks what to work on. The next PR's planning writes a new PR.md.
 8. **Replan.** When Ryan uploads an updated PR.md, claude.ai reads its Status / Open questions first and continues from there.
@@ -127,6 +127,12 @@ Concrete, testable criteria.
 
 ## Status / Open questions
 (Updated by Claude Code: progress per step, deviations and why, questions for the next planning round.)
+
+## PR summary
+(Written by Claude Code at close and pasted as the GitHub PR description. About one
+screen: one paragraph on what the PR achieves; what changed, grouped by area; the
+decisions with one line each; the checks with their actual results; what comes next.
+No step-by-step history: that stays in Status and in git.)
 ```
 
 ## 7. After a milestone
