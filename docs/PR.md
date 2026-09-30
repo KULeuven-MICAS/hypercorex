@@ -245,4 +245,17 @@ Stop after each step for Ryan to check and commit.
   - Added `hw/README.md`: the HW moves here at H0, it is parked at the root until then, and it points to ARCHITECTURE, "HW".
   - Check: with the changes staged, `git ls-files | cut -d/ -f1 | LC_ALL=C sort -u` prints `.github .gitignore .pre-commit-config.yaml Bender.yml CLAUDE.md LICENSE Makefile README.md conftest.py docs hw pixi.lock pixi.toml questa rtl sw tests`, which is the Definition of done's list.
   - The pre-commit hooks pass on both files, and every relative link resolves.
-- **Next: S0.7**, the golden fixtures. Then S0.9, close.
+- **S0.7: done.**
+  - `../hypercorex-old` is a worktree at `96b8e9e`, made with `git worktree add`. It is kept for regenerating the fixtures; remove it with `git worktree remove ../hypercorex-old`.
+  - Added `sw/tests/fixtures/make_fixtures.py` (`--old` and `--out`). It is lint-clean under the `sw/` ruff rules and runs on Python 3.11.
+  - Generated `lfsr_im.npz` (92 KB) and `ca90_im.npz` (99 KB) through A3: `pixi exec` with Python 3.11.16 and numpy 1.26.4.
+  - Added `characters.txt` (identical to the tag's copy), the fixtures `README.md` and `sw/tests/helpers.py` with `load_fixture(name)`. The helper returns a dict of arrays for `.npz` files and text for anything else.
+  - Added `sw/tests/test_fixtures.py`. It covers the 9 planned checks and adds `test_ca90_means`, which checks the recorded `hw_d512_n1024` and `iter_d512` means, so every number stated in this plan has a test (HOUSEKEEPING, "Tests"). The meta check runs once per file.
+  - Test count: 13, not 11. The extras are `test_ca90_means` and the second `test_meta` case; no test was dropped.
+  - `meta` keeps the calls under a `calls` key. HOUSEKEEPING, "Formats", is updated to say so.
+  - Checks:
+    - `pixi run test` gives `13 passed`.
+    - `pixi run lint` gives `All checks passed!` and `5 files already formatted`.
+    - Regenerating into a temp dir and running `cmp` on both `.npz` files prints nothing.
+    - The pre-commit hooks pass on every new file.
+- **Next: S0.9**, close.

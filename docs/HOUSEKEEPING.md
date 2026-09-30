@@ -53,7 +53,7 @@ Rules for code, docs, formats, files and tests. The workflow itself is in `docs/
 - One `np.savez_compressed` file per generator.
 - Every array is in binary form, uint8 {0, 1}, with row `i` = item `i`.
 - Seed arrays are uint32.
-- A `meta` entry holds a JSON string with `source_commit`, `numpy` (the version used) and, for each key, the old call that produced it.
+- A `meta` entry holds a JSON string with `source_commit`, `numpy` (the version used) and `calls`: for each key except `start_*` and `seeds`, the old call that produced it.
 - Fixtures are written only by `sw/tests/fixtures/make_fixtures.py`, run against a checkout of the tag. Rerunning it with the same environment gives byte-identical files.
 
 **HV arrays and dtypes.** TBD, S1.2 / S2.2 (open item 6).
