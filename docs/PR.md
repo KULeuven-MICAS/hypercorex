@@ -214,4 +214,9 @@ Stop after each step for Ryan to check and commit.
   - The old 2.9 GB `.pixi/` env was deleted before the install, so the new env is built from scratch. pixi's shared package cache was reused.
   - `pixi install` (pixi 0.46.0) wrote a new `pixi.lock`: 721 lines, 114 conda packages. The env is 383 MB.
   - Check: `pixi run smoke` prints `3.12.14 2.5.3`. The tools are pytest 9.1.1, ruff 0.16.9 and pre-commit 4.6.2.
-- **Next: S0.5**, delete the old SW.
+- **S0.5: done.**
+  - Deleted `lib/`, `app/`, `hdc_exp/`, `hemaia/`, `sw/`, `util/`, `requirements.txt`, `docs/Makefile`, `docs/source/` and `docs/README.md`. These are 83 tracked files, all reachable at the tag. The delete list held no untracked or ignored files.
+  - Check 1: with the deletions staged, the listing prints exactly the planned list. The plan's `sort -u` needs `LC_ALL=C` for that order, because an `en_US` locale ignores leading dots when sorting.
+  - Check 2: `git diff --stat main -- rtl tests questa Bender.yml Makefile conftest.py LICENSE` prints nothing.
+  - Expected leftovers: the parked cocotb tests still import the deleted code (ARCHITECTURE, "HW"), and `.gitignore` still names `hdc_exp/` and `docs/build/`. S0.6 replaces `.gitignore`.
+- **Next: S0.6**, the `sw/` skeleton.
