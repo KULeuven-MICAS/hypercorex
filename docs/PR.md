@@ -219,4 +219,24 @@ Stop after each step for Ryan to check and commit.
   - Check 1: with the deletions staged, the listing prints exactly the planned list. The plan's `sort -u` needs `LC_ALL=C` for that order, because an `en_US` locale ignores leading dots when sorting.
   - Check 2: `git diff --stat main -- rtl tests questa Bender.yml Makefile conftest.py LICENSE` prints nothing.
   - Expected leftovers: the parked cocotb tests still import the deleted code (ARCHITECTURE, "HW"), and `.gitignore` still names `hdc_exp/` and `docs/build/`. S0.6 replaces `.gitignore`.
-- **Next: S0.6**, the `sw/` skeleton.
+- **S0.6: done.**
+  - Added `sw/pyproject.toml` exactly as in the constraint, `sw/src/hypercorex/__init__.py` (docstring and `__version__ = "0.0.0"`) and `sw/tests/test_smoke.py` with 2 tests:
+    - `test_version_matches_metadata`;
+    - `test_numpy_major_is_at_least_2`.
+  - `pixi.toml` is now the full version from the constraint, and `pixi.lock` is updated for the editable `hypercorex`.
+  - `.gitignore` is replaced as planned, with the parked-HW entries under a comment.
+  - `.pre-commit-config.yaml` is replaced:
+    - `pre-commit-hooks` pinned at `v6.0.0`, the latest tag;
+    - a local `pixi run lint` hook on `^sw/`;
+    - a top-level `exclude` for the parked HW.
+  - Checks:
+    - `pixi install` succeeds.
+    - `pixi run test` prints `rootdir: .../sw`, `configfile: pyproject.toml` and `2 passed`.
+    - `pixi run lint` prints `All checks passed!` and `2 files already formatted`.
+  - Pre-commit:
+    - `pre-commit validate-config` passes.
+    - `pre-commit run --files` on this step's files passes all 5 hooks.
+    - On `conftest.py` and `Makefile`, the hooks skip ("no files to check").
+    - `pre-commit install` is left to Ryan.
+  - Known: `.github/workflows/docs.yml` and `lint.yml` have trailing whitespace and no final newline, and `README.md` has trailing whitespace. These come from the originals. The hooks fire only when these files are staged, and `README.md` is rewritten in S0.8.
+- **Next: S0.7**, the golden fixtures.

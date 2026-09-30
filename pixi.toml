@@ -10,5 +10,11 @@ pytest = ">=8"
 ruff = ">=0.6"
 pre-commit = ">=3"
 
+[pypi-dependencies]
+hypercorex = { path = "sw", editable = true }
+
 [tasks]
 smoke = "python -c \"import sys, numpy; print(sys.version.split()[0], numpy.__version__)\""
+test = "pytest sw/tests"
+lint = "ruff check sw && ruff format --check sw"
+fmt = "ruff format sw && ruff check --fix sw"

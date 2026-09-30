@@ -57,7 +57,7 @@ A model is its item memories plus an app encoder plus an associative memory, all
 
 | Component | Status | Role |
 |---|---|---|
-| Package `hypercorex` | exists after S0.6 | Holds `__version__` only |
+| Package `hypercorex` | exists (S0.6) | Holds `__version__` only |
 | Config | planned, S1.1 | All switches, e.g. `dim`, `hv`, `gen`, `encode_bits`, `am_bits`, `retrain_epochs`, `seed` (D8, D9) |
 | HV type | planned, S1.2 / S2 | bind, bundle, quantize, similarity (D10–D13) |
 | Item memories | planned, S1.3 / S3 | Declared by name per app, e.g. `{"id": ..., "level": ...}`, each with its own generator (D14) |

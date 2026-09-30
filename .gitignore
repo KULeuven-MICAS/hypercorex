@@ -1,6 +1,10 @@
 __pycache__/
-hdc_exp/extracted_datasets/
+.pixi/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+sw/data/
+
+# Parked HW (D3)
 sim_build/
 Bender.lock
-.pixi/
-docs/build/
