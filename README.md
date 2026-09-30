@@ -1,134 +1,79 @@
-# Hypercorex-v2 (VSAX)
+# Hypercorex
 
-## Under Construction
+Hypercorex is a hardware accelerator for hyperdimensional computing (HDC) and
+vector-symbolic architectures (VSA). It moves beyond binary HDC, whose accuracy is
+limited by how little each dimension can hold, to non-binary representations. To keep
+the cost of large, dense hypervectors down, it generates item memories on the fly and
+uses an efficient associative-memory search.
 
-This project contains ongoing development for Hypercorex version 2. It is a VSA (vector-symbolic architecture) variant, in contrast to the original [binary HDC variant](https://github.com/KULeuven-MICAS/hypercorex/tree/hypercorex_v1).
+The Python model in `sw/` is the golden reference: the RTL is checked against it bit for
+bit.
 
-## What's so special about VSAX?
+## Status
 
-This project addresses the key limitations of binary HDC, where accuracy suffers due to restricted information capacity. The core idea is to move to non-binary representations, which offer richer information encoding. However, non-binary representations introduce significant computational costs for high-dimensional dense vectors. We tackle this challenge through on-the-fly generation of item memories and an efficient associative memory search.
+The software is being rewritten from scratch, one pull request at a time into `main`.
+The hardware is parked at the repo root (`rtl/`, `tests/`, `questa/`, `Bender.yml`,
+`Makefile`, `conftest.py`) and moves into `hw/` later. Progress and the plan are in
+[`docs/STATUS.md`](docs/STATUS.md).
 
-As the VSA field continues to evolve, this hardware framework is designed to be extensible across both the hardware and software domains. Throughout these expansions, the focus remains on building an efficient and scalable VSA accelerator.
+## Quick start
 
-# HW-SW Design and Programs
-This repository has both HW and SW implementations of various applications. For HW tests, there are two ways of simulating the hardware, one is through the cocotb testing and the other is through vanilla RTL simulations supported by questasim. The cocotb tests are meant for open-source testing while the vanilla RTL simulation (with Verilog testbenches) was meant for system tests applicable for backend synthesis.
-
-## Initial Pixi Shell Setup
-VSAX uses [pixi-shell](https://pixi.prefix.dev/v0.28.1/) as its environment manager. Make sure to install pixi first:
+Install [pixi](https://pixi.sh):
 
 ```bash
 curl -fsSL https://pixi.sh/install.sh | sh
 ```
 
-Clone the repo and make sure to be inside:
+Clone the repo and set up the environment:
 
 ```bash
 git clone git@github.com:KULeuven-MICAS/hypercorex.git
-```
-
-Install the pixi environment. For more details of the versions used, please check the [pixi.toml](./pixi.toml).
-
-```bash
+cd hypercorex
 pixi install
 ```
 
-Activate the pixi shell.
+Run the checks:
 
 ```bash
-pixi shell
+pixi run smoke   # prints the Python and numpy versions
+pixi run test    # software tests
+pixi run lint    # ruff check and format check on sw/
 ```
 
-Run the smoke-test to see if it works.
+`pixi run fmt` formats `sw/`.
 
-```bash
-pixi run smoke-test
-```
+## Repository layout
 
-## Running Sample HW Testbenches
+| Path | Contents |
+|---|---|
+| `sw/` | The `hypercorex` Python package (`sw/src/hypercorex/`) and its tests (`sw/tests/`) |
+| `hw/` | Placeholder; the hardware moves here later |
+| `rtl/`, `tests/`, `questa/` | The parked hardware: RTL, cocotb tests and Questa files |
+| `docs/` | Project docs, listed below |
 
-By default, we use [cocotb-test](https://github.com/themperek/cocotb-test) while using [Verilator](https://www.veripool.org/verilator/) as our testbench since it uses Python as the backend and simulations are fast.
+## Docs
 
-You can select one of the tests from the `tests` directory. To invoke a test use:
+- [`docs/STATUS.md`](docs/STATUS.md): milestones, planned tasks and baselines.
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): components and their interfaces.
+- [`docs/DECISIONS.md`](docs/DECISIONS.md): numbered decisions and their reasons.
+- [`docs/HOUSEKEEPING.md`](docs/HOUSEKEEPING.md): code style, formats and file locations.
+- [`docs/WORKFLOW.md`](docs/WORKFLOW.md): how the work is planned and carried out.
+- `docs/PR.md`: the plan of the pull request in progress. It exists only on a PR's
+  branch and is deleted before the merge.
 
-```bash
-pytest tests/test_bundler_unit.py
-```
+## Earlier versions
 
-To display a log of what the test looks like, add `-o log_cli=True` arguments.
+- The code from before the rewrite, including the old apps, the `vsax` library and
+  the old hardware setup, is at the tag
+  [`discontinue-old-hypercorex`](https://github.com/KULeuven-MICAS/hypercorex/tree/discontinue-old-hypercorex):
 
-```bash
-pytest tests/test_bundler_unit.py -o log_cli=True
-```
+  ```bash
+  git checkout discontinue-old-hypercorex
+  ```
 
-If you want to dump waveforms, please add the `--waves=1` argument.
+- The original binary HDC accelerator lives on the branch
+  [`hypercorex_v1`](https://github.com/KULeuven-MICAS/hypercorex/tree/hypercorex_v1).
 
-```bash
-pytest tests/test_bundler_unit.py --waves=1 -o log_cli=True
-```
+## License
 
-This will create a `dump.vcd` file inside the `tests/sim_build/<path to designated test bench>` which you can view with:
-
-```bash
-gtkwave tests/sim_build/bundler_unit/dump.vcd
-```
-
-Make sure you have [gtkwave](https://github.com/gtkwave/gtkwave) installed. 
-
-## Running HW Tests with Commercial Tools
-
-VSAX currently supports the use of questasim, so make sure to have the proper questasim installation. Make sure you are inside the pixi environment. To invoke questasim simply add the `--simulator=questa` argument:
-
-```bash
-pytest tests/test_bundler_unit.py --simulator=questa -o log_cli=True
-```
-
-You can also view waveforms but questasim dumps `vsim.wlf` waveform which you can read with `vsim vsim.wlf`.
-
-```bash
-pytest tests/test_bundler_unit.py --simulator=questa -o --waves=1 log_cli=True
-```
-
-## Running with Vanilla Verilog Testbenches
-
-There are a few system tests which we use vanilla Verilog testbenches simulated on Questasim. These are meant for more legacy means of testing and testbenches that are friendly for doing backend. All relevant source files needed for proper builds are stored in the `questa` directory.
-
-To make a build simply invoke:
-
-```bash
-make build-vsim VSIM_MODULE=vsax_id_level_top
-```
-
-The `VSIM_MODULE` argument simply targets the top-level testbench required for it. Note that you need to ensure that the testbench top and the top-level DUT need to have the same name. Only the testbench top has a prepend of `tb_`.
-
-Use this when necessary for backend synthesis only.
-
-## Running SW Applications
-
-The SW programs are located inside the `app` directory. These programs rely on pre-built functions, classes, and other setups inside the `lib` directory.
-To run a program simply invoke:
-
-```bash
-python app/vsax_bin_digit_recog.py
-```
-
-Each program by default, runs training, retraining, and testing runs on pre-processed data which are generated and stored in the `data` directory.
-
-More information can be found in [here](app/README.md) file.
-
-## Development Checklist
-### General House Keeping
-- [x] Setting general pixi shell.
-- [x] Updated pixi shell with correct cocotb and verilator versions that enable correct waveform viewing.
-- [x] Updating README documentation with getting started steps.
-### Software Development
-- [ ] Improving SW VSA model generation.
-- [ ] Creating expansion of VSA models to include data-type conversions.
-- [ ] Enabling customization flows for non-streaming VSA processes.
-### Hardware Development
-- [ ] Creating comparison suite for different item-memory generators.
-- [ ] Creating multi-input HV ALU system.
-- [ ] Creating `int8` associative memory search.
-- [ ] Synthesis scripts.
-- [ ] PnR scripts.
-
-
+Apache License 2.0. See [`LICENSE`](LICENSE).

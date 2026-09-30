@@ -1,18 +1,20 @@
+# Parked HW paths are never touched by a hook (D3).
+exclude: ^(rtl|tests|questa)/|^(Bender\.yml|Makefile|conftest\.py)$
+
 repos:
-- repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.4.0
-  hooks:
-    - id: check-yaml
-- repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.0.278
-  hooks:
-    - id: ruff
-      types_or: [
-        python,
-        pyi,
-      ]
-      args: [ --fix, --exit-non-zero-on-fix]
-- repo: https://github.com/psf/black
-  rev: 23.3.0
-  hooks:
-    - id: black
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-yaml
+      - id: check-toml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
+  - repo: local
+    hooks:
+      - id: lint
+        name: lint (pixi run lint)
+        entry: pixi run lint
+        language: system
+        files: ^sw/
+        pass_filenames: false

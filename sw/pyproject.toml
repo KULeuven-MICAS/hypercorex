@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hypercorex"
+version = "0.0.0"
+requires-python = ">=3.12"
+dependencies = ["numpy>=2"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hypercorex"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "NPY"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
