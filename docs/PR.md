@@ -209,4 +209,9 @@ Stop after each step for Ryan to check and commit.
   - Check: `grep -v -e '^\s*#' -e '^\s*$' .github/workflows/*.yml` prints nothing.
   - To restore at S7.2: drop line 1, then run `sed 's/^# //'`. This gives back each original file byte for byte, checked with `cmp` against `HEAD`.
   - To watch after the push: an all-comment workflow file parses as empty YAML, and GitHub's Actions tab may list it as invalid. Nothing runs either way.
-- **Next: S0.4**, minimal pixi.
+- **S0.4: done.**
+  - `pixi.toml` is replaced with the S0.4 part of the constraint. `pixi.lock` and `activate.sh` are deleted.
+  - The old 2.9 GB `.pixi/` env was deleted before the install, so the new env is built from scratch. pixi's shared package cache was reused.
+  - `pixi install` (pixi 0.46.0) wrote a new `pixi.lock`: 721 lines, 114 conda packages. The env is 383 MB.
+  - Check: `pixi run smoke` prints `3.12.14 2.5.3`. The tools are pytest 9.1.1, ruff 0.16.9 and pre-commit 4.6.2.
+- **Next: S0.5**, delete the old SW.
